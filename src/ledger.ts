@@ -25,6 +25,7 @@ import {
 import { RemarkPicker, type PetRemarks } from './remarks.ts'
 import type { PetDisplayConfig, PetPersist } from './persist.ts'
 import type { PetGameplayState } from './gameplay.ts'
+import type { SessionColor } from './session-colors.ts'
 import { animationFps, animationMode, tickSlope, tickIntercept } from './animation.ts'
 
 /** Tuning overrides for the affinity economy. */
@@ -98,6 +99,14 @@ export class PetLedger {
    */
   forgetSession(sessionId: string): void {
     this.rewardedTurns.delete(sessionId)
+  }
+
+  /** Assigned once on activity, never during a polling read. */
+  setSessionColor(id: string, color: SessionColor): void {
+    const colors = this.current.sessionColors ?? {}
+    if (Object.hasOwn(colors, id)) return
+    this.current = { ...this.current, sessionColors: Object.fromEntries([...Object.entries(colors), [id, color]].slice(-512)) }
+    this.dirty = true
   }
 
   /** Replace the display block (clamping stays a caller concern). */

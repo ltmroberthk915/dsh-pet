@@ -5,7 +5,7 @@ const [source, output] = process.argv.slice(2);
 if (!source || !output) throw new Error('source and output archive required');
 const original = fs.readFileSync(source);
 if (path.resolve(source).toLowerCase() === path.resolve(output).toLowerCase()) throw new Error('Use a separate output archive');
-const acceptedArchives = ['983ca71114e6dfd353fc79af5a1f9481a250ee64c2a3c757673029b811b23bc2', 'c2ab0a463d6575d6c7b0e367258eeee285440e8902c9daa6502564281651a647', 'd35821882c7d804b2fbdd340960df6c92ae1fa7c777bb0c605ede09f21b10c6f'];
+const acceptedArchives = ['983ca71114e6dfd353fc79af5a1f9481a250ee64c2a3c757673029b811b23bc2', 'c2ab0a463d6575d6c7b0e367258eeee285440e8902c9daa6502564281651a647', 'd35821882c7d804b2fbdd340960df6c92ae1fa7c777bb0c605ede09f21b10c6f', '8648ad8545dd9e7360d7f7200638cbbe92e055724ee897cc797deff0cb996f0d'];
 if (!acceptedArchives.includes(crypto.createHash('sha256').update(original).digest('hex'))) throw new Error('Unsupported or modified desktop archive');
 const header = JSON.parse(original.subarray(16, 16+original.readUInt32LE(12)).toString());
 const originalOffset = 8 + original.readUInt32LE(4);
@@ -35,7 +35,7 @@ if (preload.includes(bridgeMarker)) preload=preload.slice(0,preload.indexOf(brid
 preload += `\n// Local DSH Pet bridge: top-level application renderer only.\nif (process.isMainFrame && location.protocol === 'dsh-app:' && location.hostname === 'app') {
  electron.contextBridge.exposeInMainWorld('dshPetDesktop', {
    configure: options => electron.ipcRenderer.invoke('dsh-pet-v1:configure', options),
-   state: () => electron.ipcRenderer.invoke('dsh-pet-v1:owner-state'),
+   state: id => electron.ipcRenderer.invoke('dsh-pet-v1:owner-state', id),
    resetPosition: () => electron.ipcRenderer.invoke('dsh-pet-v1:owner-reset')
  });
  electron.ipcRenderer.on('dsh-pet-v1:open-session', (_event, id) => {

@@ -3,7 +3,7 @@ declare global {
   interface Window {
     dshPetDesktop?: {
       configure(options: { enabled: boolean; currentSessionId?: string }): Promise<{ active: boolean }>
-      state(): Promise<import('../service.ts').PetStateView>
+      state(currentSessionId?: string): Promise<import('../service.ts').PetStateView>
       resetPosition(): Promise<{ active: boolean }>
     }
     dshPetOverlay?: {
@@ -11,6 +11,7 @@ declare global {
       drag(phase: 'start' | 'move' | 'end'): void
       interactive(value: boolean): void
       openMain(sessionId?: string): Promise<void>
+      subscribe(update: (state: import('../service.ts').PetStateView) => void, disconnected: () => void, retire: () => void): () => void
     }
   }
 }

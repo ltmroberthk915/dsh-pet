@@ -513,7 +513,8 @@ export function resolvePetManifest(
     manifestUrl: assetUrl(assetPrefix, id, 'pet.json'),
     dir,
     spritesheetPath: sheet,
-    servable: [sheet],
+    servable: [sheet, ...(id === 'whale-girl-refined'
+      ? ['ds', 'gpt', 'claude', 'kimi', 'glm'].map(palette => 'palettes/' + palette + '.png').filter(file => existsSync(join(dir, file))) : [])],
     ...(remarks === undefined ? {} : { remarks }),
   }
 }

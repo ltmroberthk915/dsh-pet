@@ -590,7 +590,7 @@ export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCa
       // The browser half reports the GUI's current session id so the bubble
       // stack can lead with the session the user is actually looking at.
       const current = new URL(req.url ?? '/', 'http://pet.local').searchParams.get('current')
-      return service.state(current === null || current === '' ? undefined : current)
+      return service.state(current === null ? undefined : current)
     }),
     getRoute(ctx, PET_API_PREFIX + '/pets', () => service.pets()),
     getRoute(ctx, PET_API_PREFIX + '/diagnostics', () => service.diagnostics()),
@@ -605,7 +605,7 @@ export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCa
       return service.setVisible(visible)
     }),
     postRoute(ctx, PET_API_PREFIX + '/set-config', (body) => service.setConfig({
-      ...Object.fromEntries(['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationMode', 'animationTickSlope', 'animationTickIntercept', 'desktopEnabled', 'visible'].filter(key => Object.hasOwn(body, key)).map(key => [key, body[key]])),
+      ...Object.fromEntries(['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationMode', 'animationTickSlope', 'animationTickIntercept', 'desktopEnabled', 'multiPetEnabled', 'visible'].filter(key => Object.hasOwn(body, key)).map(key => [key, body[key]])),
       ...(typeof body.right === 'number' ? { right: body.right } : {}),
       ...(typeof body.bottom === 'number' ? { bottom: body.bottom } : {}),
       ...(typeof body.visible === 'boolean' ? { visible: body.visible } : {}),

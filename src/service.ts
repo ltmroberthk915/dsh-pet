@@ -28,6 +28,7 @@ import {
   type ActivityStatusEventLike,
   type ProjectionRuntime,
 } from './event-projection.ts'
+import { chooseSessionColor, modelPalette, type SessionColor } from './session-colors.ts'
 import { PetLedger, type LedgerConfig, type LedgerInteractionResult } from './ledger.ts'
 import {
   DEFAULT_PET_NAME,
@@ -123,6 +124,7 @@ export interface PetSettingsSection {
   animationTickSlope?: number
   animationTickIntercept?: number
   desktopEnabled?: boolean
+  multiPetEnabled?: boolean
   /** Master switch for the plugin (browser half + host routes). */
   enabled?: boolean
   /**
@@ -159,8 +161,26 @@ export interface PetSessionView {
 /** Hard cap on simultaneously displayed session bubbles (most recent first). */
 export const MAX_SESSION_BUBBLES = 12
 
+/** One live conversation (or the sole main-window idle companion). */
+export interface PetCompanionView {
+  sessionId: string
+  primary: boolean
+  animation: PetStateSnapshot['animation']
+  phase: PetStateSnapshot['phase']
+  sessionActive: boolean
+  bubble?: string
+  whisper?: string
+  performance?: PetStateView['performance']
+  color: SessionColor
+}
+
 /** Snapshot returned by `pet.state`. */
 export interface PetStateView {
+  primary?: boolean
+  sessionId?: string
+  currentSessionId?: string
+  companions?: PetCompanionView[]
+  color?: SessionColor
   animation: PetStateSnapshot['animation']
   bubble?: string
   phase: PetStateSnapshot['phase']
@@ -297,9 +317,9 @@ export class PetService extends Service {
    */
   private voiceCache: { petId: string; overrides: VoicePackOverrides } | undefined
   /**
-   * Per-session activity, most recent last (Map insertion order). Bounded by
-   * MAX_SESSION_BUBBLES so a burst of sessions cannot grow it without bound;
-   * disposed sessions are removed by the 'session/disposed' listener.
+   * Per-session activity, most recent last (Map insertion order). Settled
+   * records are pruned above 128; live conversations are never evicted by
+   * the legacy bubble-stack cap. Disposed sessions are removed immediately.
    */
   private readonly sessionActivity = new Map<Session, SessionActivity>()
   /**
@@ -488,6 +508,7 @@ export class PetService extends Service {
             return
           }
 
+          if (event.type === 'request/context') this.assignSessionColor(session)
           const transition = projectOfficialEvent(event, runtime)
           if (transition === undefined) return
           runtime.officialEventsSeen = true
@@ -558,6 +579,7 @@ export class PetService extends Service {
    */
   private applyActivity(session: Session, input: PetStateInput, whisper?: string): void {
     const activity = this.activityOf(session)
+    this.assignSessionColor(session)
     activity.lastInput = input
     if (whisper !== undefined) activity.whisper = { text: whisper, at: Date.now() }
     activity.machine.onActivityStatus(input)
@@ -567,10 +589,12 @@ export class PetService extends Service {
     // reassigned below, so trimming its stale predecessor is safe.
     this.sessionActivity.delete(session)
     this.sessionActivity.set(session, activity)
-    while (this.sessionActivity.size > MAX_SESSION_BUBBLES) {
-      const oldest = this.sessionActivity.keys().next().value
-      if (oldest === undefined) break
-      this.sessionActivity.delete(oldest)
+    // Never evict a live conversation just because another one starts.
+    if (this.sessionActivity.size > 128) {
+      for (const [candidate, record] of this.sessionActivity) {
+        if (candidate !== session && record.machine.render().animation === 'idle') this.sessionActivity.delete(candidate)
+        if (this.sessionActivity.size <= 128) break
+      }
     }
     this.displaySession = session
     this.machine.onActivityStatus(input)
@@ -806,7 +830,7 @@ export class PetService extends Service {
       if (['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationTickSlope', 'animationTickIntercept'].includes(key) && (typeof value !== 'number' || !Number.isFinite(value))) throw new Error('invalid-' + key)
       if (key === 'animationTickSlope' && ((value as number) < MIN_TICK_SLOPE || (value as number) > MAX_TICK_SLOPE)) throw new Error('invalid-animationTickSlope')
       if (key === 'animationTickIntercept' && ((value as number) < MIN_TICK_INTERCEPT || (value as number) > MAX_TICK_INTERCEPT)) throw new Error('invalid-animationTickIntercept')
-      if (['visible', 'desktopEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
+      if (['visible', 'desktopEnabled', 'multiPetEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
       if (key === 'animationMode' && !['fixed', 'native', 'tick'].includes(value as string)) throw new Error('invalid-animationMode')
     }
     const next = { ...this.ledger.snapshot.display, ...patch }
@@ -861,6 +885,7 @@ export class PetService extends Service {
       next.animationTickIntercept = tickIntercept(section.animationTickIntercept ?? next.animationTickIntercept)
     }
     next.desktopEnabled = section.desktopEnabled ?? next.desktopEnabled ?? true
+    next.multiPetEnabled = section.multiPetEnabled ?? next.multiPetEnabled ?? false
     next.visible = section.visible && (section.enabled ?? true)
     next.size = Math.round(Math.min(DISPLAY_SIZE_MAX, Math.max(DISPLAY_SIZE_MIN, section.size)))
     next.right = Math.round(Math.min(DISPLAY_INSET_MAX, Math.max(0, section.right)))
@@ -888,6 +913,7 @@ export class PetService extends Service {
       animationTickSlope: snapshot.display.animationTickSlope,
       animationTickIntercept: snapshot.display.animationTickIntercept,
       desktopEnabled: snapshot.display.desktopEnabled,
+      multiPetEnabled: snapshot.display.multiPetEnabled,
       petId: snapshot.petId,
     }).catch(() => {
       // A settings write failure must not break the pet's own persistence.
@@ -905,8 +931,32 @@ export class PetService extends Service {
   }
 
   private view(currentSessionId?: string): PetStateView {
-    const snapshot = this.machine.render()
+    const selected = currentSessionId === undefined ? this.displaySession
+      : [...this.sessionActivity.keys()].find(s => String(s.id) === currentSessionId)
+    const snapshot = currentSessionId === undefined ? this.machine.render()
+      : (selected && this.sessionActivity.get(selected)?.machine.render()) ?? new PetStateMachine(this.stateConfig).render()
     const entry = this.activeEntry()
+    const companions: PetCompanionView[] = []
+    if (this.ledger.snapshot.display.multiPetEnabled) {
+      for (const [session, activity] of this.sessionActivity) {
+        if (session.header?.origin === 'subagent') continue
+        const state = activity.machine.render()
+        if (state.animation === 'idle') continue
+        const id = String(session.id)
+        const whisper = activity.whisper && Date.now() - activity.whisper.at < WHISPER_TTL_MS ? activity.whisper.text : undefined
+        companions.push({ sessionId: id, primary: id === currentSessionId,
+          animation: boundAnimation(entry.id, state), phase: state.phase, sessionActive: true,
+          bubble: state.bubble, whisper, performance: this.footerPerformance(id),
+          color: this.sessionColor(id) })
+      }
+      // Only the main window keeps an idle companion. Background idle sessions
+      // never produce windows, and closing a turn has a single return target.
+      if (!companions.some(c => c.primary)) companions.unshift({
+        sessionId: currentSessionId ?? '', primary: true,
+        animation: boundAnimation(entry.id, snapshot), phase: snapshot.phase,
+        sessionActive: false, color: this.sessionColor(currentSessionId ?? ''),
+      })
+    }
     // One bubble per concurrently active TOP-LEVEL session. The GUI's current
     // session leads the stack when reported (the browser half passes its
     // session list's 'current'); everything else keeps the most recent
@@ -917,6 +967,7 @@ export class PetService extends Service {
     // copy) drop out, so a finished turn does not leave a stale bubble behind.
     const sessions: PetSessionView[] = []
     for (const [session, activity] of [...this.sessionActivity.entries()].reverse()) {
+      if (currentSessionId !== undefined && String(session.id) !== currentSessionId) continue
       if (sessions.length >= MAX_SESSION_BUBBLES) break
       if (session.header?.origin === 'subagent') continue
       const perSession = activity.machine.render()
@@ -966,7 +1017,10 @@ export class PetService extends Service {
       ...(snapshot.bubble === undefined ? {} : { bubble: snapshot.bubble }),
       phase: snapshot.phase,
       sessionActive: snapshot.sessionActive,
-      sessions,
+      sessions: currentSessionId === undefined ? sessions : sessions.filter(s => s.sessionId === currentSessionId),
+      currentSessionId,
+      companions,
+      color: { palette: 'ds' },
       ...(decoration === undefined ? {} : { decoration }),
       ...(announcement === undefined ? {} : { announcement }),
       affinity: this.ledger.affinityView(Date.now()),
@@ -991,12 +1045,35 @@ export class PetService extends Service {
   private footerPerformance(currentSessionId?: string): PetStateView['performance'] {
     try {
       const sessions = this.ctx.get('sessions', false) as { get(id: string): Session | undefined } | undefined
-      const session = currentSessionId === undefined ? this.displaySession : sessions?.get(currentSessionId)
+      const session = currentSessionId === undefined ? this.displaySession
+        : [...this.sessionActivity.keys()].find(s => String(s.id) === currentSessionId) ?? sessions?.get(currentSessionId)
       if (session === undefined) return undefined
       const projections = this.ctx.get('sessionProjections', false) as { stateOf(session: Session, key: string): unknown } | undefined
       const rate = footerTokensPerSecond(projections?.stateOf(session, 'sessionStats'))
       return rate === undefined ? undefined : { tokensPerSecond: rate, source: 'sessionStats', sessionId: String(session.id) }
     } catch { return undefined }
+  }
+
+  private sessionColor(id: string): SessionColor {
+    const colors = this.ledger.snapshot.sessionColors
+    return colors && Object.hasOwn(colors, id) ? colors[id]! : { palette: 'ds' }
+  }
+
+  private assignSessionColor(session: Session): void {
+    if (session.header?.origin === 'subagent') return
+    const id = String(session.id)
+    if (!id || id.length > 200 || Object.hasOwn(this.ledger.snapshot.sessionColors ?? {}, id)) return
+    let config: { model?: unknown; provider?: unknown } | undefined
+    try { config = session.requestContext?.() ?? session.requestHeader?.()?.config } catch {}
+    // Wait for the actual request header rather than permanently assigning the
+    // unknown model's fallback during turn/start.
+    if (!config || typeof config.model !== 'string' || !config.model) return
+    const occupied = [...this.sessionActivity.entries()].filter(([s, a]) => s !== session
+      && s.header?.origin !== 'subagent' && a.machine.render().animation !== 'idle')
+      .map(([s]) => this.sessionColor(String(s.id)))
+    this.ledger.setSessionColor(id, chooseSessionColor(modelPalette(config.model, config.provider) ?? 'ds', occupied))
+    this.ledger.takeDirty()
+    this.flush()
   }
 
   private flush(): void {

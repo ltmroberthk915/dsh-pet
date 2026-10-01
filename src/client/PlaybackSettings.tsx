@@ -19,6 +19,7 @@ export function PlaybackSettings() {
   const [slope, setSlope] = useState(String(DEFAULT_TICK_SLOPE))
   const [intercept, setIntercept] = useState(String(DEFAULT_TICK_INTERCEPT))
   const [desktop, setDesktop] = useState(true)
+  const [multi, setMulti] = useState(false)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   useEffect(() => {
@@ -33,6 +34,7 @@ export function PlaybackSettings() {
         setSlope(String(tickSlope(state.display.animationTickSlope)))
         setIntercept(String(tickIntercept(state.display.animationTickIntercept)))
         setDesktop(state.display.desktopEnabled !== false)
+        setMulti(state.display.multiPetEnabled === true)
       }
     }).catch(() => { if (alive) setMessage('宠物服务暂不可用，请启用插件后重试。') })
     void refresh()
@@ -48,9 +50,9 @@ export function PlaybackSettings() {
     setBusy(true); setMessage('')
     try {
       const linear = validLinear ? { animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) } : {}
-      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), desktopEnabled: desktop, ...linear })
+      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), desktopEnabled: desktop, multiPetEnabled: multi, ...linear })
       if (result.ok !== true || result.display?.animationMode !== mode || result.display?.animationFps !== Number(fps)
-        || result.display?.desktopEnabled !== desktop
+        || result.display?.desktopEnabled !== desktop || result.display?.multiPetEnabled !== multi
         || (validLinear && (result.display?.animationTickSlope !== Number(slope) || result.display?.animationTickIntercept !== Number(intercept)))) throw new Error('设置未保存')
       setSlope(String(tickSlope(result.display.animationTickSlope)))
       setIntercept(String(tickIntercept(result.display.animationTickIntercept)))
@@ -84,6 +86,13 @@ export function PlaybackSettings() {
       {!validLinear && <div role="alert">k 需在 {MIN_TICK_SLOPE}–{MAX_TICK_SLOPE} 之间，b 需在 {MIN_TICK_INTERCEPT}–{MAX_TICK_INTERCEPT} 之间。</div>}
       {validLinear && <div>{rate === undefined ? `底栏暂无速度，使用备用 ${fps} FPS` : `预览：${rate} tok/s → ${effectiveFps({ animationMode: 'tick', animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) }, rate)?.toFixed(1)} FPS`}</div>}
     </>}
+    <label><input aria-label="多宠物模式" type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)} /> 多宠物模式</label>
+    <div style={{ opacity: .8, lineHeight: 1.6 }}>{multi
+      ? '活跃对话各一只，分别跟随自己的 tok/s；主对话保持原大小，其余为 62% 且不弹气泡。双击小宠物切换到对应对话后恢复大小和气泡。后台对话结束后收回主宠物。'
+      : '仅一只默认 DS 蓝色宠物，动作、气泡和 tok/s 随主窗口当前对话切换。'}</div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>{[['#f3f4f7','GPT · 白'],['#d97941','Claude · 橙'],['#24262d','Kimi · 黑'],['#660874','GLM · 清华紫'],['#6c9cda','DS · 原色']].map(([color,label]) => <span key={label}><i style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: color, border: '1px solid #888', marginRight: 4 }} />{label}</span>)}</div>
+    <div style={{ opacity: .8 }}>优先使用模型对应色；已占用时先分配空闲色，第六只起随机分配并尽量拉开色差。关闭多宠物模式不会清除已分配颜色。</div>
+    <div style={{ opacity: .8, lineHeight: 1.6 }}>所有宠物共享累计：喂食次数、亲密度和小鱼干统一记录。各对话的完成奖励汇入同一份记录，切换对话、开关多宠物或重启都不会拆分或重置。</div>
     <label><input type="checkbox" checked={desktop} onChange={e => setDesktop(e.target.checked)} /> 独立桌面宠物</label>
     <div style={{ opacity: .8 }}>主窗口隐藏或最小化后继续显示；退出 DSH 后关闭。</div>
     {window.dshPetDesktop && <div><button type="button" onClick={() => void resetPosition()} disabled={busy}>宠物窗口归位</button></div>}

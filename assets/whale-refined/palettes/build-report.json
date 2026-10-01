@@ -1,0 +1,41 @@
+{
+  "sourceSha256": "db33b20086a14867d4d4595d4f9bfd76b2479abbb5d712bbb51a2540483c1130",
+  "size": [
+    1536,
+    1872
+  ],
+  "removedSpillPixels": 92464,
+  "changedColorPixels": 578133,
+  "palettes": {
+    "ds": {
+      "sha256": "1f027b04c178dda6adffd8674a05c5b6208ada2d002eed4f9ad9a6f1509f36d4",
+      "bytes": 2442999,
+      "unalteredNonBluePixels": true,
+      "identicalAlphaAndFrameCoordinates": true
+    },
+    "gpt": {
+      "sha256": "57d1640cbad582c4362166de19dc947d9dea94d5b7e8d82f0aab98d9a686f622",
+      "bytes": 2209271,
+      "unalteredNonBluePixels": true,
+      "identicalAlphaAndFrameCoordinates": true
+    },
+    "claude": {
+      "sha256": "abb184259461f81f73b3e8b9983a9ce52981e57c2b014d5489bbd20914d896a8",
+      "bytes": 2440119,
+      "unalteredNonBluePixels": true,
+      "identicalAlphaAndFrameCoordinates": true
+    },
+    "kimi": {
+      "sha256": "fe14cd85d308eeac109844c53c064f56a206825ee0c0d12c5b8b28b6423b6901",
+      "bytes": 2173773,
+      "unalteredNonBluePixels": true,
+      "identicalAlphaAndFrameCoordinates": true
+    },
+    "glm": {
+      "sha256": "20c64096592660913e92f16a605845b1f9beb0244a82111490b092b2995fe6f5",
+      "bytes": 2359194,
+      "unalteredNonBluePixels": true,
+      "identicalAlphaAndFrameCoordinates": true
+    }
+  }
+}

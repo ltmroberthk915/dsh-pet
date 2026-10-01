@@ -1,6 +1,6 @@
 # dsh-pet — Multi-pet companion plugin
 
-> This branch runs only the refined whale, adds an isolated desktop window, editable linear Tick playback and reduced idle work. See [the desktop branch guide](docs/desktop-refined-pet.md). The upstream overview below describes the generic development registry.
+> This branch runs the refined whale with optional per-session desktop pets, five model-based palettes, editable linear Tick playback and reduced idle work. Feeding, affinity and treats accumulate in one shared balance. See [the desktop branch guide](docs/desktop-refined-pet.md) for this branch's behavior; the upstream overview below describes the generic development registry.
 
 English | [中文](README.zh.md)
 

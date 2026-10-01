@@ -1,5 +1,6 @@
 import { effectiveFps, retimeTracks } from '../animation.ts'
 import { createBlinkFilter } from './blink-frequency.ts'
+import { paletteAtlas, paletteFilter } from './palette.ts'
 /**
  * Pet sprite companion component — the browser half's centerpiece. Renders a
  * fixed-position floating sprite (React portal onto document.body), plays
@@ -287,6 +288,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   })
 
   const cell = definition.cell
+  const atlasUrl = paletteAtlas(definition.atlasUrl, definition.id, snapshot?.color)
   const columns = definition.columns
   const rows = definition.rows
   const phase = snapshot?.phase ?? 'idle'
@@ -350,7 +352,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
           retryTimer = setTimeout(loadAtlas, delay)
         }
       }
-      img.src = definition.atlasUrl
+      img.src = atlasUrl
     }
 
     loadAtlas()
@@ -363,7 +365,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
         activeImg.onerror = null
       }
     }
-  }, [definition.atlasUrl, props.visual])
+  }, [atlasUrl, props.visual])
 
   // Frame loop: advance the current track and write background-position.
   // Offsets must be in SCALED coordinates (background-position applies to the
@@ -628,18 +630,19 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   // is hovered/pinned open. The legacy single 'bubble' is the fallback when
   // the host serves no per-session list. The hover panel normally sits below
   // the sprite, so the bubbles stay visible and clickable — no region swap.
-  const sessionBubbles = snapshot?.sessions ?? []
+  const allowBubbles = snapshot?.primary !== false
+  const sessionBubbles = allowBubbles ? snapshot?.sessions ?? [] : []
   const stackOpen = stackPeek || stackPinned
   const collapsed = !stackOpen && sessionBubbles.length > 1
   const visibleSessions = collapsed ? sessionBubbles.slice(0, 1) : sessionBubbles
-  const statusBubble = feedback === null && sessionBubbles.length === 0
+  const statusBubble = allowBubbles && feedback === null && sessionBubbles.length === 0
     ? snapshot?.bubble
     : undefined
   // The freshest plugin-authored announcement (dsh-usage linkage): a
   // dedicated, specially styled bubble above the session stack. The host
   // already TTL-filters; this client-side check covers the last poll tick.
   const announcement = snapshot?.announcement
-  const usageAnnouncement = feedback === null && announcement !== undefined && announcementFresh(announcement, Date.now())
+  const usageAnnouncement = allowBubbles && feedback === null && announcement !== undefined && announcementFresh(announcement, Date.now())
     ? announcement
     : undefined
   // Each session's inner whisper (碎碎念) rides its own bubble — short
@@ -649,7 +652,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   // never wears two voices at once. Interaction feedback takes over the
   // whole bubble area while it plays, so whispers yield to it like status
   // copy.
-  const bubblePresent = feedback !== null || sessionBubbles.length > 0 || statusBubble !== undefined || usageAnnouncement !== undefined
+  const bubblePresent = allowBubbles && (feedback !== null || sessionBubbles.length > 0 || statusBubble !== undefined || usageAnnouncement !== undefined)
   const displayName = snapshot?.name ?? definition.displayName
   // The host-served status decoration (M5, #567); absent = text-only bubbles.
   const decoration = snapshot?.decoration
@@ -730,19 +733,21 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
             height: spriteHeight,
             ...(props.visual === undefined
               ? {
-                  backgroundImage: imageReady ? 'url(' + definition.atlasUrl + ')' : undefined,
+                  backgroundImage: imageReady ? 'url(' + atlasUrl + ')' : undefined,
                   backgroundSize: (cell.width * columns * spriteScale) + 'px ' + (cell.height * (definition.atlasRows ?? rows.length) * spriteScale) + 'px',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: '0 0',
                 }
               : {}),
             cursor: dragRef.current === null ? 'grab' : 'grabbing',
+            filter: paletteFilter(snapshot?.color),
             ...(facingRight ? { transform: 'scaleX(-1)' } : {}),
           }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
+          onDoubleClick={() => { if (snapshot?.primary === false && snapshot.sessionId) props.onOpenSession(snapshot.sessionId) }}
           onClick={(e) => {
             // A pointer sequence that moved (dragged) still fires a trailing
             // click; skip the pet when that happened.
@@ -762,7 +767,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
         </div>
       </div>
       {props.hud}
-      {feedback !== null && (
+      {allowBubbles && feedback !== null && (
         <div key={feedback.at} ref={bubbleRef} className={clsx(styles.bubble, feedback.kind === 'feed' ? styles.bubbleFeed : styles.bubblePet)}>
           {feedback.text}
         </div>

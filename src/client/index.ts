@@ -36,7 +36,8 @@ import { createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createPetStore, type PetStoreInstance } from './pet-store.ts'
 import { createWorkTickGate } from './work-tick-gate.ts'
-import { PetDockEntry, type PetInjected } from './PetDockEntry.tsx'
+import type { PetInjected } from './PetDockEntry.tsx'
+import { PetGroupEntry } from './PetGroupEntry.tsx'
 import { registerPetUiTeardown, takeoverPetUiTeardown } from './ui-teardown.ts'
 import { PetSettingsSection, PetSettingsCardController, type PetSettings } from './PetSettingsCard.tsx'
 import { NS, en, zh, t } from './locales.ts'
@@ -77,7 +78,7 @@ async function petFetch<T>(path: string, body?: unknown): Promise<T> {
 /** The live host API instance (always defined; failures surface per call). */
 const petApi: PetHttpApi = {
   state: (currentSessionId) => petFetch('/api/pet/state'
-    + (currentSessionId === undefined ? '' : '?current=' + encodeURIComponent(currentSessionId))),
+    + '?current=' + encodeURIComponent(currentSessionId ?? '')),
   pets: () => petFetch('/api/pet/pets'),
   interact: (kind) => petFetch('/api/pet/interact', { kind }),
   setVisible: (visible) => petFetch('/api/pet/set-visible', { visible }),
@@ -299,8 +300,11 @@ export function apply(ctx: ClientContext): void {
         }
         const seq = stateSeq + 1
         stateSeq = seq
-        petApi.state(currentSessionId()).then((snapshot) => {
-          if (uiGone || seq !== stateSeq) return
+        const requestedSessionId = currentSessionId()
+        const stateRequest = window.dshPetDesktop
+          ? window.dshPetDesktop.state(requestedSessionId ?? '') : petApi.state(requestedSessionId)
+        stateRequest.then((snapshot) => {
+          if (uiGone || seq !== stateSeq || requestedSessionId !== currentSessionId()) return
           setSnapshot(snapshot)
           const publishNativeState = (active: boolean): void => {
             if (uiGone || seq !== stateSeq) return
@@ -309,7 +313,7 @@ export function apply(ctx: ClientContext): void {
           }
           const nativeOptions = {
             enabled: snapshot.display.desktopEnabled !== false && snapshot.display.visible,
-            currentSessionId: currentSessionId(),
+            currentSessionId: requestedSessionId,
           }
           const key = JSON.stringify(nativeOptions)
           if (key !== nativeOptionsKey && window.dshPetDesktop) {
@@ -369,6 +373,7 @@ export function apply(ctx: ClientContext): void {
           const nextId = currentSessionId()
           if (nextId === observedSessionId) return
           observedSessionId = nextId
+          stateSeq++
           if (document.visibilityState === 'visible') pollNow()
         })
         return unsubscribe
@@ -499,7 +504,7 @@ export function apply(ctx: ClientContext): void {
       // root then owns the whole surface, so a root-keyed suppressor (the
       // portrait mobile layer, which hides [data-dsh-plugin="pet"]) really
       // hides the sprite instead of missing the portaled float.
-      petRoot.render(createElement(PetDockEntry, { ...injected(), t, portalTarget: container }))
+      petRoot.render(createElement(PetGroupEntry, { ...injected(), t, portalTarget: container }))
 
       disposeUi = () => {
         if (uiGone) return

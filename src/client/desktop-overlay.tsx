@@ -39,8 +39,12 @@ function interact(kind: 'pet' | 'feed') {
 
 function App() {
   useEffect(() => {
+    const unsubscribe = bridge.subscribe(state => {
+      latest = state
+      renderState()
+      document.body.dataset.connected = 'true'
+    }, () => { document.body.dataset.connected = 'false' }, () => { document.body.dataset.retiring = 'true' })
     void refresh()
-    const timer = window.setInterval(() => { void refresh() }, 1000)
     let interactive: boolean | undefined
     const setInteractive = (on: boolean) => {
       if (interactive !== on) { interactive = on; bridge.interactive(on) }
@@ -54,7 +58,7 @@ function App() {
     window.addEventListener('blur', leave)
     window.addEventListener('resize', renderState)
     return () => {
-      clearInterval(timer)
+      unsubscribe()
       document.removeEventListener('mousemove', mouse)
       document.removeEventListener('mouseleave', leave)
       window.removeEventListener('blur', leave)

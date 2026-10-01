@@ -22,6 +22,17 @@ function mockHost() {
 }
 
 describe('Tick settings', () => {
+  it('saves the multi-pet switch together with the existing linear settings', async () => {
+    const host = mockHost()
+    render(<PlaybackSettings />)
+    const checkbox = await screen.findByLabelText('多宠物模式') as HTMLInputElement
+    expect(checkbox.checked).toBe(false)
+    fireEvent.click(checkbox)
+    expect(checkbox.checked).toBe(true)
+    fireEvent.click(screen.getByText('保存动画设置'))
+    await screen.findByText('已保存')
+    expect(host.writes).toEqual([expect.objectContaining({ multiPetEnabled: true, animationTickSlope: 0.1, animationTickIntercept: 4 })])
+  })
   it('previews and saves both parameters against the actual footer rate', async () => {
     const host = mockHost()
     render(<PlaybackSettings />)
@@ -32,7 +43,7 @@ describe('Tick settings', () => {
     fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes).toEqual([{ petId: 'whale-girl-refined', animationMode: 'tick', animationFps: 20,
-      desktopEnabled: true, animationTickSlope: 0.2, animationTickIntercept: 5 }])
+      desktopEnabled: true, multiPetEnabled: false, animationTickSlope: 0.2, animationTickIntercept: 5 }])
   })
 
   it('blocks a nonpositive slope and displays output limits in the preview', async () => {

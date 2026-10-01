@@ -71,6 +71,7 @@ describe('pet configuration schema', () => {
       animationTickSlope: true,
       animationTickIntercept: true,
       desktopEnabled: true,
+      multiPetEnabled: true,
       petId: true,
       enabled: true,
       decorationEnabled: true,
@@ -103,6 +104,7 @@ describe('petSettingsSection', () => {
       animationTickSlope: 1 / 6,
       animationTickIntercept: 6,
       desktopEnabled: true,
+      multiPetEnabled: false,
     })
   })
 

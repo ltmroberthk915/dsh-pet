@@ -508,7 +508,7 @@ describe('PetService (rc.6 session events)', () => {
     }
   })
 
-  it('leads the bubble stack with the GUI current session when reported', async () => {
+  it('shows only the selected conversation bubble when the GUI reports its selection', async () => {
     const ctx = new Context()
     const dir = tempDir()
     const sessionA = makeSession('s-a')
@@ -525,11 +525,11 @@ describe('PetService (rc.6 session events)', () => {
 
       // B was the most recent event, so it leads without a current report.
       expect((await service.state()).sessions?.map(session => session.sessionId)).toEqual(['s-b', 's-a'])
-      // The current session leads, no matter which event was most recent.
-      expect((await service.state('s-a')).sessions?.map(session => session.sessionId)).toEqual(['s-a', 's-b'])
-      expect((await service.state('s-b')).sessions?.map(session => session.sessionId)).toEqual(['s-b', 's-a'])
-      // An unknown or absent session falls back to the recent-first order.
-      expect((await service.state('s-missing')).sessions?.map(session => session.sessionId)).toEqual(['s-b', 's-a'])
+      // Background activity cannot replace the current conversation's bubble.
+      expect((await service.state('s-a')).sessions?.map(session => session.sessionId)).toEqual(['s-a'])
+      expect((await service.state('s-b')).sessions?.map(session => session.sessionId)).toEqual(['s-b'])
+      // An explicit missing selection stays idle rather than borrowing activity.
+      expect((await service.state('s-missing')).sessions).toEqual([])
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
@@ -550,7 +550,7 @@ describe('PetService (rc.6 session events)', () => {
 
       const view = await service.state('s-a')
       expect(view.sessions?.[0]).toMatchObject({ sessionId: 's-a', whisper: WHISPER_CATEGORY_POOLS.reading[0] })
-      expect(view.sessions?.[1]).toMatchObject({ sessionId: 's-b', whisper: WHISPER_CATEGORY_POOLS.thinking[0] })
+      expect((await service.state('s-b')).sessions?.[0]).toMatchObject({ sessionId: 's-b', whisper: WHISPER_CATEGORY_POOLS.thinking[0] })
       // No global whisper rides the view anymore.
       expect((view as { whisper?: string }).whisper).toBeUndefined()
     } finally {

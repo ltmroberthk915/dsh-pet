@@ -23,7 +23,7 @@ describe('installed desktop plugin integration', () => {
   })
   beforeAll(async () => { await new Promise<void>(resolve => server.listen(0,'127.0.0.1',resolve)); base='http://127.0.0.1:'+(server.address() as any).port })
   afterAll(async () => { await new Promise<void>(resolve => server.close(()=>resolve())) })
-  it('loads the legacy atlas assets without reading custom user pets', () => {
+  it('loads the four shipped assets without reading custom user pets', () => {
     expect(registry.entries.map(p=>p.id)).toEqual(expect.arrayContaining(['blue-throated-bee-eater','ouo-neko','whale-girl','whale-girl-refined']))
     expect(registry.defaultEntry().id).toBe('whale-girl')
   })
@@ -31,7 +31,7 @@ describe('installed desktop plugin integration', () => {
     const single = loadPetRegistry({ packageRoot: petPackageRoot(import.meta.url), singlePet: true, petsDir: '', dshPetsDir: '' })
     expect(single.entries.map(p=>p.id)).toEqual(['whale-girl-refined'])
     expect(single.defaultEntry().id).toBe('whale-girl-refined')
-    expect(single.decorations?.length ?? 0).toBeGreaterThan(0)
+    expect(single.decorations?.length).toBeGreaterThan(0)
   })
   it('persists FPS, Tick and desktop settings through the real route', async () => {
     const patch={animationFps:24,animationMode:'tick',animationTickSlope:0.1,animationTickIntercept:4,desktopEnabled:true,bubbleScale:1.2}

@@ -1,3 +1,4 @@
+import { loadSessionColors, type SessionColor } from './session-colors.ts'
 import { animationFps, animationMode, tickSlope, tickIntercept, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, type AnimationMode } from './animation.ts'
 /**
  * Pet persistence — tiny JSON store for affinity + display config, written
@@ -39,6 +40,7 @@ export interface PetDisplayConfig {
   animationTickSlope?: number
   animationTickIntercept?: number
   desktopEnabled?: boolean
+  multiPetEnabled?: boolean
 }
 
 export const defaultDisplayConfig: PetDisplayConfig = {
@@ -52,6 +54,7 @@ export const defaultDisplayConfig: PetDisplayConfig = {
   animationTickSlope: DEFAULT_TICK_SLOPE,
   animationTickIntercept: DEFAULT_TICK_INTERCEPT,
   desktopEnabled: true,
+  multiPetEnabled: false,
 }
 
 /** Display value bounds (shared by load-time validation and setConfig). */
@@ -98,6 +101,7 @@ export function bubbleScaleFor(display: Pick<PetDisplayConfig, 'size'> & { bubbl
 
 /** Everything persisted for the pet. */
 export interface PetPersist {
+  sessionColors?: Record<string, SessionColor>
   /** Playback preferences belong to a character, not to the whole application. */
   playback?: Record<string, Pick<PetDisplayConfig, 'animationFps' | 'animationMode' | 'animationTickSlope' | 'animationTickIntercept'>>
   /** Selected pet id (a registry entry; clamped at service startup). */
@@ -113,8 +117,9 @@ export interface PetPersist {
    * when the state view is built instead of pinning an unresolvable track.
    */
   skins: Record<string, string>
+  /** One shared total for every session pet, including feeds and cooldowns. */
   affinity: AffinityState
-  /** Treat (小鱼干) stock ledger. */
+  /** Shared treat (小鱼干) stock; session colors never create another balance. */
   treats: TreatLedger
   display: PetDisplayConfig
   /** Per-pet gameplay state (stats/currencies/mode), keyed by pet id. */
@@ -265,6 +270,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       animationTickSlope: tickSlope(rawDisplay.animationTickSlope),
       animationTickIntercept: tickIntercept(rawDisplay.animationTickIntercept),
       desktopEnabled: rawDisplay.desktopEnabled !== false,
+      multiPetEnabled: rawDisplay.multiPetEnabled === true,
       bubbleScale: Math.min(BUBBLE_SCALE_MAX, Math.max(BUBBLE_SCALE_MIN, finiteNum(rawDisplay.bubbleScale, base.display.bubbleScale))),
     }
     const petId = typeof parsed.petId === 'string' && parsed.petId.trim() !== ''
@@ -290,6 +296,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       petId,
       names,
       skins: loadPetSkins(parsed),
+      sessionColors: loadSessionColors(parsed.sessionColors),
       affinity,
       treats,
       display,

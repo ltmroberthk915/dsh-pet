@@ -1,3 +1,4 @@
 html,body,#root{width:100%;height:100%;margin:0;background:transparent;overflow:hidden;font:13px 'Segoe UI','Microsoft YaHei',sans-serif;color:#eef2ff}
 *{box-sizing:border-box}button,input,select{font:inherit;color:inherit;background:#243045;border:1px solid #71809e;border-radius:6px;padding:4px 7px}button{cursor:pointer}button:hover{background:#364968}input[type=checkbox]{accent-color:#759bff}button:disabled{opacity:.5}
 .pet-disconnected{display:none;position:fixed;bottom:80px;left:130px;background:#522;padding:6px;border-radius:6px}body[data-connected=false] .pet-disconnected{display:block}
+body[data-retiring="true"] { opacity: 0; transform: scale(.5); transform-origin: 50% calc(100% - 135px); transition: opacity 280ms, transform 280ms; pointer-events: none; }

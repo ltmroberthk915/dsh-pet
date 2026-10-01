@@ -111,6 +111,27 @@ function petProps(overrides: Partial<PetSpriteProps> = {}): PetSpriteProps {
   }
 }
 
+describe('small companion bubble permissions', () => {
+  it('suppresses status, whisper and feedback while small, then restores them on promotion', () => {
+    const small: PetStateView = { ...snapshot, primary: false, sessionId: 'secondary', bubble: 'status copy',
+      sessions: [{ sessionId: 'secondary', animation: 'running-right', phase: 'thinking', bubble: 'status copy', whisper: 'whisper copy' }] }
+    const feedback = { text: 'feedback copy', kind: 'pet' as const, at: Date.now() }
+    const props = petProps({ snapshot: small, feedback })
+    const view = render(<PetSprite {...props} />)
+    expect(screen.queryByText('feedback copy')).toBeNull()
+    expect(screen.queryByText('whisper copy')).toBeNull()
+    expect(screen.queryByText('status copy')).toBeNull()
+    view.rerender(<PetSprite {...props} snapshot={{ ...small, primary: true }} />)
+    expect(screen.getByText('feedback copy')).toBeTruthy()
+    view.rerender(<PetSprite {...props} snapshot={{ ...small, primary: true }} feedback={null} />)
+    expect(screen.getByText('whisper copy')).toBeTruthy()
+    view.rerender(<PetSprite {...props} snapshot={small} feedback={null} />)
+    expect(screen.queryByText('whisper copy')).toBeNull()
+    fireEvent.doubleClick(screen.getByRole('button', { name: '鲸鱼娘' }))
+    expect(props.onOpenSession).toHaveBeenCalledWith('secondary')
+  })
+})
+
 /** Render the pet with mocked callbacks; returns the rename/open spys + the RTL result. */
 function renderPet(overrides: Partial<PetSpriteProps> = {}): {
   onRename: ReturnType<typeof vi.fn>
