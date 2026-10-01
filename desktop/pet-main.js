@@ -2,11 +2,12 @@ import { app, BrowserWindow, ipcMain, screen, session } from 'electron'
 import { readFile, writeFile, rename } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { SECONDARY_SCALE, artworkRect, findOpenPosition } from './pet-layout.js'
 
 const PAGE = 'dsh-app://pet/index.html'
 const DIR = fileURLToPath(new URL('.', import.meta.url))
 const PREFIX = 'dsh-pet-v1:'
-const WIDTH = 420, HEIGHT = 460, SECONDARY_SCALE = 0.62
+const WIDTH = 420, HEIGHT = 460
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; media-src 'self'; object-src 'none'; base-uri 'none'; frame-src 'none'; form-action 'none'"
 const ACTIONS = {
   state: ['GET', '/api/pet/state'], pets: ['GET', '/api/pet/pets'],
@@ -120,6 +121,19 @@ export function installDesktopPet({ owner, request, openMain }) {
     record.lastSent = serialized
     record.win.webContents.send(PREFIX + 'update', record.view)
   }
+  function separateOverlaps() {
+    const records = [...windows.values()].filter(record => live(record) && !record.retiring)
+      .sort((a, b) => Number(b.view.primary) - Number(a.view.primary) || Number(!!b.drag) - Number(!!a.drag))
+    const occupied = [], displays = screen.getAllDisplays().map(display => display.bounds)
+    for (const record of records) {
+      const bounds = record.win.getBounds(), rect = artworkRect(bounds, record.geometry)
+      // The main pet remains the anchor; do not pull a pet out of the user's hand.
+      const position = record.view.primary || record.drag ? rect : findOpenPosition(rect, occupied, displays)
+      const x = Math.round(bounds.x + position.x - rect.x), y = Math.round(bounds.y + position.y - rect.y)
+      if (x !== bounds.x || y !== bounds.y) record.win.setPosition(x, y)
+      occupied.push(artworkRect({ x, y }, record.geometry))
+    }
+  }
   function retire(record, destination) {
     if (!live(record) || record.retiring) return
     if (!live(destination) || record.view.primary || !cache?.display.multiPetEnabled) { record.win.destroy(); return }
@@ -177,9 +191,9 @@ export function installDesktopPet({ owner, request, openMain }) {
     try {
       await win.loadURL(PAGE)
       if (live(record) && enabled && !closing) {
-        win.showInactive(); win.setAlwaysOnTop(true)
+        // Reconcile places the whole group before revealing any new window.
+        record.showPending = true
         publish(record)
-        setTimeout(() => { if (live(record)) win.setAlwaysOnTop(true) }, 250)
       }
     } catch (error) { if (live(record)) win.destroy(); throw error }
     return record
@@ -189,24 +203,31 @@ export function installDesktopPet({ owner, request, openMain }) {
     if (state.display?.visible === false || state.display?.desktopEnabled === false) { enabled = false; revision++; destroyAll(); return }
     const token = revision, views = desiredViews(state), wanted = new Set(views.map(v => v.key))
     const oldPrimary = primary(), anchor = live(oldPrimary) ? oldPrimary.win.getBounds() : savedBounds
-    let index = 0
+    let index = 0, layoutNeeded = false
     for (const view of [...views].sort((a, b) => Number(b.primary) - Number(a.primary))) {
       if (token !== revision || !enabled || closing) return
       const viewIndex = index++
       let record = windows.get(view.key)
       if (record?.retiring) { clearInterval(record.returnTimer); record.win.destroy(); record = undefined }
-      if (!live(record)) { await create(view, anchor, viewIndex); continue }
+      if (!live(record)) { await create(view, anchor, viewIndex); layoutNeeded = true; continue }
       const previous = record.geometry, geometry = measure(view), bounds = record.win.getBounds()
       record.view = view; record.geometry = geometry
       if (previous.dimensions.width !== geometry.dimensions.width || previous.dimensions.height !== geometry.dimensions.height) {
         record.win.setBounds(fit({ x: bounds.x + (previous.dimensions.width - geometry.dimensions.width) / 2,
           y: bounds.y + previous.dimensions.height - geometry.dimensions.height }, geometry))
       }
+      if (previous.artwork.width !== geometry.artwork.width || previous.artwork.height !== geometry.artwork.height) layoutNeeded = true
       if (record.win.isVisible() && !record.win.isAlwaysOnTop()) record.win.setAlwaysOnTop(true)
       publish(record)
     }
     const destination = primary()
     for (const [key, record] of windows) if (!wanted.has(key)) retire(record, destination)
+    if (layoutNeeded) separateOverlaps()
+    for (const record of windows.values()) if (live(record) && record.showPending && !record.retiring) {
+      record.showPending = false
+      record.win.showInactive(); record.win.setAlwaysOnTop(true)
+      setTimeout(() => { if (live(record)) record.win.setAlwaysOnTop(true) }, 250)
+    }
   }
   async function fetchState(force = false) {
     if (!force && cache && Date.now() - cacheAt < 850) return cache
@@ -281,7 +302,7 @@ export function installDesktopPet({ owner, request, openMain }) {
       const record = assertPet(event), win = record.win
       if (record.retiring) return
       if (phase === 'start') { record.drag = { cursor: screen.getCursorScreenPoint(), bounds: win.getBounds() }; win.setIgnoreMouseEvents(false); return }
-      if (phase === 'end') { record.drag = undefined; savePosition(record); return }
+      if (phase === 'end') { record.drag = undefined; separateOverlaps(); savePosition(record); return }
       if (phase !== 'move' || !record.drag || Date.now() - record.lastMove < 8) return
       record.lastMove = Date.now()
       const cursor = screen.getCursorScreenPoint(), drag = record.drag
@@ -312,9 +333,13 @@ export function installDesktopPet({ owner, request, openMain }) {
     for (const other of windows.values()) if (live(other) && other !== record) {
       other.win.setBounds(fit({ x: anchor.x - (++n) * (other.geometry.artwork.width + 22), y: anchor.y }, other.geometry))
     }
+    separateOverlaps()
     return { active: true }
   })
-  const refit = () => { for (const record of windows.values()) if (live(record)) record.win.setBounds(fit(record.win.getBounds(), record.geometry)) }
+  const refit = () => {
+    for (const record of windows.values()) if (live(record)) record.win.setBounds(fit(record.win.getBounds(), record.geometry))
+    separateOverlaps()
+  }
   screen.on('display-removed', refit); screen.on('display-metrics-changed', refit)
   app.on('before-quit', () => { closing = true; enabled = false; revision++; clearTimeout(saveTimer); destroyAll() })
 }

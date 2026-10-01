@@ -33,9 +33,10 @@ report = {'sourceSha256': hashlib.sha256(source.read_bytes()).hexdigest(),
 for palette in ['ds', 'gpt', 'claude', 'kimi', 'glm']:
     colored = hsv.copy()
     if palette == 'gpt':
-        colored[..., 0] = 215 / 360
-        colored[..., 1] = .035 + .035 * s
-        colored[..., 2] = v + (1 - v) * .73 * strength
+        # Soft bean-paste green; keep shadows and white apron distinct.
+        colored[..., 0] = 128 / 360
+        colored[..., 1] = .12 + .15 * s
+        colored[..., 2] = v + (1 - v) * .60 * strength
     elif palette == 'claude':
         colored[..., 0] = 22 / 360
         colored[..., 1] = np.clip(s * .9 + .13, 0, .88)
@@ -48,7 +49,7 @@ for palette in ['ds', 'gpt', 'claude', 'kimi', 'glm']:
         # Tsinghua purple reference RGB 102, 8, 116; preserve original shading.
         colored[..., 0] = 292.22 / 360
         colored[..., 1] = np.clip(s * .8 + .25, 0, .93)
-        colored[..., 2] = v * .86
+        colored[..., 2] = v * .74
     result = rgba.copy()
     if palette != 'ds':
         rgb = np.array(Image.fromarray(np.rint(colored * 255).astype(np.uint8), 'HSV').convert('RGB'))

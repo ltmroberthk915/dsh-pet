@@ -594,6 +594,10 @@ export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCa
     }),
     getRoute(ctx, PET_API_PREFIX + '/pets', () => service.pets()),
     getRoute(ctx, PET_API_PREFIX + '/diagnostics', () => service.diagnostics()),
+    postRoute(ctx, PET_API_PREFIX + '/session-viewed', (body) => {
+      if (typeof body.sessionId !== 'string' || typeof body.revision !== 'number') return Promise.reject(new Error('invalid-viewed-session'))
+      return service.markSessionViewed(body.sessionId, body.revision)
+    }),
     postRoute(ctx, PET_API_PREFIX + '/interact', (body) => {
       const kind = body.kind as PetInteraction | undefined
       if (kind !== 'pet' && kind !== 'feed') return Promise.reject(new Error('invalid-kind'))

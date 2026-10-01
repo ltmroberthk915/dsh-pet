@@ -78,6 +78,7 @@ afterEach(() => {
   document.body.replaceChildren()
   delete window.dshPetDesktop
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   vi.useRealTimers()
 })
 
@@ -298,6 +299,37 @@ function desktopFixture() {
 }
 
 describe('desktop and embedded pet ownership', () => {
+  it('opening a session promotes it without input, and only a focused visible view acknowledges completion', async () => {
+    const f = desktopFixture()
+    const focus = vi.spyOn(document, 'hasFocus').mockReturnValue(false)
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
+    f.update({ awaitingView: 7 })
+    await act(async () => { apply(f.lifecycle.ctx); f.lifecycle.selectSession('finished'); await vi.advanceTimersByTimeAsync(2100) })
+    expect(f.configure).toHaveBeenLastCalledWith({ enabled: true, currentSessionId: 'finished' })
+    const acknowledgements = () => vi.mocked(fetch).mock.calls.filter(([url]) => url === '/api/pet/session-viewed')
+    expect(acknowledgements()).toHaveLength(0)
+    focus.mockReturnValue(true); visibility.mockReturnValue('hidden')
+    await act(async () => { window.dispatchEvent(new Event('focus')) })
+    expect(acknowledgements()).toHaveLength(0)
+    visibility.mockReturnValue('visible')
+    await act(async () => { window.dispatchEvent(new Event('focus')); await vi.advanceTimersByTimeAsync(1100) })
+    expect(acknowledgements()).toHaveLength(1)
+    expect(JSON.parse(acknowledgements()[0]![1]!.body as string)).toEqual({ sessionId: 'finished', revision: 7 })
+  })
+
+  it('a stale response for a conversation left before completion arrives does not acknowledge it', async () => {
+    const f = desktopFixture()
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true)
+    const old = await f.state()
+    let resolve!: (snapshot: PetStateView) => void
+    f.state.mockImplementationOnce(() => new Promise(ready => { resolve = ready }))
+    f.lifecycle.selectSession('old')
+    await act(async () => { apply(f.lifecycle.ctx) })
+    await act(async () => { f.lifecycle.selectSession('new'); resolve({ ...old, awaitingView: 8 }); await vi.advanceTimersByTimeAsync(1100) })
+    expect(vi.mocked(fetch).mock.calls.some(([url]) => url === '/api/pet/session-viewed')).toBe(false)
+    expect(f.configure).toHaveBeenLastCalledWith({ enabled: true, currentSessionId: 'new' })
+  })
+
   it('a delayed desktop acknowledgement survives newer polls and visibility recovery', async () => {
     const f = desktopFixture()
     let ready!: (result: { active: boolean }) => void

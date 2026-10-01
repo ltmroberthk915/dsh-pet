@@ -5,7 +5,7 @@ const [source, output] = process.argv.slice(2);
 if (!source || !output) throw new Error('source and output archive required');
 const original = fs.readFileSync(source);
 if (path.resolve(source).toLowerCase() === path.resolve(output).toLowerCase()) throw new Error('Use a separate output archive');
-const acceptedArchives = ['983ca71114e6dfd353fc79af5a1f9481a250ee64c2a3c757673029b811b23bc2', 'c2ab0a463d6575d6c7b0e367258eeee285440e8902c9daa6502564281651a647', 'd35821882c7d804b2fbdd340960df6c92ae1fa7c777bb0c605ede09f21b10c6f', '8648ad8545dd9e7360d7f7200638cbbe92e055724ee897cc797deff0cb996f0d', '717e7f72cf40e65dd29d66412d9e06854074b48e576578579944f58002f22523'];
+const acceptedArchives = ['983ca71114e6dfd353fc79af5a1f9481a250ee64c2a3c757673029b811b23bc2', 'c2ab0a463d6575d6c7b0e367258eeee285440e8902c9daa6502564281651a647', 'd35821882c7d804b2fbdd340960df6c92ae1fa7c777bb0c605ede09f21b10c6f', '8648ad8545dd9e7360d7f7200638cbbe92e055724ee897cc797deff0cb996f0d', '717e7f72cf40e65dd29d66412d9e06854074b48e576578579944f58002f22523', '19e4b007274c8297792484c5e84b95222856837aceea7308a11bfff881ae1825'];
 if (!acceptedArchives.includes(crypto.createHash('sha256').update(original).digest('hex'))) throw new Error('Unsupported or modified desktop archive');
 const header = JSON.parse(original.subarray(16, 16+original.readUInt32LE(12)).toString());
 const originalOffset = 8 + original.readUInt32LE(4);
@@ -50,7 +50,7 @@ let boot = readEntry(bootPath);
 if (!boot.includes("const rootInclude = ctx.loader?.resolve('include');")) boot = replace(boot, 'const entry = bootstrapIncludes.get(ctx);', `const rootInclude = ctx.loader?.resolve('include');
 \tconst entry = bootstrapIncludes.get(ctx) ?? (rootInclude?.parent === ctx.loader?.root && rootInclude?.options.name === 'cordis:include' ? rootInclude : void 0);`);
 replacements.set(bootPath, Buffer.from(boot));
-for (const file of ['pet-main.js','pet-preload.cjs','pet-window.html','overlay.js','overlay.css']) replacements.set('lib/dsh-pet/'+file,fs.readFileSync(path.join(__dirname,file)));
+for (const file of ['pet-main.js','pet-layout.js','pet-preload.cjs','pet-window.html','overlay.js','overlay.css']) replacements.set('lib/dsh-pet/'+file,fs.readFileSync(path.join(__dirname,file)));
 for (const name of replacements.keys()) { let parent=header;const parts=name.split('/');for (const part of parts.slice(0,-1)) { parent.files[part]??={files:{}};parent=parent.files[part]; } parent.files[parts.at(-1)]??={}; }
 const blocks=[]; let offset=0;
 function walk(files,prefix='') {

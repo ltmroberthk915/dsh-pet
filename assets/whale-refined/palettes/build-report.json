@@ -14,8 +14,8 @@
       "identicalAlphaAndFrameCoordinates": true
     },
     "gpt": {
-      "sha256": "57d1640cbad582c4362166de19dc947d9dea94d5b7e8d82f0aab98d9a686f622",
-      "bytes": 2209271,
+      "sha256": "50038ad9835fe92e3297765272a048f8c6507df151bd4cde89d6593ece559ddb",
+      "bytes": 2327940,
       "unalteredNonBluePixels": true,
       "identicalAlphaAndFrameCoordinates": true
     },
@@ -32,8 +32,8 @@
       "identicalAlphaAndFrameCoordinates": true
     },
     "glm": {
-      "sha256": "20c64096592660913e92f16a605845b1f9beb0244a82111490b092b2995fe6f5",
-      "bytes": 2359194,
+      "sha256": "43ed1ab709fc46af1da1f95935b8f3431338233d16ea826c2df171c6be0e4c0c",
+      "bytes": 2313859,
       "unalteredNonBluePixels": true,
       "identicalAlphaAndFrameCoordinates": true
     }

@@ -47,6 +47,7 @@ import { mainViewSessionId } from './main-session.ts'
 interface PetHttpApi {
   /** Poll the host snapshot; the GUI's current session id rides the query. */
   state(currentSessionId?: string): Promise<PetStateView>
+  markSessionViewed(sessionId: string, revision: number): Promise<{ ok: true }>
   pets(): Promise<PetDefinition[]>
   interact(kind: PetInteraction): Promise<PetInteractResult>
   setVisible(visible: boolean): Promise<{ ok: true; display: PetDisplayConfig }>
@@ -79,6 +80,7 @@ async function petFetch<T>(path: string, body?: unknown): Promise<T> {
 const petApi: PetHttpApi = {
   state: (currentSessionId) => petFetch('/api/pet/state'
     + '?current=' + encodeURIComponent(currentSessionId ?? '')),
+  markSessionViewed: (sessionId, revision) => petFetch('/api/pet/session-viewed', { sessionId, revision }),
   pets: () => petFetch('/api/pet/pets'),
   interact: (kind) => petFetch('/api/pet/interact', { kind }),
   setVisible: (visible) => petFetch('/api/pet/set-visible', { visible }),
@@ -284,6 +286,8 @@ export function apply(ctx: ClientContext): void {
       let nativeOptionsKey: string | undefined
       let nativeRequestSeq = 0
       let uiGone = false
+      let viewedInFlight = false
+      let acknowledgedView: string | undefined
       // Latest-wins guard: the 2s tick, visibility recovery, and
       // interaction-triggered refreshes can overlap; only the newest
       // response may publish, so a slow older one can never roll the
@@ -336,6 +340,18 @@ export function apply(ctx: ClientContext): void {
             })
           }
           setSnapshot(snapshot)
+          // A selected tab in a hidden/minimized app is not a viewed result.
+          // The completion revision prevents a late POST consuming a newer turn.
+          if (requestedSessionId && snapshot.awaitingView !== undefined
+            && document.visibilityState === 'visible' && document.hasFocus()) {
+            const viewKey = JSON.stringify([requestedSessionId, snapshot.awaitingView])
+            if (!viewedInFlight && acknowledgedView !== viewKey) {
+              viewedInFlight = true
+              void petApi.markSessionViewed(requestedSessionId, snapshot.awaitingView).then(() => {
+                acknowledgedView = viewKey
+              }, () => {}).finally(() => { viewedInFlight = false })
+            }
+          }
         }, () => {
           if (seq !== stateSeq) return
           setState('error', 'pet.state transport error')
@@ -373,9 +389,11 @@ export function apply(ctx: ClientContext): void {
         }
         start()
         document.addEventListener('visibilitychange', onVisibility)
+        window.addEventListener('focus', onVisibility)
         return () => {
           stop()
           document.removeEventListener('visibilitychange', onVisibility)
+          window.removeEventListener('focus', onVisibility)
         }
       }, 'pet: poll')
 

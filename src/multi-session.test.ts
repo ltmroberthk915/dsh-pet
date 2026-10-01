@@ -87,16 +87,70 @@ describe('per-conversation desktop pets', () => {
     await f.service.setConfig({ multiPetEnabled: true })
     expect((await f.service.state('0')).companions?.find(c => c.sessionId === '0')?.color.palette).toBe('gpt')
   })
-  it('keeps all active conversations, excludes subagents, and retires finished background sessions', async () => {
+  it('keeps finished background pets until viewed, then retires them after leaving the main conversation', async () => {
     const f = setup(); await f.service.setConfig({ multiPetEnabled: true })
     const sessions = Array.from({ length: 16 }, (_, i) => f.session(String(i), 'gpt-6'))
     for (const s of sessions) f.phase(s, 'thinking')
     const child = { ...f.session('child', 'gpt-6'), header: { origin: 'subagent' } }; f.phase(child, 'thinking')
     expect((await f.service.state('0')).companions).toHaveLength(16)
     f.phase(sessions[1], 'idle')
+    const pending = (await f.service.state('0')).companions?.find(c => c.sessionId === '1')
+    expect(pending).toMatchObject({ primary: false, animation: 'idle', awaitingView: expect.any(Number) })
+    const opened = await f.service.state('1')
+    // A read, including a background native poll of the selected session, is not a view acknowledgement.
+    expect(opened.awaitingView).toBe(pending?.awaitingView)
+    await f.service.markSessionViewed('1', opened.awaitingView!)
+    expect((await f.service.state('1')).companions?.find(c => c.sessionId === '1')).toMatchObject({ primary: true, animation: 'idle' })
     expect((await f.service.state('0')).companions?.some(c => c.sessionId === '1')).toBe(false)
     for (const s of sessions) f.phase(s, 'idle')
+    for (const s of sessions) {
+      const state = await f.service.state(s.id)
+      if (state.awaitingView !== undefined) await f.service.markSessionViewed(s.id, state.awaitingView)
+    }
     expect((await f.service.state('0')).companions).toEqual([expect.objectContaining({ sessionId: '0', primary: true, animation: 'idle' })])
+  })
+  it('retains completed, failed and stopped results beyond animation expiry, without writing on polls', async () => {
+    vi.useFakeTimers()
+    const f = setup(); await f.service.setConfig({ multiPetEnabled: true })
+    const sessions = ['done', 'failed', 'idle'].map((phase, i) => {
+      const s = f.session(String(i), 'gpt-6'); f.phase(s, 'thinking'); f.phase(s, phase); return s
+    })
+    const file = join(f.dir, 'pet.json'), original = readFileSync(file, 'utf8')
+    vi.advanceTimersByTime(24 * 60 * 60 * 1000)
+    for (let i = 0; i < 3; i++) {
+      const pending = (await f.service.state('main')).companions?.filter(c => !c.primary)
+      expect(pending).toHaveLength(3)
+      expect(pending?.every(c => c.animation === 'idle' && c.awaitingView !== undefined)).toBe(true)
+    }
+    expect(readFileSync(file, 'utf8')).toBe(original)
+    f.ctx.emit('session/disposed', sessions[2] as any)
+    expect((await f.service.state('main')).companions?.some(c => c.sessionId === '2')).toBe(false)
+  })
+  it('does not let an old view acknowledgement consume a new turn or release working pets', async () => {
+    const f = setup(), s = f.session('repeat', 'gpt-6')
+    await f.service.setConfig({ multiPetEnabled: true })
+    f.phase(s, 'thinking'); f.phase(s, 'idle')
+    const oldRevision = (await f.service.state(s.id)).awaitingView!
+    f.phase(s, 'thinking')
+    await f.service.markSessionViewed(s.id, oldRevision)
+    expect((await f.service.state('other')).companions?.some(c => c.sessionId === s.id)).toBe(true)
+    f.phase(s, 'idle')
+    await f.service.markSessionViewed(s.id, oldRevision)
+    const fresh = await f.service.state(s.id)
+    expect(fresh.awaitingView).toBeGreaterThan(oldRevision)
+    await f.service.markSessionViewed(s.id, fresh.awaitingView!)
+    expect((await f.service.state('other')).companions?.some(c => c.sessionId === s.id)).toBe(false)
+    await expect(f.service.markSessionViewed('', 1)).rejects.toThrow('invalid-viewed-session')
+    await expect(f.service.markSessionViewed(s.id, NaN)).rejects.toThrow('invalid-viewed-session')
+  })
+  it('reserves waiting-pet colors and does not prune unread completions at the activity cache limit', async () => {
+    const f = setup(); await f.service.setConfig({ multiPetEnabled: true })
+    for (let i = 0; i < 130; i++) {
+      const s = f.session('pending-' + i, 'gpt-6'); f.phase(s, 'thinking'); f.phase(s, 'idle')
+    }
+    const waiting = (await f.service.state('main')).companions?.filter(c => !c.primary) ?? []
+    expect(waiting).toHaveLength(130)
+    expect(new Set(waiting.slice(0, 5).map(c => c.color.palette)).size).toBe(5)
   })
   it('waits for a real model header before freezing a color, and rejects malformed switches', async () => {
     const f = setup(), s = f.session('late', '')

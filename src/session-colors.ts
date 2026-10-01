@@ -2,7 +2,7 @@
 export const PET_PALETTES = ['ds', 'gpt', 'claude', 'kimi', 'glm'] as const
 export type PetPalette = typeof PET_PALETTES[number]
 export interface SessionColor { palette: PetPalette; hue?: number }
-export const SECONDARY_PET_SCALE = 0.62
+export { SECONDARY_SCALE as SECONDARY_PET_SCALE } from '../desktop/pet-layout.js'
 
 /** The model wins over a proxy/provider name, which may serve many families. */
 export function modelPalette(model: unknown, provider?: unknown): PetPalette | undefined {
@@ -29,7 +29,7 @@ export function chooseSessionColor(preferred: PetPalette, occupied: readonly Ses
   }
   // Farthest-point sampling of candidate hues prevents adjacent random draws
   // from producing several visually identical extras. Zero is original DS.
-  const hues = occupied.map(c => c.hue ?? ({ ds: 0, gpt: 0, claude: 185, kimi: 0, glm: 65 })[c.palette])
+  const hues = occupied.map(c => c.hue ?? ({ ds: 0, gpt: 270, claude: 185, kimi: 0, glm: 65 })[c.palette])
   let best = 0, distance = -1
   const offset = Math.floor(random() * 360)
   for (let n = 0; n < 72; n++) {

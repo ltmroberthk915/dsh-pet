@@ -88,9 +88,9 @@ export function PlaybackSettings() {
     </>}
     <label><input aria-label="多宠物模式" type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)} /> 多宠物模式</label>
     <div style={{ opacity: .8, lineHeight: 1.6 }}>{multi
-      ? '活跃对话各一只，分别跟随自己的 tok/s；主对话保持原大小，其余为 62% 且不弹气泡。双击小宠物切换到对应对话后恢复大小和气泡。后台对话结束后收回主宠物。'
+      ? '活跃对话各一只，分别跟随自己的 tok/s；主对话保持原大小，其余为 52.7% 且不弹气泡。新建、尺寸切换或拖动结束时自动避让。后台对话结束后，小宠物保留等待查看；点开对话或双击小宠物即可查看并变为主宠物，不需要输入文字。查看后切到其他对话时回收。'
       : '仅一只默认 DS 蓝色宠物，动作、气泡和 tok/s 随主窗口当前对话切换。'}</div>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>{[['#f3f4f7','GPT · 白'],['#d97941','Claude · 橙'],['#24262d','Kimi · 黑'],['#660874','GLM · 清华紫'],['#6c9cda','DS · 原色']].map(([color,label]) => <span key={label}><i style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: color, border: '1px solid #888', marginRight: 4 }} />{label}</span>)}</div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>{[['#c7edcc','GPT · 豆沙绿'],['#d97941','Claude · 橙'],['#24262d','Kimi · 黑'],['#570763','GLM · 暗清华紫'],['#6c9cda','DS · 原色']].map(([color,label]) => <span key={label}><i style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: color, border: '1px solid #888', marginRight: 4 }} />{label}</span>)}</div>
     <div style={{ opacity: .8 }}>优先使用模型对应色；已占用时先分配空闲色，第六只起随机分配并尽量拉开色差。关闭多宠物模式不会清除已分配颜色。</div>
     <div style={{ opacity: .8, lineHeight: 1.6 }}>所有宠物共享累计：喂食次数、亲密度和小鱼干统一记录。各对话的完成奖励汇入同一份记录，切换对话、开关多宠物或重启都不会拆分或重置。</div>
     <label><input type="checkbox" checked={desktop} onChange={e => setDesktop(e.target.checked)} /> 独立桌面宠物</label>

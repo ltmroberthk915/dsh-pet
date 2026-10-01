@@ -165,6 +165,8 @@ export const MAX_SESSION_BUBBLES = 12
 export interface PetCompanionView {
   sessionId: string
   primary: boolean
+  /** Completion revision awaiting an explicit foreground-view acknowledgement. */
+  awaitingView?: number
   animation: PetStateSnapshot['animation']
   phase: PetStateSnapshot['phase']
   sessionActive: boolean
@@ -177,6 +179,7 @@ export interface PetCompanionView {
 /** Snapshot returned by `pet.state`. */
 export interface PetStateView {
   primary?: boolean
+  awaitingView?: number
   sessionId?: string
   currentSessionId?: string
   companions?: PetCompanionView[]
@@ -277,6 +280,9 @@ declare module '@deepseek-ai/cordis' {
 interface SessionActivity {
   runtime: ProjectionRuntime
   machine: PetStateMachine
+  revision: number
+  /** Keep this companion after work ends until its result has been viewed. */
+  retainUntilViewed?: boolean
   /** The session's most recent meaningful input (for display fallback). */
   lastInput?: PetStateInput
   /** Latest inner whisper woken by this session's model output (碎碎念). */
@@ -322,6 +328,7 @@ export class PetService extends Service {
    * the legacy bubble-stack cap. Disposed sessions are removed immediately.
    */
   private readonly sessionActivity = new Map<Session, SessionActivity>()
+  private activityRevision = 0
   /**
    * Sessions whose reward source is the official event stream. This metadata
    * outlives transient visual resets so a derived legacy `done` cannot reward
@@ -397,6 +404,23 @@ export class PetService extends Service {
   /** RPC: current pet state snapshot. */
   async state(currentSessionId?: string): Promise<PetStateView> {
     return this.view(currentSessionId)
+  }
+
+  /** A foreground conversation was viewed; polling alone never acknowledges it. */
+  async markSessionViewed(sessionId: string, revision: number): Promise<{ ok: true }> {
+    if (typeof sessionId !== 'string' || !sessionId || sessionId.length > 200
+      || !Number.isSafeInteger(revision) || revision < 1) throw new Error('invalid-viewed-session')
+    for (const [session, activity] of this.sessionActivity) {
+      if (String(session.id) === sessionId && this.awaitingView(activity) === revision) {
+        activity.retainUntilViewed = false
+      }
+    }
+    return { ok: true }
+  }
+
+  private awaitingView(activity?: SessionActivity): number | undefined {
+    return activity?.retainUntilViewed && ['idle', 'done', 'failed'].includes(activity.lastInput?.phase ?? '')
+      ? activity.revision : undefined
   }
 
   /**
@@ -566,6 +590,7 @@ export class PetService extends Service {
       activity = {
         runtime,
         machine: new PetStateMachine(this.stateConfig),
+        revision: 0,
       }
       this.sessionActivity.set(session, activity)
     }
@@ -580,6 +605,8 @@ export class PetService extends Service {
   private applyActivity(session: Session, input: PetStateInput, whisper?: string): void {
     const activity = this.activityOf(session)
     this.assignSessionColor(session)
+    activity.revision = ++this.activityRevision
+    if (!['idle', 'done', 'failed'].includes(input.phase)) activity.retainUntilViewed = true
     activity.lastInput = input
     if (whisper !== undefined) activity.whisper = { text: whisper, at: Date.now() }
     activity.machine.onActivityStatus(input)
@@ -592,7 +619,7 @@ export class PetService extends Service {
     // Never evict a live conversation just because another one starts.
     if (this.sessionActivity.size > 128) {
       for (const [candidate, record] of this.sessionActivity) {
-        if (candidate !== session && record.machine.render().animation === 'idle') this.sessionActivity.delete(candidate)
+        if (candidate !== session && !record.retainUntilViewed && record.machine.render().animation === 'idle') this.sessionActivity.delete(candidate)
         if (this.sessionActivity.size <= 128) break
       }
     }
@@ -941,16 +968,17 @@ export class PetService extends Service {
       for (const [session, activity] of this.sessionActivity) {
         if (session.header?.origin === 'subagent') continue
         const state = activity.machine.render()
-        if (state.animation === 'idle') continue
+        if (state.animation === 'idle' && !activity.retainUntilViewed) continue
         const id = String(session.id)
         const whisper = activity.whisper && Date.now() - activity.whisper.at < WHISPER_TTL_MS ? activity.whisper.text : undefined
         companions.push({ sessionId: id, primary: id === currentSessionId,
+          awaitingView: this.awaitingView(activity),
           animation: boundAnimation(entry.id, state), phase: state.phase, sessionActive: true,
           bubble: state.bubble, whisper, performance: this.footerPerformance(id),
           color: this.sessionColor(id) })
       }
-      // Only the main window keeps an idle companion. Background idle sessions
-      // never produce windows, and closing a turn has a single return target.
+      // Finished background companions remain until explicitly viewed. A viewed
+      // idle session stays only while it owns the main window; leaving retires it.
       if (!companions.some(c => c.primary)) companions.unshift({
         sessionId: currentSessionId ?? '', primary: true,
         animation: boundAnimation(entry.id, snapshot), phase: snapshot.phase,
@@ -1019,6 +1047,7 @@ export class PetService extends Service {
       sessionActive: snapshot.sessionActive,
       sessions: currentSessionId === undefined ? sessions : sessions.filter(s => s.sessionId === currentSessionId),
       currentSessionId,
+      awaitingView: selected ? this.awaitingView(this.sessionActivity.get(selected)) : undefined,
       companions,
       color: { palette: 'ds' },
       ...(decoration === undefined ? {} : { decoration }),
@@ -1069,7 +1098,7 @@ export class PetService extends Service {
     // unknown model's fallback during turn/start.
     if (!config || typeof config.model !== 'string' || !config.model) return
     const occupied = [...this.sessionActivity.entries()].filter(([s, a]) => s !== session
-      && s.header?.origin !== 'subagent' && a.machine.render().animation !== 'idle')
+      && s.header?.origin !== 'subagent' && (a.retainUntilViewed || a.machine.render().animation !== 'idle'))
       .map(([s]) => this.sessionColor(String(s.id)))
     this.ledger.setSessionColor(id, chooseSessionColor(modelPalette(config.model, config.provider) ?? 'ds', occupied))
     this.ledger.takeDirty()
