@@ -9,6 +9,8 @@
  * exactly one [data-dsh-pet-root].
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { act } from '@testing-library/react'
+import type { PetStateView } from '../service.ts'
 // The npm SDK's client half is a closure-factory bundle for the GUI's
 // __ModuleLoader__ (not importable under vitest); provide defineStore /
 // createSnapshotStore (same fake-store pattern as the settings-card tests).
@@ -23,6 +25,7 @@ vi.mock('@deepseek-ai/dsh-client-store', () => ({
       const actions: Record<string, (...args: unknown[]) => void> = {}
       for (const [name, fn] of Object.entries(spec.actions)) {
         actions[name] = (...args: unknown[]) => {
+          value = { ...(value as object) }
           fn(value as never, ...(args as never[]))
           for (const listener of listeners) listener()
         }
@@ -63,6 +66,7 @@ interface FakeClientLifecycle {
   emitSettings(): void
   sessionsListenerCount(): number
   setEnabled(enabled: boolean): void
+  selectSession(id: string): void
   /** Namespaces the family settings binder was asked for (empty without one). */
   boundNamespaces(): string[]
 }
@@ -72,6 +76,9 @@ const activeLifecycles: FakeClientLifecycle[] = []
 afterEach(() => {
   for (const lifecycle of activeLifecycles.splice(0).reverse()) lifecycle.dispose()
   document.body.replaceChildren()
+  delete window.dshPetDesktop
+  vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
 interface FakeContextOptions {
@@ -86,6 +93,7 @@ function fakeContext(options: FakeContextOptions = {}): FakeClientLifecycle {
   const settingsListeners = new Set<() => void>()
   const sessionListeners = new Set<() => void>()
   const boundNamespaces: string[] = []
+  let selectedSessionId: string | undefined
   let settingsValue: { enabled?: boolean } | undefined = options.enabled === undefined ? undefined : { enabled: options.enabled }
   const scope = {
     getSnapshot: () => ({
@@ -134,7 +142,7 @@ function fakeContext(options: FakeContextOptions = {}): FakeClientLifecycle {
     },
     sessions: {
       list: {
-        getSnapshot: () => ({ current: undefined, byId: {} }),
+        getSnapshot: () => ({ byId: selectedSessionId ? { [selectedSessionId]: { id: selectedSessionId, retainedBy: { mainView: 1 } } } : {} }),
         subscribe: (listener: () => void) => {
           sessionListeners.add(listener)
           return () => { sessionListeners.delete(listener) }
@@ -157,6 +165,7 @@ function fakeContext(options: FakeContextOptions = {}): FakeClientLifecycle {
     },
     sessionsListenerCount: () => sessionListeners.size,
     setEnabled: (enabled: boolean) => { settingsValue = { enabled } },
+    selectSession: (id: string) => { selectedSessionId = id; for (const listener of sessionListeners) listener() },
     boundNamespaces: () => boundNamespaces,
   }
   activeLifecycles.push(lifecycle)
@@ -268,5 +277,63 @@ describe('pet client apply', () => {
     expect(lifecycle.boundNamespaces()).toEqual(['pet'])
     // ...and the pet surface followed the form it answered (disabled -> hidden)
     expect(document.body.querySelectorAll('[data-dsh-pet-root]')).toHaveLength(0)
+  })
+})
+
+function desktopFixture() {
+  vi.useFakeTimers()
+  vi.stubGlobal('fetch', vi.fn(async () => Response.json([])))
+  let snapshot: PetStateView = {
+    animation: 'idle', phase: 'idle', sessionActive: false,
+    display: { visible: true, size: 163, right: 24, bottom: 20, bubbleScale: 1, desktopEnabled: true, multiPetEnabled: true },
+    affinity: { points: 0, rank: '幼鲸', rankEmoji: '*', pets: 0, feeds: 0, turns: 0, petCooldown: false, feedCooldown: false },
+    pet: { id: 'whale-girl-refined', displayName: '鲸鱼娘', description: '' }, name: '鲸鱼娘', treats: { stocked: 0, max: 20 },
+  }
+  const state = vi.fn(async () => snapshot)
+  const configure = vi.fn(async (options: { enabled: boolean; currentSessionId?: string }) => ({ active: options.enabled }))
+  window.dshPetDesktop = { state, configure, resetPosition: vi.fn(async () => ({ active: true })) }
+  const lifecycle = fakeContext()
+  return { state, configure, lifecycle, update: (patch: Partial<PetStateView>) => { snapshot = { ...snapshot, ...patch } },
+    display: (patch: Partial<PetStateView['display']>) => { snapshot = { ...snapshot, display: { ...snapshot.display, ...patch } } } }
+}
+
+describe('desktop and embedded pet ownership', () => {
+  it('a delayed desktop acknowledgement survives newer polls and visibility recovery', async () => {
+    const f = desktopFixture()
+    let ready!: (result: { active: boolean }) => void
+    f.configure.mockImplementationOnce(() => new Promise(resolve => { ready = resolve }))
+    await act(async () => { apply(f.lifecycle.ctx) })
+    await act(async () => { await vi.advanceTimersByTimeAsync(2100) })
+    expect(f.state.mock.calls.length).toBeGreaterThan(1)
+    await act(async () => { ready({ active: true }) })
+    const root = document.querySelector<HTMLElement>('[data-dsh-pet-root]')!
+    expect(root.style.display).toBe('none')
+    await act(async () => { document.dispatchEvent(new Event('visibilitychange')); await vi.advanceTimersByTimeAsync(1100) })
+    expect(root.style.display).toBe('none')
+    expect(root.querySelectorAll('[data-pet-dock]')).toHaveLength(0)
+  })
+
+  it('multi-session children never mount under desktop ownership, and disabling desktop restores one embedded pet', async () => {
+    const f = desktopFixture()
+    await act(async () => { apply(f.lifecycle.ctx) })
+    for (const id of ['a', 'b']) {
+      f.update({ companions: [{ sessionId: id, primary: true, animation: 'idle', phase: 'idle', sessionActive: false, color: { palette: 'ds' } }] })
+      await act(async () => { f.lifecycle.selectSession(id); await vi.advanceTimersByTimeAsync(1100) })
+      expect(document.querySelectorAll('[data-pet-dock]')).toHaveLength(0)
+    }
+    f.display({ desktopEnabled: false, multiPetEnabled: false })
+    await act(async () => { await vi.advanceTimersByTimeAsync(1100) })
+    expect(document.querySelector<HTMLElement>('[data-dsh-pet-root]')!.style.display).toBe('')
+    expect(document.querySelectorAll('[data-pet-dock]')).toHaveLength(1)
+  })
+
+  it('failed desktop creation falls back, then a successful retry removes the embedded pet', async () => {
+    const f = desktopFixture()
+    f.configure.mockRejectedValueOnce(new Error('window creation failed'))
+    await act(async () => { apply(f.lifecycle.ctx) })
+    await act(async () => { await vi.advanceTimersByTimeAsync(1100) })
+    expect(f.configure.mock.calls.length).toBeGreaterThanOrEqual(2)
+    expect(document.querySelector<HTMLElement>('[data-dsh-pet-root]')!.style.display).toBe('none')
+    expect(document.querySelectorAll('[data-pet-dock]')).toHaveLength(0)
   })
 })

@@ -257,6 +257,9 @@ export function apply(ctx: ClientContext): void {
       const setPets = petStore.actions.setPets
       const setState = petStore.actions.setState
       const setFeedback = petStore.actions.setFeedback
+      const setDesktopActive = petStore.actions.setDesktopActive
+      // Claim desktop presentation before any fallback child can mount.
+      setDesktopActive(window.dshPetDesktop !== undefined)
 
       // Clicking a session bubble jumps the GUI to that session; the
       // catalog's main-view ownership marker tells which session the main view
@@ -279,6 +282,7 @@ export function apply(ctx: ClientContext): void {
       let polling = false
       let pollAgain = false
       let nativeOptionsKey: string | undefined
+      let nativeRequestSeq = 0
       let uiGone = false
       // Latest-wins guard: the 2s tick, visibility recovery, and
       // interaction-triggered refreshes can overlap; only the newest
@@ -305,10 +309,9 @@ export function apply(ctx: ClientContext): void {
           ? window.dshPetDesktop.state(requestedSessionId ?? '') : petApi.state(requestedSessionId)
         stateRequest.then((snapshot) => {
           if (uiGone || seq !== stateSeq || requestedSessionId !== currentSessionId()) return
-          setSnapshot(snapshot)
           const publishNativeState = (active: boolean): void => {
-            if (uiGone || seq !== stateSeq) return
-            window.dispatchEvent(new CustomEvent('dsh-pet-native-active', { detail: active }))
+            if (uiGone) return
+            setDesktopActive(active)
             container.style.display = active ? 'none' : ''
           }
           const nativeOptions = {
@@ -318,9 +321,21 @@ export function apply(ctx: ClientContext): void {
           const key = JSON.stringify(nativeOptions)
           if (key !== nativeOptionsKey && window.dshPetDesktop) {
             nativeOptionsKey = key
-            void window.dshPetDesktop.configure(nativeOptions).then(result => publishNativeState(result.active))
-              .catch(() => { nativeOptionsKey = undefined; publishNativeState(false) })
+            // Window creation can outlive a poll or session refresh. Only a
+            // newer configure request supersedes its acknowledgement.
+            const nativeSeq = ++nativeRequestSeq
+            if (nativeOptions.enabled) publishNativeState(true)
+            void window.dshPetDesktop.configure(nativeOptions).then(result => {
+              if (uiGone || nativeSeq !== nativeRequestSeq) return
+              publishNativeState(result.active)
+              if (nativeOptions.enabled && !result.active) nativeOptionsKey = undefined
+            }).catch(() => {
+              if (uiGone || nativeSeq !== nativeRequestSeq) return
+              nativeOptionsKey = undefined
+              publishNativeState(false)
+            })
           }
+          setSnapshot(snapshot)
         }, () => {
           if (seq !== stateSeq) return
           setState('error', 'pet.state transport error')
@@ -498,6 +513,7 @@ export function apply(ctx: ClientContext): void {
       const container = document.createElement('div')
       container.dataset.dshPetRoot = ''
       container.dataset.dshPlugin = 'pet'
+      if (petStore.getSnapshot().desktopActive) container.style.display = 'none'
       document.body.appendChild(container)
       const petRoot = createRoot(container)
       // The sprite chrome portals into THIS root (not document.body): the
@@ -525,6 +541,9 @@ export function apply(ctx: ClientContext): void {
         uiDead = true
         disposeUi?.()
       })
+      // Desktop ownership suppresses PetDockEntry, so its mount effect cannot
+      // be responsible for bootstrapping the first state/configuration read.
+      pollNow()
     } else if (!uiDead && !enabled() && disposeUi !== undefined) {
       void window.dshPetDesktop?.configure({ enabled: false }).catch(() => {})
       disposeUi()

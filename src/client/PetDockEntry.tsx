@@ -12,7 +12,7 @@
  * @module @linxin666/dsh-pet/client/PetDockEntry
  */
 
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactElement } from 'react'
+import { useEffect, useRef, useSyncExternalStore, type ReactElement } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PetDisplayConfig } from '../persist.ts'
 import type { PetStoreInstance } from './pet-store.ts'
@@ -73,12 +73,6 @@ const DEFAULT_DISPLAY: PetDisplayConfig = { visible: true, size: 160, right: 24,
  * host-global, not session-scoped.
  */
 export function PetDockEntry(props: PetDockEntryProps): ReactElement {
-  const [nativeActive, setNativeActive] = useState(false)
-  useEffect(() => {
-    const handler = (event: Event) => setNativeActive((event as CustomEvent).detail === true)
-    window.addEventListener('dsh-pet-native-active', handler)
-    return () => window.removeEventListener('dsh-pet-native-active', handler)
-  }, [])
   const { store, ensure } = props
   const ui = useSyncExternalStore(store.subscribe, store.getSnapshot)
   const snapshot = ui.snapshot
@@ -99,7 +93,6 @@ export function PetDockEntry(props: PetDockEntryProps): ReactElement {
   const aux = auxRef.current
   const gameplay = definition?.gameplay
 
-  if (nativeActive) return <></>
   if (visible) {
     return (
       <span data-pet-dock data-testid="pet-dock">

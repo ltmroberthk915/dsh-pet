@@ -24,6 +24,8 @@ export interface PetFeedback {
 
 /** Pet UI state as consumers see it. */
 export interface PetUiState {
+  /** Desktop windows own the pet surface, including while they are starting. */
+  desktopActive: boolean
   /** Latest host snapshot; null before the first successful fetch. */
   snapshot: PetStateView | null
   /** The registry list the host serves (atlas URLs + geometry + tracks). */
@@ -38,6 +40,7 @@ export interface PetUiState {
 
 /** Store write set. */
 export type PetUiActions = {
+  setDesktopActive: (draft: PetUiState, active: boolean) => void
   /** Replace the host snapshot (poll result). */
   setSnapshot: (draft: PetUiState, snapshot: PetStateView) => void
   /** Replace the registry list. */
@@ -58,6 +61,7 @@ export type PetUiActions = {
 export function createPetStore(): EngineStoreHandle<PetUiState, PetUiActions> {
   return defineStore({
     init: (): PetUiState => ({
+      desktopActive: false,
       snapshot: null,
       pets: [],
       state: 'loading',
@@ -65,6 +69,7 @@ export function createPetStore(): EngineStoreHandle<PetUiState, PetUiActions> {
       feedback: null,
     }),
     actions: {
+      setDesktopActive: (draft, active) => { draft.desktopActive = active },
       setSnapshot: (draft, snapshot) => {
         // The 2 s poll republishes the full snapshot even while the pet is
         // idle. Skipping an unchanged payload keeps immer's produce at zero
