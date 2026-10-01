@@ -164,12 +164,20 @@ function postRoute(ctx: Context, path: string, run: (body: Record<string, unknow
     handler: (req: IncomingMessage, res: ServerResponse): Promise<void> => {
       if (!guard(ctx, req, res)) return Promise.resolve()
       if (!requireMethod(req, res, 'POST')) return Promise.resolve()
+      if (req.headers['content-type']?.split(';')[0]?.trim().toLowerCase() !== 'application/json') {
+        writeJson(res, 415, { ok: false, error: 'application-json-required' })
+        return Promise.resolve()
+      }
       // Shared lenient reader (64 KiB cap): an empty body yields null and is
       // restored to {} at the call site (legacy empty-body semantics); invalid
       // JSON and over-limit bodies also yield null, so the endpoint validators
       // below keep answering 400 with the same { ok: false, error } envelope.
       return readJsonBody(req, { maxBytes: 64 * 1024 }).then((parsed) => {
-        const payload = parsed ?? {}
+        if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+          writeJson(res, 400, { ok: false, error: 'invalid-json-object' })
+          return
+        }
+        const payload = parsed
         const record = (typeof payload === 'object' && payload !== null) ? payload as Record<string, unknown> : {}
         return run(record).then(
           (value) => writeJson(res, 200, value),
@@ -324,6 +332,8 @@ function assetHandler(ctx: Context, registry: PetRegistry, caps: PetAssetCaps): 
     if (revalidated(req, res, etag)) return
     return readFile(resolved).then((body) => {
       res.writeHead(200, {
+        'x-content-type-options': 'nosniff',
+        'content-security-policy': "default-src 'none'; sandbox",
         'content-type': mimeFor(resolved),
         'content-length': String(body.byteLength),
         'cache-control': 'no-cache',
@@ -553,6 +563,8 @@ function decorationHandler(ctx: Context, registry: PetRegistry, caps: PetAssetCa
     if (revalidated(req, res, etag)) return
     readFile(resolved).then((body) => {
       res.writeHead(200, {
+        'x-content-type-options': 'nosniff',
+        'content-security-policy': "default-src 'none'; sandbox",
         'content-type': mimeFor(resolved),
         'content-length': String(body.byteLength),
         'cache-control': 'no-cache',
@@ -593,11 +605,11 @@ export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCa
       return service.setVisible(visible)
     }),
     postRoute(ctx, PET_API_PREFIX + '/set-config', (body) => service.setConfig({
-      ...(typeof body.size === 'number' ? { size: body.size } : {}),
+      ...Object.fromEntries(['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationMode', 'animationTickSlope', 'animationTickIntercept', 'desktopEnabled', 'visible'].filter(key => Object.hasOwn(body, key)).map(key => [key, body[key]])),
       ...(typeof body.right === 'number' ? { right: body.right } : {}),
       ...(typeof body.bottom === 'number' ? { bottom: body.bottom } : {}),
       ...(typeof body.visible === 'boolean' ? { visible: body.visible } : {}),
-    })),
+    }, body.petId)),
     postRoute(ctx, PET_API_PREFIX + '/set-name', (body) => {
       const name = body.name
       if (typeof name !== 'string') return Promise.reject(new Error('invalid-name'))

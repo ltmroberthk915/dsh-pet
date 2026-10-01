@@ -16,5 +16,14 @@ import { isPairedOrLoopbackAllowed } from './pair-access.ts'
  * @returns true for loopback, or a live paired-device cookie.
  */
 export function isPetAllowed(ctx: Context, request: IncomingMessage): boolean {
+  // Pairing grants authentication, never permission to bypass same-origin checks.
+  if (request.headers['sec-fetch-site'] === 'cross-site' || request.headers['sec-fetch-site'] === 'same-site') return false
+  const origin = request.headers.origin
+  if (origin !== undefined) {
+    try {
+      const parsed = new URL(origin)
+      if (!['http:', 'https:'].includes(parsed.protocol) || parsed.host !== request.headers.host) return false
+    } catch { return false }
+  }
   return isPairedOrLoopbackAllowed(ctx, request)
 }

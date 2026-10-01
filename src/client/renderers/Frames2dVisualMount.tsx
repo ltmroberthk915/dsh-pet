@@ -1,3 +1,4 @@
+import { retimeTracks } from '../../animation.ts'
 /**
  * Frames2d visual mount — the React bridge between the pet center chrome
  * and the imperative frames2d renderer, mirroring the live2d mount. The
@@ -24,6 +25,7 @@ import type { NS } from '../locales.ts'
 /** Mount the frames2d renderer as the sprite's visual (inside the chrome). */
 export function Frames2dVisualMount(props: {
   definition: PetDefinition
+  fps?: number
   phase: ActivityPhase
   onPet: () => void
   /** Chrome drag gesture stream (the renderer switch owns it). */
@@ -55,7 +57,7 @@ export function Frames2dVisualMount(props: {
     }
     let handle: Frames2dRendererHandle
     try {
-      handle = defaultPetRendererRegistry.mount('frames2d', ctx, frames2d) as Frames2dRendererHandle
+      handle = defaultPetRendererRegistry.mount('frames2d', ctx, { ...frames2d, tracks: retimeTracks(frames2d.tracks, props.fps) }) as Frames2dRendererHandle
     } catch {
       setInvalid(true)
       return () => { for (const fn of cleanups.splice(0)) fn() }
@@ -96,7 +98,7 @@ export function Frames2dVisualMount(props: {
       handle.dispose()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one activation per pet identity
-  }, [props.definition])
+  }, [props.definition, props.fps])
 
   // Feed the polled phase into the activation's stream (change-only).
   useEffect(() => {

@@ -66,6 +66,11 @@ describe('pet configuration schema', () => {
       right: true,
       bottom: true,
       bubbleScale: true,
+      animationFps: true,
+      animationMode: true,
+      animationTickSlope: true,
+      animationTickIntercept: true,
+      desktopEnabled: true,
       petId: true,
       enabled: true,
       decorationEnabled: true,
@@ -93,6 +98,11 @@ describe('petSettingsSection', () => {
       petId: 'doro',
       enabled: true,
       decorationEnabled: true,
+      animationFps: 12,
+      animationMode: 'fixed',
+      animationTickSlope: 1 / 6,
+      animationTickIntercept: 6,
+      desktopEnabled: true,
     })
   })
 

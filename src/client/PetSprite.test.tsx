@@ -599,6 +599,7 @@ describe('PetSprite definition-driven render', () => {
     renderPet({
       definition,
       snapshot: { ...snapshot, animation: 'running', phase: 'thinking' },
+      display: { ...snapshot.display, animationMode: 'native' },
     })
     const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
     expect(sprite.style.backgroundPosition).toBe('0px -1120px')
@@ -946,7 +947,7 @@ describe('PetSprite status decoration (pet-center M5, #567)', () => {
       return frames.length
     })
     vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {})
-    renderPet({ snapshot: { ...snapshot, bubble: '完成', phase: 'done', decoration: { ...decoration, loop: false } } })
+    renderPet({ visual: <span />, snapshot: { ...snapshot, bubble: '完成', phase: 'done', decoration: { ...decoration, loop: false } } })
     const el = ornament()!
     const step = (ms: number): void => {
       for (const callback of frames.splice(0)) callback(now)
@@ -999,6 +1000,7 @@ describe('PetSprite status decoration (pet-center M5, #567)', () => {
     vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {})
     // failed binds the single frame 3 of a 24px-wide frame; loop stays true.
     renderPet({
+      visual: <span />,
       snapshot: {
         ...snapshot,
         bubble: '失败',

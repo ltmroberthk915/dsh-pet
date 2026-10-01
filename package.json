@@ -1,7 +1,7 @@
 {
   "name": "@linxin666/dsh-pet",
   "description": "Multi-pet companion plugin for the dsh web GUI: a registry-driven floating pet that reacts to model activity, with per-pet naming, petting/feeding interactions and an affinity score",
-  "version": "0.4.4",
+  "version": "0.4.4-local.20261001.3",
   "publishConfig": {
     "access": "public"
   },
@@ -16,7 +16,8 @@
     "test": "vitest run",
     "pet:cli": "node scripts/dsh-pet.cjs",
     "typecheck": "tsc -b --pretty false && tsc -p tsconfig.test.json --pretty false",
-    "prepare": "tsdown --config tsdown.prepare.config.ts"
+    "prepare": "tsdown --config tsdown.prepare.config.ts",
+    "build:local": "node scripts/build-local.mjs"
   },
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -42,11 +43,10 @@
     "lib/**/*.d.ts",
     "lib/**/*.d.ts.map",
     "src",
+    "desktop",
+    "scripts/build-local.mjs",
     "cordis.patch.yml",
-    "assets/whale",
     "assets/whale-refined",
-    "assets/ouo-neko",
-    "assets/blue-throated-bee-eater",
     "assets/decorations",
     "contracts",
     "icon.svg"
@@ -80,6 +80,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "esbuild": "^0.25.12",
     "@deepseek-ai/cordis": "^4.0.4",
     "@deepseek-ai/dsh-agent": "^0.1.7-rc.1",
     "@deepseek-ai/dsh-api-remotes": "^0.1.7-rc.1",

@@ -1,5 +1,7 @@
 # dsh-pet — Multi-pet companion plugin
 
+> This branch runs only the refined whale, adds an isolated desktop window, editable linear Tick playback and reduced idle work. See [the desktop branch guide](docs/desktop-refined-pet.md). The upstream overview below describes the generic development registry.
+
 English | [中文](README.zh.md)
 
 > A registry-driven desktop companion for DeepSeek Harness — the built-in whale girl plus any pet you drop in.

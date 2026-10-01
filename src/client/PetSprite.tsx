@@ -1,3 +1,5 @@
+import { effectiveFps, retimeTracks } from '../animation.ts'
+import { createBlinkFilter } from './blink-frequency.ts'
 /**
  * Pet sprite companion component — the browser half's centerpiece. Renders a
  * fixed-position floating sprite (React portal onto document.body), plays
@@ -9,7 +11,7 @@
  * @module @linxin666/dsh-pet/client/PetSprite
  */
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement, ReactNode, ReactPortal } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
@@ -287,8 +289,13 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const cell = definition.cell
   const columns = definition.columns
   const rows = definition.rows
-  const tracks = definition.tracks
+  const phase = snapshot?.phase ?? 'idle'
+  const animation = snapshot?.animation ?? 'idle'
   const sequences = definition.sequences
+  const selectedSequence = animation === animationForPhase(phase) ? sequences?.[phase] : undefined
+  const usesRightRun = animation === 'running-right' || selectedSequence?.includes('running-right') === true
+  const fps = usesRightRun ? effectiveFps(display, snapshot?.performance?.tokensPerSecond) : undefined
+  const tracks = useMemo(() => retimeTracks(definition.tracks, fps) as typeof definition.tracks, [definition.tracks, fps])
   // Hover-panel chrome from the pet's voice pack (pet-center M4, issue
   // #677): every slot falls back to the i18n dictionary when unset. Stat
   // formats carry {rank}/{n}/{points} placeholders the host validated.
@@ -365,10 +372,9 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   // its track's first frame instead of animating (presentation-only; the
   // animation state machine is untouched).
   const spriteScale = display.size / cell.height
-  const phase = snapshot?.phase ?? 'idle'
-  const animation = snapshot?.animation ?? 'idle'
   const scaleRef = useRef(spriteScale)
   scaleRef.current = spriteScale
+  const blinkFrame = useMemo(() => createBlinkFilter(definition.id), [definition.id])
   useEffect(() => {
     if (props.visual !== undefined) return
     const reduceMotion = typeof window !== 'undefined'
@@ -393,24 +399,33 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
     const track = trimTrack(tracks[leadAnimation], rows[row] ?? tracks[leadAnimation].frames.length)
     // Paint one static sprite frame up front either way, so the pet is never
     // blank while the loop heat-up runs.
-    const leadCol = track.frames[0]!
+    const leadCol = blinkFrame(leadAnimation, track.frames[0]!)
     const lead = framePosition(cell, row, leadCol, scaleRef.current)
     let lastPosStr = lead.x + 'px ' + lead.y + 'px'
     if (spriteRef.current !== null) {
       spriteRef.current.style.backgroundPosition = lastPosStr
     }
     if (reduceMotion) return
+    frameRef.current = { track: null, index: 0, elapsed: 0 }
     let raf = 0
+    let frameTimer: ReturnType<typeof setTimeout> | undefined
     let last = performance.now()
     let sequenceElapsed = 0
+    // Sleep until the next actual sprite frame. One rAF aligns the paint with
+    // the display; idle no longer wakes the renderer on every monitor refresh.
+    const schedule = (remaining: number): void => {
+      if (frameTimer !== undefined) clearTimeout(frameTimer)
+      if (remaining <= 32) { raf = requestAnimationFrame(tick); return }
+      frameTimer = setTimeout(() => { raf = requestAnimationFrame(tick) }, remaining)
+    }
     const tick = (ts: number): void => {
-      const delta = ts - last
+      const delta = Math.min(10000, Math.max(0, ts - last))
       last = ts
       if (timeline !== undefined && sequenceItems !== undefined) {
         sequenceElapsed += delta
         const current = timeline.frameAt(sequenceElapsed)
         const item = sequenceItems.get(current.animation)!
-        const col = item.track.frames[current.frameIndex]!
+        const col = blinkFrame(current.animation, item.track.frames[current.frameIndex]!)
         const pos = framePosition(cell, item.row, col, scaleRef.current)
         const posStr = pos.x + 'px ' + pos.y + 'px'
         if (posStr !== lastPosStr) {
@@ -419,7 +434,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
             spriteRef.current.style.backgroundPosition = posStr
           }
         }
-        raf = requestAnimationFrame(tick)
+        schedule(timeline.nextFrameIn(sequenceElapsed))
         return
       }
       // row/track come from the effect scope: they were computed once above
@@ -433,19 +448,13 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
       }
       st.elapsed += delta
       const maxIndex = track.frames.length - 1
-      while (st.elapsed >= (track.durations[st.index] ?? 0) && st.index < maxIndex) {
-        st.elapsed -= track.durations[st.index] ?? 0
-        st.index += 1
+      while (st.elapsed >= Math.max(1, track.durations[st.index] ?? 100)) {
+        st.elapsed -= Math.max(1, track.durations[st.index] ?? 100)
+        if (st.index < maxIndex) st.index += 1
+        else if (track.loop) st.index = 0
+        else { st.elapsed = 0; break }
       }
-      if (st.elapsed >= (track.durations[st.index] ?? 0)) {
-        if (track.loop) {
-          st.elapsed = 0
-          st.index = 0
-        } else {
-          st.index = maxIndex // hold the final frame; the host switches tracks
-        }
-      }
-      const col = track.frames[st.index]!
+      const col = blinkFrame(animation, track.frames[st.index]!)
       const pos = framePosition(cell, row, col, scaleRef.current)
       const posStr = pos.x + 'px ' + pos.y + 'px'
       if (posStr !== lastPosStr) {
@@ -454,11 +463,11 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
           spriteRef.current.style.backgroundPosition = posStr
         }
       }
-      raf = requestAnimationFrame(tick)
+      if (track.loop || st.index < maxIndex) schedule(Math.max(1, track.durations[st.index]! - st.elapsed))
     }
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [animation, phase, cell, columns, rows, tracks, sequences, props.visual])
+    return () => { cancelAnimationFrame(raf); if (frameTimer !== undefined) clearTimeout(frameTimer) }
+  }, [animation, phase, cell, columns, rows, tracks, sequences, props.visual, blinkFrame])
 
   // Auto-clear the feedback bubble after its CSS animation. The callback
   // rides a ref so re-renders never reset the timer: the 2s poll rebuilds
@@ -489,6 +498,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>): void => {
     if (props.dragDisabled === true) return
+    window.dshPetOverlay?.drag('start')
     endWalk(false)
     e.preventDefault()
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
@@ -506,6 +516,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
       if (!draggedRef.current) props.onDraggingChange?.(true)
       draggedRef.current = true
     }
+    if (window.dshPetOverlay) { window.dshPetOverlay.drag('move'); return }
     const right = clampOffset(drag.right - dx, window.innerWidth - 40)
     const bottom = clampOffset(drag.bottom - dy, window.innerHeight - 40)
     setDragPos({ right, bottom })
@@ -513,6 +524,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const onPointerUp = (): void => {
     if (dragRef.current === null) return
     dragRef.current = null
+    window.dshPetOverlay?.drag('end')
     if (draggedRef.current) props.onDraggingChange?.(false)
     if (dragPos !== null) props.onDragEnd(dragPos.right, dragPos.bottom)
   }
@@ -730,6 +742,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
           onClick={(e) => {
             // A pointer sequence that moved (dragged) still fires a trailing
             // click; skip the pet when that happened.

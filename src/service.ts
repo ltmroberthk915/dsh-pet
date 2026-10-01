@@ -1,3 +1,5 @@
+import { animationFps, animationMode, tickSlope, tickIntercept, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, footerTokensPerSecond, type AnimationMode } from './animation.ts'
+import { boundAnimation } from './animation-bindings.ts'
 /**
  * Pet host service — the `pet.*` RPC domain. A composition facade: it wires
  * the pure event projection (`event-projection`) onto the state machine,
@@ -116,6 +118,11 @@ export interface PetSettingsSection {
   bottom: number
   /** Bubble typography multiplier (#1549); see PetDisplayConfig. */
   bubbleScale?: number
+  animationFps?: number
+  animationMode?: AnimationMode
+  animationTickSlope?: number
+  animationTickIntercept?: number
+  desktopEnabled?: boolean
   /** Master switch for the plugin (browser half + host routes). */
   enabled?: boolean
   /**
@@ -168,6 +175,7 @@ export interface PetStateView {
   /** Affinity ledger snapshot. */
   affinity: PetAffinityView
   /** Display configuration. */
+  performance?: { tokensPerSecond: number; source: 'sessionStats'; sessionId: string }
   display: PetDisplayConfig
   /** The selected pet's registry identity. */
   pet: {
@@ -792,8 +800,20 @@ export class PetService extends Service {
   }
 
   /** RPC: update display config (size / position / bubble scale). Pixel values are clamped to whole pixels. */
-  async setConfig(patch: Partial<PetDisplayConfig>): Promise<{ ok: true; display: PetDisplayConfig }> {
+  async setConfig(patch: Partial<PetDisplayConfig>, expectedPetId?: unknown): Promise<{ ok: true; display: PetDisplayConfig }> {
+    if (expectedPetId !== undefined && expectedPetId !== this.selectedPetId()) throw new Error('pet-changed-reopen-settings')
+    for (const [key, value] of Object.entries(patch)) {
+      if (['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationTickSlope', 'animationTickIntercept'].includes(key) && (typeof value !== 'number' || !Number.isFinite(value))) throw new Error('invalid-' + key)
+      if (key === 'animationTickSlope' && ((value as number) < MIN_TICK_SLOPE || (value as number) > MAX_TICK_SLOPE)) throw new Error('invalid-animationTickSlope')
+      if (key === 'animationTickIntercept' && ((value as number) < MIN_TICK_INTERCEPT || (value as number) > MAX_TICK_INTERCEPT)) throw new Error('invalid-animationTickIntercept')
+      if (['visible', 'desktopEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
+      if (key === 'animationMode' && !['fixed', 'native', 'tick'].includes(value as string)) throw new Error('invalid-animationMode')
+    }
     const next = { ...this.ledger.snapshot.display, ...patch }
+    next.animationFps = animationFps(next.animationFps)
+    next.animationMode = animationMode(next.animationMode)
+    next.animationTickSlope = tickSlope(next.animationTickSlope)
+    next.animationTickIntercept = tickIntercept(next.animationTickIntercept)
     next.size = Math.round(Math.min(DISPLAY_SIZE_MAX, Math.max(DISPLAY_SIZE_MIN, next.size)))
     next.right = Math.round(Math.min(DISPLAY_INSET_MAX, Math.max(0, next.right)))
     next.bottom = Math.round(Math.min(DISPLAY_INSET_MAX, Math.max(0, next.bottom)))
@@ -823,6 +843,7 @@ export class PetService extends Service {
   applySettingsSection(section: PetSettingsSection): void {
     this.decorationEnabled = section.decorationEnabled ?? true
     const selected = typeof section.petId === 'string' ? this.registry.byId(section.petId) : undefined
+    const selectionChanged = selected !== undefined && selected.id !== this.selectedPetId()
     if (selected !== undefined) {
       this.ledger.setPetId(selected.id)
       this.ledger.setRemarks(selected.remarks)
@@ -832,6 +853,14 @@ export class PetService extends Service {
       this.syncSettingsFromPet()
     }
     const next = { ...this.ledger.snapshot.display }
+    // A pet picker commit still carries the previous pet's form values.
+    if (!selectionChanged) {
+      next.animationFps = animationFps(section.animationFps ?? next.animationFps)
+      next.animationMode = animationMode(section.animationMode ?? next.animationMode)
+      next.animationTickSlope = tickSlope(section.animationTickSlope ?? next.animationTickSlope)
+      next.animationTickIntercept = tickIntercept(section.animationTickIntercept ?? next.animationTickIntercept)
+    }
+    next.desktopEnabled = section.desktopEnabled ?? next.desktopEnabled ?? true
     next.visible = section.visible && (section.enabled ?? true)
     next.size = Math.round(Math.min(DISPLAY_SIZE_MAX, Math.max(DISPLAY_SIZE_MIN, section.size)))
     next.right = Math.round(Math.min(DISPLAY_INSET_MAX, Math.max(0, section.right)))
@@ -839,6 +868,7 @@ export class PetService extends Service {
     next.bubbleScale = Math.min(BUBBLE_SCALE_MAX, Math.max(BUBBLE_SCALE_MIN, section.bubbleScale ?? next.bubbleScale))
     this.ledger.setDisplay(next)
     this.flush()
+    if (selectionChanged) this.syncSettingsFromPet()
   }
 
   /** Mirror the persisted display config into the settings document (best-effort). */
@@ -852,6 +882,12 @@ export class PetService extends Service {
       size: snapshot.display.size,
       right: snapshot.display.right,
       bottom: snapshot.display.bottom,
+      bubbleScale: snapshot.display.bubbleScale,
+      animationFps: snapshot.display.animationFps,
+      animationMode: snapshot.display.animationMode,
+      animationTickSlope: snapshot.display.animationTickSlope,
+      animationTickIntercept: snapshot.display.animationTickIntercept,
+      desktopEnabled: snapshot.display.desktopEnabled,
       petId: snapshot.petId,
     }).catch(() => {
       // A settings write failure must not break the pet's own persistence.
@@ -893,7 +929,7 @@ export class PetService extends Service {
         : undefined
       sessions.push({
         sessionId: String(session.id),
-        animation: perSession.animation,
+        animation: boundAnimation(entry.id, perSession),
         bubble: perSession.bubble,
         phase: perSession.phase,
         ...(freshWhisper === undefined ? {} : { whisper: freshWhisper }),
@@ -926,7 +962,7 @@ export class PetService extends Service {
       : undefined
     const skin = this.persistedSkin(entry)
     return {
-      animation: snapshot.animation,
+      animation: boundAnimation(entry.id, snapshot),
       ...(snapshot.bubble === undefined ? {} : { bubble: snapshot.bubble }),
       phase: snapshot.phase,
       sessionActive: snapshot.sessionActive,
@@ -934,6 +970,7 @@ export class PetService extends Service {
       ...(decoration === undefined ? {} : { decoration }),
       ...(announcement === undefined ? {} : { announcement }),
       affinity: this.ledger.affinityView(Date.now()),
+      performance: this.footerPerformance(currentSessionId),
       display: { ...this.ledger.snapshot.display },
       pet: {
         id: entry.id,
@@ -948,6 +985,18 @@ export class PetService extends Service {
       },
       ...(gameplay === undefined ? {} : { gameplay }),
     }
+  }
+
+  /** Reads the SAME durable projection as the footer. Never estimates tokens. */
+  private footerPerformance(currentSessionId?: string): PetStateView['performance'] {
+    try {
+      const sessions = this.ctx.get('sessions', false) as { get(id: string): Session | undefined } | undefined
+      const session = currentSessionId === undefined ? this.displaySession : sessions?.get(currentSessionId)
+      if (session === undefined) return undefined
+      const projections = this.ctx.get('sessionProjections', false) as { stateOf(session: Session, key: string): unknown } | undefined
+      const rate = footerTokensPerSecond(projections?.stateOf(session, 'sessionStats'))
+      return rate === undefined ? undefined : { tokensPerSecond: rate, source: 'sessionStats', sessionId: String(session.id) }
+    } catch { return undefined }
   }
 
   private flush(): void {

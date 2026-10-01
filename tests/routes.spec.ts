@@ -421,14 +421,14 @@ describe('post body failure contract (shared readJsonBody migration)', () => {  
     expect(res.status).toBe(200)
   })
 
-  it('answers 400 with the endpoint validator for a body that is not JSON', async () => {
+  it('rejects malformed JSON before the endpoint validator runs', async () => {
     const res = await fetch(url('/api/pet/interact'), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: 'not-json',
     })
     expect(res.status).toBe(400)
-    expect(await res.json()).toEqual({ ok: false, error: 'invalid-kind' })
+    expect(await res.json()).toEqual({ ok: false, error: 'invalid-json-object' })
   })
 
   it('writes family JSON headers through the shared writer', async () => {
@@ -442,8 +442,16 @@ describe('post body failure contract (shared readJsonBody migration)', () => {  
     expect(res.headers.get('referrer-policy')).toBe('no-referrer')
   })
 
-  it('preserves the empty-body {} pipeline through the call site', async () => {
+  it('requires explicit JSON content type before a configuration write', async () => {
     const res = await fetch(url('/api/pet/set-config'), { method: 'POST' })
+    expect(res.status).toBe(415)
+    expect(await res.json()).toEqual({ ok: false, error: 'application-json-required' })
+  })
+
+  it('accepts an explicit empty JSON object as a no-op configuration write', async () => {
+    const res = await fetch(url('/api/pet/set-config'), {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    })
     expect(res.status).toBe(200)
     expect(await res.json()).toMatchObject({ ok: true })
   })

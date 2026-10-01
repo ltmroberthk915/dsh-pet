@@ -1,0 +1,9 @@
+const { contextBridge, ipcRenderer } = require('electron')
+if (process.isMainFrame && location.href === 'dsh-app://pet/index.html') {
+  contextBridge.exposeInMainWorld('dshPetOverlay', {
+    call: (action, body) => ipcRenderer.invoke('dsh-pet-v1:call', action, body),
+    drag: phase => ipcRenderer.send('dsh-pet-v1:drag', phase),
+    interactive: value => ipcRenderer.send('dsh-pet-v1:interactive', value),
+    openMain: id => ipcRenderer.invoke('dsh-pet-v1:open-main', id),
+  })
+}

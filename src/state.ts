@@ -27,6 +27,7 @@ export type PetAnimation =
 
 /** One input snapshot consumed by the machine. */
 export interface PetStateInput {
+  toolKind?: 'command'
   /** Current activity phase of the active session. */
   phase: ActivityPhase
   /** Human-readable status line (plain text). */
@@ -37,6 +38,7 @@ export interface PetStateInput {
 
 /** Animation decision plus the copy the pet should show. */
 export interface PetStateSnapshot {
+  toolKind?: 'command'
   /** Which animation track to play. */
   animation: PetAnimation
   /** Optional status bubble copy (line or phrase), shown while active. */
@@ -104,6 +106,7 @@ export class PetStateMachine {
   private phase: ActivityPhase = 'idle'
   private line: string | undefined
   private phrase: string | undefined
+  private toolKind: 'command' | undefined
   private sessionActive = false
   private doneAt: number | undefined
   private failedAt: number | undefined
@@ -121,6 +124,7 @@ export class PetStateMachine {
     this.phase = input.phase
     this.line = input.line
     this.phrase = input.phrase
+    this.toolKind = input.phase === 'tool' ? input.toolKind : undefined
     this.doneAt = input.phase === 'done' ? this.now() : undefined
     this.failedAt = input.phase === 'failed' ? this.now() : undefined
   }
@@ -136,6 +140,7 @@ export class PetStateMachine {
     this.phase = 'idle'
     this.line = undefined
     this.phrase = undefined
+    this.toolKind = undefined
     this.doneAt = undefined
     this.failedAt = undefined
   }
@@ -157,6 +162,7 @@ export class PetStateMachine {
     const bubble = settled ? undefined : this.phrase ?? this.line
     return {
       animation,
+      ...(this.toolKind === undefined ? {} : { toolKind: this.toolKind }),
       ...(bubble === undefined ? {} : { bubble }),
       animationStartedAt: nowMs,
       phase: this.phase,

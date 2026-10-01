@@ -57,7 +57,7 @@ describe('loadPetPersist', () => {
         skins: { otter: 'lanhainishang' },
         affinity: { ...emptyAffinity(), points: 42, pets: 3, feeds: 1, turns: 10 },
         treats: { ...emptyTreatLedger(), treats: 7, lastTreatGrantAt: 1234, turnsAtLastTreatGrant: 9 },
-        display: { visible: false, size: 200, right: 10, bottom: 40, bubbleScale: 1.25 },
+        display: { visible: false, size: 200, right: 10, bottom: 40, bubbleScale: 1.25, animationFps: 24, animationMode: 'tick' as const, animationTickSlope: 0.1, animationTickIntercept: 4, desktopEnabled: true },
         gameplay: {
           otter: { stats: { hunger: 55.5 }, currencies: { coins: 12 }, mode: 'work' as const, settledAt: 777 },
         },

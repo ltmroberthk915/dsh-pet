@@ -1,3 +1,4 @@
+import { PlaybackSettings } from "./PlaybackSettings.tsx"
 /**
  * The pet settings card: pet selection plus display layout, staged over the
  * 'pet' profile entry's own configuration (a plugin's settings ARE its Cordis
@@ -16,7 +17,8 @@ import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 // Type-only: pulls the settings-surface SlotMap merge (the 'settings.section' entry).
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { PluginSettingsCard, ValueField, BooleanField, ChoiceField } from './PluginSettingsCard.tsx'
-import { CardForm, booleanField, choiceField, numberField, type CardActions, type CardShell, type FieldState as CardFieldState } from './settings-form.ts'
+import { CardForm, booleanField, choiceField, type CardActions, type CardShell, type FieldState as CardFieldState } from './settings-form.ts'
+import { petNumberField } from './pet-setting-fields.ts'
 import sectionCss from './settings-section.module.css'
 
 /** The pet's settings fields this card edits (the namespace's full schema). */
@@ -129,10 +131,10 @@ export class PetSettingsCardController {
       booleanField('enabled'),
       booleanField('decorationEnabled'),
       booleanField('visible'),
-      numberField('size'),
-      numberField('right'),
-      numberField('bottom'),
-      numberField('bubbleScale'),
+      petNumberField('size'),
+      petNumberField('right'),
+      petNumberField('bottom'),
+      petNumberField('bubbleScale'),
       choiceField('petId', this.petChoices),
     ])
     this.store = this.form.bind(() => this.projection())
@@ -363,6 +365,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
       onDiscard={props.discard}
       alwaysOpen
     >
+      {state.invalid && <p role="status" style={{ color: '#c58b2a', lineHeight: 1.6 }}>{t('settings.invalidDraft')}</p>}
       {state.petSelectionFallback ? null : <BooleanField
         id="settings-pet-enabled"
         label={t('settings.enabled')}
@@ -395,6 +398,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
         {...fieldProps}
         {...state.petId}
         choices={state.petChoices}
+        disabled={disabled || state.petChoices.length === 1}
         onEdit={(text) => { props.edit('petId', text) }}
         onReset={() => { props.resetField('petId') }}
       />
@@ -417,6 +421,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
         numeric
         {...fieldProps}
         {...state.size}
+        invalidLabel={t('settings.invalidSize')}
         onEdit={(text) => { props.edit('size', text) }}
         onReset={() => { props.resetField('size') }}
       />}
@@ -427,6 +432,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
         numeric
         {...fieldProps}
         {...state.right}
+        invalidLabel={t('settings.invalidInset')}
         onEdit={(text) => { props.edit('right', text) }}
         onReset={() => { props.resetField('right') }}
       />}
@@ -437,6 +443,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
         numeric
         {...fieldProps}
         {...state.bottom}
+        invalidLabel={t('settings.invalidInset')}
         onEdit={(text) => { props.edit('bottom', text) }}
         onReset={() => { props.resetField('bottom') }}
       />}
@@ -447,6 +454,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
         numeric
         {...fieldProps}
         {...state.bubbleScale}
+        invalidLabel={t('settings.invalidBubbleScale')}
         onEdit={(text) => { props.edit('bubbleScale', text) }}
         onReset={() => { props.resetField('bubbleScale') }}
       />}
@@ -466,6 +474,7 @@ export function PetSettingsSection(props: PetSettingsSectionProps): ReactNode {
   return (
     <ul className={sectionCss.sectionList}>
       <PetSettingsCard t={t} usePetSettingsCard={usePetSettingsCard} save={save} discard={discard} edit={edit} resetField={resetField} />
+      <li style={{ listStyle: "none" }}><PlaybackSettings /></li>
     </ul>
   )
 }

@@ -15,6 +15,7 @@ export interface SequenceFrame {
  */
 export interface SequenceTimeline {
   frameAt(elapsedMs: number): SequenceFrame
+  nextFrameIn(elapsedMs: number): number
 }
 
 /** Build a {@link SequenceTimeline} over one manifest sequence. */
@@ -24,8 +25,7 @@ export function createSequenceTimeline(
 ): SequenceTimeline {
   const itemDurations = sequence.map(animation => tracks[animation].durations.reduce((sum, value) => sum + value, 0))
   const sequenceDuration = itemDurations.reduce((sum, value) => sum + value, 0)
-  return {
-    frameAt(elapsedMs: number): SequenceFrame {
+  function locate(elapsedMs: number): SequenceFrame & { remaining: number } {
       let offset = Math.max(0, elapsedMs) % sequenceDuration
       let itemIndex = 0
       while (itemIndex < sequence.length - 1 && offset >= itemDurations[itemIndex]!) {
@@ -39,8 +39,11 @@ export function createSequenceTimeline(
         offset -= track.durations[frameIndex]!
         frameIndex += 1
       }
-      return { animation, frameIndex }
-    },
+      return { animation, frameIndex, remaining: Math.max(1, track.durations[frameIndex]! - offset) }
+  }
+  return {
+    frameAt(elapsedMs) { const { animation, frameIndex } = locate(elapsedMs); return { animation, frameIndex } },
+    nextFrameIn(elapsedMs) { return locate(elapsedMs).remaining },
   }
 }
 

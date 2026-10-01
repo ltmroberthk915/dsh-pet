@@ -23,6 +23,7 @@
 import type { AssistantStreamFrame } from '@deepseek-ai/dsh-agent'
 import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import type { PetStateInput } from './state.ts'
+import { commandTool } from './animation-bindings.ts'
 import {
   StatusVoice,
   toolArgHint,
@@ -43,6 +44,7 @@ export interface ActivityStatusEventLike {
 /** Per-session facts needed to project the official event stream. */
 export interface ProjectionRuntime {
   activeTools: Set<string>
+  commandTools: Set<string>
   /** callIds whose tool looked like a test run, marked at tool/call (pet M6). */
   testCalls: Set<string>
   officialEventsSeen: boolean
@@ -70,6 +72,7 @@ export interface PetActivityTransition {
 export function emptyProjectionRuntime(pools?: VoicePoolsProvider): ProjectionRuntime {
   return {
     activeTools: new Set(),
+    commandTools: new Set(),
     testCalls: new Set(),
     officialEventsSeen: false,
     stepHadFailure: false,
@@ -102,11 +105,13 @@ export function projectOfficialEvent(
   switch (event.type) {
     case 'turn/start':
       runtime.activeTools.clear()
+      runtime.commandTools.clear()
       runtime.testCalls.clear()
       runtime.stepHadFailure = false
       return { input: { phase: 'waiting', line: runtime.voice.scene('prepare', nowMs) } }
     case 'step/start':
       runtime.activeTools.clear()
+      runtime.commandTools.clear()
       runtime.stepHadFailure = false
       return { input: { phase: 'waiting', line: runtime.voice.scene('waiting', nowMs) } }
     case 'assistant/message':
@@ -114,6 +119,7 @@ export function projectOfficialEvent(
     case 'tool/call': {
       const callId = String(event.data.callId)
       runtime.activeTools.add(callId)
+      if (commandTool(event.data.name)) runtime.commandTools.add(callId)
       // A test-looking call is remembered so its result (the only place the
       // outcome is known) can wake the test-green mood later.
       if (looksLikeTestTool(event.data.name, event.data.arguments)) runtime.testCalls.add(callId)
@@ -121,6 +127,7 @@ export function projectOfficialEvent(
       return {
         input: {
           phase: 'tool',
+          ...(runtime.commandTools.has(callId) ? { toolKind: 'command' as const } : {}),
           line: runtime.voice.tool(
             event.data.name,
             displayToolName(event.data.name),
@@ -139,6 +146,7 @@ export function projectOfficialEvent(
       const failed = event.data.error !== undefined || message.isError === true
       const wasTest = runtime.testCalls.delete(callId)
       runtime.activeTools.delete(callId)
+      runtime.commandTools.delete(callId)
       runtime.stepHadFailure ||= failed
       const whisper = failed
         ? runtime.whispers.result('fail', nowMs)
@@ -150,6 +158,7 @@ export function projectOfficialEvent(
         return {
           input: {
             phase: 'tool',
+            ...(runtime.commandTools.has([...runtime.activeTools].at(-1)!) ? { toolKind: 'command' as const } : {}),
             line: runtime.voice.toolRemaining(runtime.activeTools.size, nowMs),
           },
           ...whisperSpread,
@@ -161,6 +170,7 @@ export function projectOfficialEvent(
     }
     case 'turn/end': {
       runtime.activeTools.clear()
+      runtime.commandTools.clear()
       runtime.testCalls.clear()
       switch (event.data.reason.kind) {
         case 'completed': {

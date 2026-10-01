@@ -1,7 +1,7 @@
 /**
  * dsh-pet browser half — mounts the selected pet as a global floating
  * surface and drives it from the host's same-origin '/api/pet/*' JSON
- * endpoints: fetch the registry list once, poll the host snapshot (~2 s),
+ * endpoints: fetch the registry list once, poll the host snapshot (~1 s),
  * forward interactions, persist drag positions. The pet is host-global (no
  * session dimension), so it mounts directly onto 'document.body' via a
  * single React root — the [data-dsh-plugin="pet"] container — rather than a
@@ -37,14 +37,10 @@ import { createRoot } from 'react-dom/client'
 import { createPetStore, type PetStoreInstance } from './pet-store.ts'
 import { createWorkTickGate } from './work-tick-gate.ts'
 import { PetDockEntry, type PetInjected } from './PetDockEntry.tsx'
-import { defaultPetRendererRegistry } from './renderers/registry.ts'
-import { live2dRenderer } from './renderers/live2d.ts'
-import { frames2dRenderer } from './renderers/frames2d.ts'
 import { registerPetUiTeardown, takeoverPetUiTeardown } from './ui-teardown.ts'
 import { PetSettingsSection, PetSettingsCardController, type PetSettings } from './PetSettingsCard.tsx'
 import { NS, en, zh, t } from './locales.ts'
 import { mainViewSessionId } from './main-session.ts'
-import { reportDailyHeartbeat } from './telemetry.ts'
 
 /** The host pet API as the browser sees it (same-origin JSON endpoints). */
 interface PetHttpApi {
@@ -96,7 +92,7 @@ const petApi: PetHttpApi = {
 }
 
 /** Poll interval for the host snapshot. */
-const POLL_MS = 2000
+const POLL_MS = 1000
 
 /** Settings namespace of the pet's settings page. It is the profile entry id the Host serves a form for. */
 const PET_SETTINGS_NS = 'pet'
@@ -182,9 +178,7 @@ function activeWorkTickMs(store: PetStoreInstance): number | undefined {
 }
 
 export function apply(ctx: ClientContext): void {
-  // Anonymous install heartbeat (docs/telemetry.md): one beat per browser per
-  // UTC day, package name only, silent failure.
-  reportDailyHeartbeat([{ name: '@linxin666/dsh-pet' }])
+  // Local build: no unsolicited install telemetry.
 
   ctx.effect(() => {
     try {
@@ -196,8 +190,6 @@ export function apply(ctx: ClientContext): void {
 
   // Built-in renderers dispatch through the plugin-wide registry (pet-center
   // M3). Registration is idempotent (id wins), so re-applies stay clean.
-  defaultPetRendererRegistry.register(live2dRenderer)
-  defaultPetRendererRegistry.register(frames2dRenderer)
 
   const settingsForm = petSettingsForm(ctx)
   const enabled = (): boolean => {
@@ -246,6 +238,7 @@ export function apply(ctx: ClientContext): void {
   const killUi = (): void => {
     if (uiDead) return
     uiDead = true
+    void window.dshPetDesktop?.configure({ enabled: false }).catch(() => {})
     clearUiTeardown?.()
     clearUiTeardown = undefined
     disposeUi?.()
@@ -281,28 +274,55 @@ export function apply(ctx: ClientContext): void {
       // tick tries again. After it lands, one list feeds both the sprite and
       // the settings card's choices.
       let petsLoaded = false
+      let petsLoading = false
+      let polling = false
+      let pollAgain = false
+      let nativeOptionsKey: string | undefined
+      let uiGone = false
       // Latest-wins guard: the 2s tick, visibility recovery, and
       // interaction-triggered refreshes can overlap; only the newest
       // response may publish, so a slow older one can never roll the
       // snapshot back.
       let stateSeq = 0
       const pollNow = (): void => {
-        if (!petsLoaded) {
+        if (uiGone) return
+        if (polling) { pollAgain = true; return }
+        polling = true
+        if (!petsLoaded && !petsLoading) {
+          petsLoading = true
           petApi.pets().then((list) => {
             petsLoaded = true
             setPets(list)
           }, () => {
             // Retry on the next poll tick.
-          })
+          }).finally(() => { petsLoading = false })
         }
         const seq = stateSeq + 1
         stateSeq = seq
         petApi.state(currentSessionId()).then((snapshot) => {
-          if (seq !== stateSeq) return
+          if (uiGone || seq !== stateSeq) return
           setSnapshot(snapshot)
+          const publishNativeState = (active: boolean): void => {
+            if (uiGone || seq !== stateSeq) return
+            window.dispatchEvent(new CustomEvent('dsh-pet-native-active', { detail: active }))
+            container.style.display = active ? 'none' : ''
+          }
+          const nativeOptions = {
+            enabled: snapshot.display.desktopEnabled !== false && snapshot.display.visible,
+            currentSessionId: currentSessionId(),
+          }
+          const key = JSON.stringify(nativeOptions)
+          if (key !== nativeOptionsKey && window.dshPetDesktop) {
+            nativeOptionsKey = key
+            void window.dshPetDesktop.configure(nativeOptions).then(result => publishNativeState(result.active))
+              .catch(() => { nativeOptionsKey = undefined; publishNativeState(false) })
+          }
         }, () => {
           if (seq !== stateSeq) return
           setState('error', 'pet.state transport error')
+        }).finally(() => {
+          polling = false
+          if (pollAgain && !uiGone) { pollAgain = false; pollNow() }
         })
       }
 
@@ -344,7 +364,11 @@ export function apply(ctx: ClientContext): void {
       // not on the next 2s tick. Poll only while the tab is visible, as the
       // poll loop itself does.
       const disposeSessionWatch = ctx.effect(() => {
+        let observedSessionId = currentSessionId()
         const unsubscribe = sessions.list.subscribe(() => {
+          const nextId = currentSessionId()
+          if (nextId === observedSessionId) return
+          observedSessionId = nextId
           if (document.visibilityState === 'visible') pollNow()
         })
         return unsubscribe
@@ -357,6 +381,15 @@ export function apply(ctx: ClientContext): void {
         // Session model; the Session Controller no longer opens one.
         ctx.uiWorkspace.openSession(sessionId as never)
       }
+
+      const nativeOpenSession = (event: Event): void => {
+        const id = (event as CustomEvent).detail
+        if (typeof id === 'string') openSession(id)
+      }
+      ctx.effect(() => {
+        window.addEventListener('dsh-pet-open-session', nativeOpenSession)
+        return () => window.removeEventListener('dsh-pet-open-session', nativeOpenSession)
+      }, 'pet: native session navigation')
 
       const injected = (): PetInjected => ({
         store: petStore,
@@ -468,10 +501,10 @@ export function apply(ctx: ClientContext): void {
       // hides the sprite instead of missing the portaled float.
       petRoot.render(createElement(PetDockEntry, { ...injected(), t, portalTarget: container }))
 
-      let uiGone = false
       disposeUi = () => {
         if (uiGone) return
         uiGone = true
+        stateSeq += 1
         clearUiTeardown?.()
         clearUiTeardown = undefined
         petRoot.unmount()
@@ -488,6 +521,7 @@ export function apply(ctx: ClientContext): void {
         disposeUi?.()
       })
     } else if (!uiDead && !enabled() && disposeUi !== undefined) {
+      void window.dshPetDesktop?.configure({ enabled: false }).catch(() => {})
       disposeUi()
       disposeUi = undefined
     }

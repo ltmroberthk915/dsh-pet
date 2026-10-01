@@ -346,6 +346,8 @@ export interface PetRegistryDiagnostic {
 
 /** Registry sources. */
 export interface PetRegistryOptions {
+  /** Ship only the refined whale; keep user voice and decoration features. */
+  singlePet?: boolean
   /** Absolute package root whose 'assets/*' hold built-in pets. */
   packageRoot: string
   /** Asset route prefix the browser URLs are built under. */
@@ -838,11 +840,11 @@ function resolveFrames2dEntry(
 }
 
 /** Scan one directory of pet folders; entries come back in name order. */
-function scanPetDir(dir: string, options: { assetPrefix?: string; warnings?: string[]; diagnostics?: PetRegistryDiagnostic[] }): PetEntry[] {
+function scanPetDir(dir: string, options: { assetPrefix?: string; warnings?: string[]; diagnostics?: PetRegistryDiagnostic[]; names?: readonly string[] }): PetEntry[] {
   if (!existsSync(dir)) return []
   let names: string[] = []
   try {
-    names = readdirSync(dir).filter(name => !name.startsWith('.'))
+    names = [...(options.names ?? readdirSync(dir))].filter(name => !name.startsWith('.'))
   } catch {
     return []
   }
@@ -1097,7 +1099,7 @@ export function loadPetRegistry(options: PetRegistryOptions): PetRegistry {
   const byId = new Map<string, PetEntry>()
   const builtinIds = new Set<string>()
 
-  for (const entry of scanPetDir(join(packageRoot, 'assets'), { assetPrefix, warnings, diagnostics })) {
+  for (const entry of scanPetDir(join(packageRoot, 'assets'), { assetPrefix, warnings, diagnostics, ...(options.singlePet ? { names: ['whale-refined'] } : {}) })) {
     if (byId.has(entry.id)) {
       warnings.push('duplicate built-in pet id ' + entry.id + '; the first one wins')
       continue
@@ -1106,7 +1108,7 @@ export function loadPetRegistry(options: PetRegistryOptions): PetRegistry {
     builtinIds.add(entry.id)
   }
 
-  const petsDir = options.petsDir ?? codexPetsDir()
+  const petsDir = options.singlePet ? '' : options.petsDir ?? codexPetsDir()
   if (petsDir !== '') {
     for (const entry of scanPetDir(petsDir, { assetPrefix, warnings, diagnostics })) {
       if (byId.has(entry.id)) warnings.push('custom pet ' + entry.id + ' overrides the built-in one')
@@ -1118,7 +1120,7 @@ export function loadPetRegistry(options: PetRegistryOptions): PetRegistry {
   const dshPetsDir = options.dshPetsDir ?? join(dshHome(), 'pets')
   let globalVoice: VoicePack | undefined
   if (dshPetsDir !== '') {
-    for (const entry of scanPetDir(dshPetsDir, { assetPrefix, warnings, diagnostics })) {
+    for (const entry of options.singlePet ? [] : scanPetDir(dshPetsDir, { assetPrefix, warnings, diagnostics })) {
       if (byId.has(entry.id)) warnings.push('user pet ' + entry.id + ' overrides an earlier registration')
       byId.set(entry.id, entry)
     }
@@ -1126,7 +1128,7 @@ export function loadPetRegistry(options: PetRegistryOptions): PetRegistry {
     globalVoice = loadVoicePackFile(join(dshPetsDir, '.voice.json'), { warnings, diagnostics })
   }
 
-  for (const manifest of options.extra ?? []) {
+  for (const manifest of options.singlePet ? [] : options.extra ?? []) {
     const raw = manifest.spritesheetPath
     const dir = raw === undefined || isAbsolute(raw)
       ? join(packageRoot, 'assets', 'extra')

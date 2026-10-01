@@ -6,11 +6,13 @@
  * when the Host form is absent.
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useSyncExternalStore } from 'react'
 import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
 import { PetSettingsCard, PetSettingsCardController, type PetSettings } from './PetSettingsCard.tsx'
 import { t } from './locales.ts'
+import { Config } from '../index.ts'
+import { petNumberField } from './pet-setting-fields.ts'
 
 vi.mock('@deepseek-ai/dsh-client-store', () => ({ // test-standards-allow: the SDK client bundle is a browser module factory and cannot be imported by Vitest
   createSnapshotStore: (initial: unknown) => {
@@ -49,6 +51,52 @@ afterEach(() => {
   cleanup()
   vi.useRealTimers()
   vi.unstubAllGlobals()
+})
+
+describe('pet settings input validation', () => {
+  it('accepts the same numeric bounds and steps as the real Host schema', () => {
+    const cases = {
+      size: [-1, 0, 31, 32, 160, 160.5, 1024, 1025, Infinity, NaN],
+      right: [-1, 0, 0.5, 20, 10000, 10001, Infinity],
+      bottom: [-1, 0, 0.5, 20, 10000, 10001, Infinity],
+      bubbleScale: [0.3, 0.5, 0.55, 0.73, 0.75, 1, 1.001, 2, 2.05, NaN],
+    }
+    for (const [field, values] of Object.entries(cases)) {
+      for (const value of values) {
+        let accepted = true
+        try { Config({ [field]: value }) } catch { accepted = false }
+        expect(petNumberField(field as keyof typeof cases).parse(String(value)) !== undefined, `${field}=${value}`).toBe(accepted)
+      }
+      expect(petNumberField(field as keyof typeof cases).parse('')).toEqual({ kind: 'clear' })
+    }
+  })
+
+  it('shows input correction without sending a save, and distinguishes an actual write failure', async () => {
+    const values = { enabled: true, visible: true, size: 160, right: 24, bottom: 20, bubbleScale: 1 }
+    const mutate = vi.fn(async () => false)
+    const scope = { getSnapshot: () => ({ status: 'ready', writable: true, value: values, base: values, user: values }),
+      subscribe: () => () => {}, mutate } as unknown as ConfigForm<PetSettings>
+    vi.stubGlobal('fetch', vi.fn(async () => response([])))
+    const controller = new PetSettingsCardController(scope)
+    const face = controller.inject()
+    const store = face.hooks.petSettingsCard
+    render(<PetSettingsCard t={t} usePetSettingsCard={select => useSyncExternalStore(store.subscribe, () => select(store.getSnapshot()))}
+      save={face.save} discard={face.discard} edit={face.edit} resetField={face.resetField} />)
+    fireEvent.change(screen.getByLabelText(t('settings.bubbleScale')), { target: { value: '0.3' } })
+    expect(screen.getByText(t('settings.invalidBubbleScale'))).toBeTruthy()
+    expect(screen.getByText(t('settings.invalidDraft'))).toBeTruthy()
+    expect((screen.getByText(t('settings.save')) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(screen.getByText(t('settings.save')))
+    expect(mutate).not.toHaveBeenCalled()
+    expect(screen.queryByText(t('settings.saveFailed'))).toBeNull()
+    fireEvent.change(screen.getByLabelText(t('settings.bubbleScale')), { target: { value: '0.75' } })
+    expect(screen.queryByText(t('settings.invalidDraft'))).toBeNull()
+    fireEvent.click(screen.getByText(t('settings.save')))
+    await screen.findByText(t('settings.saveFailed'))
+    expect(mutate).toHaveBeenCalledOnce()
+    expect((screen.getByLabelText(t('settings.bubbleScale')) as HTMLInputElement).value).toBe('0.75')
+    controller.dispose()
+  })
 })
 
 describe('pet selection without a Host settings form', () => {

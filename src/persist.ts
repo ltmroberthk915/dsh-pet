@@ -1,3 +1,4 @@
+import { animationFps, animationMode, tickSlope, tickIntercept, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, type AnimationMode } from './animation.ts'
 /**
  * Pet persistence — tiny JSON store for affinity + display config, written
  * under $DSH_HOME (defaults to ~/.dsh) as `pet.json`. Deliberately minimal:
@@ -32,6 +33,12 @@ export interface PetDisplayConfig {
    * 12px baseline the stylesheet was drawn for at the default 160px pet.
    */
   bubbleScale: number
+  animationFps?: number
+  animationMode?: AnimationMode
+  /** FPS = k × footer tok/s + b, clamped to 1–60 FPS. */
+  animationTickSlope?: number
+  animationTickIntercept?: number
+  desktopEnabled?: boolean
 }
 
 export const defaultDisplayConfig: PetDisplayConfig = {
@@ -40,6 +47,11 @@ export const defaultDisplayConfig: PetDisplayConfig = {
   right: 24,
   bottom: 120,
   bubbleScale: 1,
+  animationFps: 12,
+  animationMode: 'fixed',
+  animationTickSlope: DEFAULT_TICK_SLOPE,
+  animationTickIntercept: DEFAULT_TICK_INTERCEPT,
+  desktopEnabled: true,
 }
 
 /** Display value bounds (shared by load-time validation and setConfig). */
@@ -50,6 +62,7 @@ export const DISPLAY_INSET_MAX = 10_000
 /** Bubble typography bounds (issue #1549). */
 export const BUBBLE_SCALE_MIN = 0.5
 export const BUBBLE_SCALE_MAX = 2
+export const BUBBLE_SCALE_STEP = 0.05
 /** Pixel size the bubble stylesheet was drawn for, at the default pet size. */
 export const BUBBLE_BASE_FONT_PX = 12
 /** Pet size that baseline matches; other sizes scale the bubble with them. */
@@ -85,6 +98,8 @@ export function bubbleScaleFor(display: Pick<PetDisplayConfig, 'size'> & { bubbl
 
 /** Everything persisted for the pet. */
 export interface PetPersist {
+  /** Playback preferences belong to a character, not to the whole application. */
+  playback?: Record<string, Pick<PetDisplayConfig, 'animationFps' | 'animationMode' | 'animationTickSlope' | 'animationTickIntercept'>>
   /** Selected pet id (a registry entry; clamped at service startup). */
   petId: string
   /**
@@ -245,11 +260,25 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       right: Math.round(clamp(finiteNum(rawDisplay.right, base.display.right), DISPLAY_INSET_MAX)),
       bottom: Math.round(clamp(finiteNum(rawDisplay.bottom, base.display.bottom), DISPLAY_INSET_MAX)),
       // Fractional on purpose: the multiplier is a ratio, not a pixel count.
+      animationFps: animationFps(rawDisplay.animationFps),
+      animationMode: animationMode(rawDisplay.animationMode),
+      animationTickSlope: tickSlope(rawDisplay.animationTickSlope),
+      animationTickIntercept: tickIntercept(rawDisplay.animationTickIntercept),
+      desktopEnabled: rawDisplay.desktopEnabled !== false,
       bubbleScale: Math.min(BUBBLE_SCALE_MAX, Math.max(BUBBLE_SCALE_MIN, finiteNum(rawDisplay.bubbleScale, base.display.bubbleScale))),
     }
     const petId = typeof parsed.petId === 'string' && parsed.petId.trim() !== ''
       ? parsed.petId.trim()
       : base.petId
+    let playback: PetPersist['playback']
+    if (typeof parsed.playback === 'object' && parsed.playback !== null && !Array.isArray(parsed.playback)) {
+      playback = Object.fromEntries(Object.entries(parsed.playback).filter(([id, value]) => id.length > 0 && id.length <= 200
+        && typeof value === 'object' && value !== null && !Array.isArray(value)).map(([id, value]) => [id, {
+        animationFps: animationFps(value.animationFps), animationMode: animationMode(value.animationMode),
+        animationTickSlope: tickSlope(value.animationTickSlope), animationTickIntercept: tickIntercept(value.animationTickIntercept),
+      }]))
+      if (Object.hasOwn(playback, petId)) Object.assign(display, playback[petId])
+    }
     const names = loadPetNames(parsed)
     // Legacy migration: pre-registry installs persisted one flat `name`
     // field. Move it onto the selected pet (the legacy whale-girl unless the
@@ -265,6 +294,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       treats,
       display,
       gameplay: loadGameplay(parsed),
+      ...(playback === undefined ? {} : { playback }),
     }
   } catch {
     return emptyPersist()

@@ -19,8 +19,9 @@ import z from '@deepseek-ai/schemastery'
 import { PET_SETTINGS_NAMESPACE, PetService, type PetConfig, type PetSettingsSection } from './service.ts'
 import { makePetRoutes } from './routes.ts'
 import { loadPetRegistry, petPackageRoot } from './registry.ts'
-import { BUBBLE_SCALE_MAX, BUBBLE_SCALE_MIN, DEFAULT_PET_ID, DISPLAY_INSET_MAX, DISPLAY_SIZE_MAX, DISPLAY_SIZE_MIN, type PetDisplayConfig } from './persist.ts'
+import { BUBBLE_SCALE_MAX, BUBBLE_SCALE_MIN, BUBBLE_SCALE_STEP, DEFAULT_PET_ID, DISPLAY_INSET_MAX, DISPLAY_SIZE_MAX, DISPLAY_SIZE_MIN, type PetDisplayConfig } from './persist.ts'
 import { mountOnce } from './mount-once.ts'
+import { DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT } from './animation.ts'
 
 export { PetService, MAX_SESSION_BUBBLES } from './service.ts'
 export type {
@@ -130,6 +131,11 @@ export const PET_FORM_DEFAULTS = {
   right: 24,
   bottom: 20,
   bubbleScale: 1,
+  animationFps: 12,
+  animationMode: 'fixed',
+  animationTickSlope: DEFAULT_TICK_SLOPE,
+  animationTickIntercept: DEFAULT_TICK_INTERCEPT,
+  desktopEnabled: true,
   petId: DEFAULT_PET_ID,
   enabled: true,
   decorationEnabled: true,
@@ -159,6 +165,11 @@ export interface PetFormConfig {
   bottom?: LiveField<number>
   /** Bubble typography multiplier on the automatic size following (#1549). */
   bubbleScale?: LiveField<number>
+  animationFps?: LiveField<number>
+  animationMode?: LiveField<'fixed' | 'native' | 'tick'>
+  animationTickSlope?: LiveField<number>
+  animationTickIntercept?: LiveField<number>
+  desktopEnabled?: LiveField<boolean>
   /** Selected pet id (a registry entry; the service clamps stale values). */
   petId?: LiveField<string | undefined>
 }
@@ -183,7 +194,12 @@ export const Config = z.object({
   size: z.number().step(1).min(DISPLAY_SIZE_MIN).max(DISPLAY_SIZE_MAX).default(PET_FORM_DEFAULTS.size).volatile(),
   right: z.number().step(1).min(0).max(DISPLAY_INSET_MAX).default(PET_FORM_DEFAULTS.right).volatile(),
   bottom: z.number().step(1).min(0).max(DISPLAY_INSET_MAX).default(PET_FORM_DEFAULTS.bottom).volatile(),
-  bubbleScale: z.number().step(0.05).min(BUBBLE_SCALE_MIN).max(BUBBLE_SCALE_MAX).default(PET_FORM_DEFAULTS.bubbleScale).volatile(),
+  bubbleScale: z.number().step(BUBBLE_SCALE_STEP).min(BUBBLE_SCALE_MIN).max(BUBBLE_SCALE_MAX).default(PET_FORM_DEFAULTS.bubbleScale).volatile(),
+  animationFps: z.number().min(1).max(60).default(12).volatile(),
+  animationMode: z.union(['fixed', 'native', 'tick']).default('fixed').volatile(),
+  animationTickSlope: z.number().min(MIN_TICK_SLOPE).max(MAX_TICK_SLOPE).default(DEFAULT_TICK_SLOPE).volatile(),
+  animationTickIntercept: z.number().min(MIN_TICK_INTERCEPT).max(MAX_TICK_INTERCEPT).default(DEFAULT_TICK_INTERCEPT).volatile(),
+  desktopEnabled: z.boolean().default(true).volatile(),
   // An absent profile choice must leave the selection persisted in pet.json
   // intact across restarts (aggregate rows have no served Host pet form).
   petId: z.string().volatile(),
@@ -264,6 +280,11 @@ export function petSettingsSection(
     right: displayField('right', config.right, persisted, committed),
     bottom: displayField('bottom', config.bottom, persisted, committed),
     bubbleScale: displayField('bubbleScale', config.bubbleScale, persisted, committed),
+    animationFps: displayField('animationFps', config.animationFps, persisted, committed),
+    animationMode: displayField('animationMode', config.animationMode, persisted, committed),
+    animationTickSlope: displayField('animationTickSlope', config.animationTickSlope, persisted, committed),
+    animationTickIntercept: displayField('animationTickIntercept', config.animationTickIntercept, persisted, committed),
+    desktopEnabled: displayField('desktopEnabled', config.desktopEnabled, persisted, committed),
     petId: readLive(config.petId, fallbackPetId),
     enabled: readLive(config.enabled, PET_FORM_DEFAULTS.enabled),
     decorationEnabled: readLive(config.decorationEnabled, PET_FORM_DEFAULTS.decorationEnabled),
@@ -321,6 +342,7 @@ export type PetPluginConfig = Omit<PetConfig, 'enabled' | 'decorationEnabled'> &
 function applyImpl(ctx: Context, config: PetPluginConfig = {}): void {
   const registry = config.registry
     ?? loadPetRegistry({
+      singlePet: true,
       packageRoot: petPackageRoot(import.meta.url),
       ...(config.pets === undefined ? {} : { extra: config.pets }),
     })

@@ -307,7 +307,8 @@ describe('loadPetRegistry frames2d', () => {
 })
 
 describe('loadPetRegistry', () => {
-  it('ships every built-in pet while keeping the original whale as default', () => {
+  // This upstream checkout-only fixture requires Workshop assets omitted from npm.
+  it.skipIf(!existsSync(join(petPackageRoot(import.meta.url), 'assets', 'jyn')))('ships every built-in pet while keeping the original whale as default', () => {
     const registry = loadPetRegistry({
       packageRoot: petPackageRoot(import.meta.url),
       petsDir: '',

@@ -7,7 +7,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { useSyncExternalStore, type ComponentProps } from 'react'
 import type { ConfigForm, ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 // The npm SDK's client half is a closure-factory bundle for the GUI's
@@ -29,7 +29,10 @@ import { PetSettingsSection, PetSettingsCardController, type PetSettingsSectionP
 import { en } from '../src/client/locales.ts'
 
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify([
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => new Response(JSON.stringify(url === '/api/pet/state' ? {
+    pet: { id: 'whale-girl-refined', displayName: '鲸鱼娘（精致版）' },
+    display: { animationMode: 'fixed', animationFps: 12, desktopEnabled: true },
+  } : [
     { id: 'whale-girl', displayName: '鲸鱼娘（原版）' },
     { id: 'whale-girl-refined', displayName: '鲸鱼娘（精致版）' },
   ]), {
@@ -128,7 +131,7 @@ describe('PetSettingsSection', () => {
     const enabled = screen.getByLabelText(/enable the pet/i)
     expect(enabled.id).toBe('settings-pet-enabled')
     fireEvent.click(enabled)
-    const options = screen.getAllByRole('option').map(option => option.textContent)
+    const options = within(screen.getByRole('listbox')).getAllByRole('option').map(option => option.textContent)
     expect(options).toEqual(['Inherit', 'On', 'Off'])
   })
 
@@ -139,7 +142,7 @@ describe('PetSettingsSection', () => {
       expect(screen.getByLabelText('Pet').textContent).toContain('鲸鱼娘（原版）')
     })
     fireEvent.click(screen.getByLabelText('Pet'))
-    expect(screen.getAllByRole('option').map(option => option.textContent)).toEqual([
+    expect(within(screen.getByRole('listbox')).getAllByRole('option').map(option => option.textContent)).toEqual([
       'Inherit',
       '鲸鱼娘（原版）',
       '鲸鱼娘（精致版）',
