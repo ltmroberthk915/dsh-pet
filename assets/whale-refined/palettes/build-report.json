@@ -1,39 +1,39 @@
 {
-  "sourceSha256": "db33b20086a14867d4d4595d4f9bfd76b2479abbb5d712bbb51a2540483c1130",
+  "sourceSha256": "30c9f5fbec7cfc106148e0491e6ad1beac0e40d5ed496a5b5134d60291539d28",
   "size": [
-    1536,
+    3072,
     1872
   ],
-  "removedSpillPixels": 92464,
-  "changedColorPixels": 578133,
+  "removedSpillPixels": 33028,
+  "changedColorPixels": 1510897,
   "palettes": {
     "ds": {
-      "sha256": "1f027b04c178dda6adffd8674a05c5b6208ada2d002eed4f9ad9a6f1509f36d4",
-      "bytes": 2442999,
+      "sha256": "ddc2c07222eed0f55b70f6ab30d14f48309f210ef84afb4baa80d6ccbf0c55d0",
+      "bytes": 5527819,
       "unalteredNonBluePixels": true,
       "identicalAlphaAndFrameCoordinates": true
     },
     "gpt": {
-      "sha256": "50038ad9835fe92e3297765272a048f8c6507df151bd4cde89d6593ece559ddb",
-      "bytes": 2327940,
+      "sha256": "1274cfa6384ebd82de17dc7d0aecf4be72bcf0bf72c09aef4c1af6374cf291f8",
+      "bytes": 5277342,
       "unalteredNonBluePixels": true,
       "identicalAlphaAndFrameCoordinates": true
     },
     "claude": {
-      "sha256": "abb184259461f81f73b3e8b9983a9ce52981e57c2b014d5489bbd20914d896a8",
-      "bytes": 2440119,
+      "sha256": "57ba282bf85d10553f52f5ee718d103393acf4902199012f38a6ec4ed947179c",
+      "bytes": 5517291,
       "unalteredNonBluePixels": true,
       "identicalAlphaAndFrameCoordinates": true
     },
     "kimi": {
-      "sha256": "fe14cd85d308eeac109844c53c064f56a206825ee0c0d12c5b8b28b6423b6901",
-      "bytes": 2173773,
+      "sha256": "54cde0f816fdc00d77747773eac52082ebcdecc76646e0d2de2a0f1bb1fad992",
+      "bytes": 4960964,
       "unalteredNonBluePixels": true,
       "identicalAlphaAndFrameCoordinates": true
     },
     "glm": {
-      "sha256": "43ed1ab709fc46af1da1f95935b8f3431338233d16ea826c2df171c6be0e4c0c",
-      "bytes": 2313859,
+      "sha256": "290c6026e9cb4a4fd187d0a57a2b36166e2abdd03a1c1a7b72661d91b1647723",
+      "bytes": 5238317,
       "unalteredNonBluePixels": true,
       "identicalAlphaAndFrameCoordinates": true
     }

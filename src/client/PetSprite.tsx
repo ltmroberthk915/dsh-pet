@@ -319,7 +319,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const usesRightRun = animation === 'running-right' || selectedSequence?.includes('running-right') === true
   const runningTrack = animation === 'running-left' ? 'running-left' : 'running-right'
   const canRetime = definition.id === 'whale-girl-refined'
-    ? snapshot?.generation !== undefined && (animation === 'running-right' || animation === 'running-left')
+    ? animation === 'running-right' || animation === 'running-left'
     : usesRightRun
   const fps = canRetime ? effectiveFps(display, snapshot?.performance?.tokensPerSecond) : undefined
   const tracks = useMemo(() => retimeTracks(definition.tracks, fps, runningTrack) as typeof definition.tracks, [definition.tracks, fps, runningTrack])
@@ -401,7 +401,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const spriteScale = display.size / cell.height
   const scaleRef = useRef(spriteScale)
   scaleRef.current = spriteScale
-  const blinkFrame = useMemo(() => createBlinkFilter(definition.id), [definition.id])
+  const blinkFrame = useMemo(() => createBlinkFilter(definition.id, columns), [definition.id, columns])
   useEffect(() => {
     if (props.visual !== undefined) return
     const reduceMotion = typeof window !== 'undefined'

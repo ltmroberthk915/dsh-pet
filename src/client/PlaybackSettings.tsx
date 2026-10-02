@@ -77,7 +77,7 @@ export function PlaybackSettings() {
     </select></label>
     <label>{mode === 'tick' ? '无统计数据时的 FPS' : '动画 FPS'} <input aria-label="动画 FPS" type="number" min="1" max="60" step="1" value={fps} disabled={mode === 'native'} onChange={e => setFps(e.target.value)} style={{ width: 64 }} /></label>
     {!validFps && <div role="alert">帧率需为 1–60 之间的数字；当前输入尚未提交保存。</div>}
-    <div style={{ opacity: .8, lineHeight: 1.6 }}>思考、回答及其他工具参数生成向右跑；写文件、编辑和补丁内容生成向左跑。两种生成动作共用此帧率设置，实际工具执行与其他动作保留素材原速。固定帧率默认 12 FPS，支持 1–60。</div>
+    <div style={{ opacity: .8, lineHeight: 1.6 }}>思考、回答及其他工具参数生成向右跑；写文件、编辑和补丁内容生成向左跑。所有左右跑步（含工具执行）共用此帧率设置，其他动作按各自节奏播放。固定帧率默认 12 FPS，支持 1–60。</div>
     {mode === 'tick' && <>
       <div>FPS = k × 底部 tok/s + b，结果限制在 1–60 FPS。</div>
       <label>斜率 k <input aria-label="斜率 k" type="number" min={MIN_TICK_SLOPE} max={MAX_TICK_SLOPE} step="any" value={slope} onChange={e => setSlope(e.target.value)} style={{ width: 180 }} /></label>

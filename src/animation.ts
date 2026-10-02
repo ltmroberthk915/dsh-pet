@@ -51,7 +51,7 @@ export function effectiveFps(display: { animationMode?: AnimationMode; animation
   return animationFps(display.animationFps)
 }
 
-/** Retime only the selected generation track; tool execution keeps native timing. */
+/** Both running directions share the selected FPS policy, including tool execution. */
 export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number, runningTrack: 'running-right' | 'running-left' = 'running-right'): Record<string, T> {
   if (fps === undefined) return tracks
   const ms = 1000 / animationFps(fps)

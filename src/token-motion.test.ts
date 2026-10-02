@@ -91,7 +91,7 @@ describe('model generation motion and stream boundaries', () => {
     expect(f.chunk({ type: 'text-delta', index: 1, text: 'second' }).generation).toBe('text')
   })
 
-  it('retimes either generation direction while retaining all other track durations', () => {
+  it('retimes either running direction while retaining all other track durations', () => {
     const tracks = { 'running-right': { durations: [300, 400] }, 'running-left': { durations: [300, 400] }, running: { durations: [250, 350] } }
     const fps = effectiveFps({ animationMode: 'tick', animationTickSlope: .1, animationTickIntercept: 5 }, 150)
     expect(fps).toBe(20)

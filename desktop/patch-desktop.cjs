@@ -6,6 +6,8 @@ if (!source || !output) throw new Error('source and output archive required');
 const original = fs.readFileSync(source);
 if (path.resolve(source).toLowerCase() === path.resolve(output).toLowerCase()) throw new Error('Use a separate output archive');
 const acceptedArchives = ['addb3d95122f91c2c311d94cf92ff17d76f86fbd369946e3a74de3fb321d7323', 'c5d83065cf924848b635f3489bdb23c66daa97919d02091da80ac5b9bc6c5bfd', '983ca71114e6dfd353fc79af5a1f9481a250ee64c2a3c757673029b811b23bc2', 'c2ab0a463d6575d6c7b0e367258eeee285440e8902c9daa6502564281651a647', 'd35821882c7d804b2fbdd340960df6c92ae1fa7c777bb0c605ede09f21b10c6f', '8648ad8545dd9e7360d7f7200638cbbe92e055724ee897cc797deff0cb996f0d', '717e7f72cf40e65dd29d66412d9e06854074b48e576578579944f58002f22523', '19e4b007274c8297792484c5e84b95222856837aceea7308a11bfff881ae1825'];
+// Previously verified v1.0.3 desktop build; v1.0.4 updates only its pet renderer.
+acceptedArchives.push('ddddf21819f9e89a3529e59ad5b58caf2dfbb879567de862618f9969f6a0c571');
 if (!acceptedArchives.includes(crypto.createHash('sha256').update(original).digest('hex'))) throw new Error('Unsupported or modified desktop archive');
 const header = JSON.parse(original.subarray(16, 16+original.readUInt32LE(12)).toString());
 const originalOffset = 8 + original.readUInt32LE(4);

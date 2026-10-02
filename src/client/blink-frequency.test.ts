@@ -19,4 +19,20 @@ describe('refined whale blink frequency', () => {
     const frame = createBlinkFilter('whale-girl')
     for (let cycle=0; cycle<4; cycle++) for (let column=0; column<6; column++) expect(frame('idle',column)).toBe(column)
   })
+  it.each([['idle', 6, 9], ['running', 4, 9]] as const)('keeps or skips the entire smooth %s blink, including intermediate eyelids', (animation, first, last) => {
+    const frame = createBlinkFilter('whale-girl-refined', 16)
+    for (let cycle = 0; cycle < 6; cycle++) {
+      for (let column = 0; column < 16; column++) {
+        const actual = frame(animation, column)
+        expect(frame(animation, column)).toBe(actual)
+        if (column >= first && column <= last && cycle % 2 === 1) {
+          expect(actual).not.toBe(column)
+          expect(actual < first || actual > last).toBe(true)
+        } else expect(actual).toBe(column)
+      }
+    }
+    for (const track of ['running-right', 'running-left', 'review'] as const) {
+      for (let column = 0; column < 16; column++) expect(frame(track, column)).toBe(column)
+    }
+  })
 })

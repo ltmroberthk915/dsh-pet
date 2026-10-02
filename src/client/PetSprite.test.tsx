@@ -113,7 +113,7 @@ function petProps(overrides: Partial<PetSpriteProps> = {}): PetSpriteProps {
 }
 
 describe('refined whale token playback', () => {
-  it.each(['running-right', 'running-left'] as const)('retimes %s only during generation and preserves frame position when tok/s changes', animation => {
+  it.each(['running-right', 'running-left'] as const)('retimes %s through generation and tool execution, preserving the frame when tok/s changes', animation => {
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
     let now = 0
     vi.spyOn(performance, 'now').mockImplementation(() => now)
@@ -134,8 +134,9 @@ describe('refined whale token playback', () => {
     view.rerender(<PetSprite {...props} snapshot={{ ...state, performance: { ...state.performance!, tokensPerSecond: 250 } }} />)
     expect(sprite.style.backgroundPosition).toBe(advanced)
     view.rerender(<PetSprite {...props} snapshot={{ ...state, generation: undefined }} />)
-    now = 110; act(() => tick?.(now))
     expect(sprite.style.backgroundPosition).toBe(advanced)
+    now = 110; act(() => tick?.(now))
+    expect(parseFloat(sprite.style.backgroundPosition)).toBeLessThan(parseFloat(advanced))
   })
 
   it('waves once for a request, then waits, and never masks token generation or retries the same greeting', () => {
