@@ -10,9 +10,6 @@ importers:
 
   .:
     dependencies:
-      '@deepseek-ai/schemastery':
-        specifier: ^3.18.4
-        version: 3.18.4
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -83,6 +80,9 @@ importers:
       '@deepseek-ai/dsh-util-values':
         specifier: ^0.1.7-rc.1
         version: 0.1.7-rc.1(@deepseek-ai/cordis@4.0.4)
+      '@deepseek-ai/schemastery':
+        specifier: ^3.18.4
+        version: 3.18.4
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.2

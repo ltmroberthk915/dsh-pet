@@ -9,7 +9,7 @@ import { live2dVendorBundle } from './tsdown.live2d-vendor.ts'
  * emitted too: the modules node half serves lib/client.js to browsers, so a
  * git-installed package must ship it.
  */
-export default clientBundle('@linxin666/dsh-pet', [
+export default clientBundle('@ltmroberthk915/dsh-pet', [
   'src/index.ts',
   'src/invariant.ts',
 ], {

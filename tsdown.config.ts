@@ -1,7 +1,7 @@
 import { clientBundle } from './shared/tsdown.client.ts'
 import { live2dVendorBundle } from './tsdown.live2d-vendor.ts'
 
-export default clientBundle('@linxin666/dsh-pet', [
+export default clientBundle('@ltmroberthk915/dsh-pet', [
   'src/index.ts',
   'src/invariant.ts',
 ], {

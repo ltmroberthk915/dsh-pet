@@ -24,7 +24,7 @@
  * that only carry 'frames' keep working: geometry, per-row frame counts and
  * per-track rhythm all fall back to the hatch-pet contract defaults, and the
  * whale-girl manifest overrides its own durations.
- * @module @linxin666/dsh-pet/registry
+ * @module @ltmroberthk915/dsh-pet/registry
  */
 
 import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, statSync } from 'node:fs'

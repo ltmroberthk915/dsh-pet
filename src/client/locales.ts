@@ -1,6 +1,6 @@
 /**
  * dsh-pet locale dictionaries (zh/en).
- * @module @linxin666/dsh-pet/client/locales
+ * @module @ltmroberthk915/dsh-pet/client/locales
  */
 
 /** Dictionary namespace this package registers. */

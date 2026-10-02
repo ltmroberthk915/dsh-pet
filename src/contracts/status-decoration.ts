@@ -15,7 +15,7 @@
  * The ActivityPhase stream the pet center owns drives the ornament: each
  * phase binds to a frame segment (inclusive from/to indices into the
  * strip) or to 'hide' (no ornament for that phase; the default).
- * @module @linxin666/dsh-pet/contracts/status-decoration
+ * @module @ltmroberthk915/dsh-pet/contracts/status-decoration
  */
 
 import type { ActivityPhase } from '../state.ts'

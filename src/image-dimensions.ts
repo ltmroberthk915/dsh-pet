@@ -11,7 +11,7 @@
  * WebP: RIFF header (12) + chunk — 'VP8X' extended (width-1/height-1 as
  * little-endian uint24 at 24/27), 'VP8L' lossless (packed 14-bit dims at
  * 21), or 'VP8 ' lossy (frame header, low 14 bits of the uint16 at 26/28).
- * @module @linxin666/dsh-pet/image-dimensions
+ * @module @ltmroberthk915/dsh-pet/image-dimensions
  */
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])

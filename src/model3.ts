@@ -12,7 +12,7 @@
  * (safeManifestPath); unsafe entries make the model unloadable.
  *
  * Erasable-syntax-only: scripts/ import this under node strip-only mode.
- * @module @linxin666/dsh-pet/model3
+ * @module @ltmroberthk915/dsh-pet/model3
  */
 
 import { safeManifestPath } from './manifest-v2.ts'

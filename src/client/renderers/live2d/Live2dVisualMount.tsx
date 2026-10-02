@@ -5,7 +5,7 @@
  * activation cleanups), feeds the polled phase into the stream, forwards
  * sub-4px taps as hit-test coordinates, and renders the localized error
  * card when the renderer reports a fatal boot failure.
- * @module @linxin666/dsh-pet/client/renderers/live2d/Live2dVisualMount
+ * @module @ltmroberthk915/dsh-pet/client/renderers/live2d/Live2dVisualMount
  */
 
 import { useEffect, useRef, useState, type ReactElement } from 'react'

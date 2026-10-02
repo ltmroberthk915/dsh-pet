@@ -17,7 +17,7 @@
  * `agent/assistant-stream` publication ({@link projectAssistantStreamFrame}),
  * while the durable log settles one `assistant/message` (or `assistant/attempt`)
  * per attempt.
- * @module @linxin666/dsh-pet/event-projection
+ * @module @ltmroberthk915/dsh-pet/event-projection
  */
 
 import type { AssistantStreamFrame } from '@deepseek-ai/dsh-agent'

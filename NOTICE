@@ -1,0 +1,11 @@
+DSH Session Pet
+Maintained fork: https://github.com/ltmroberthk915/dsh-pet
+
+Based on dsh-pet by the upstream contributors:
+https://github.com/zhu1090093659/dsh-pet
+Original package: @linxin666/dsh-pet
+Licensed under Apache-2.0; the original LICENSE and asset notices are retained.
+
+Fork changes include session-specific companions, optional reviewed desktop bridge,
+model palettes, configurable tok/s playback, shared affinity, reduced idle work,
+placement avoidance, and completion review lifecycle.

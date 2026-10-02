@@ -11,7 +11,7 @@ import { boundAnimation } from './animation-bindings.ts'
  * Concurrent sessions each keep their own machine: the sprite animation
  * follows the most recent meaningful event (the display session) while the
  * state view carries one bubble per active session.
- * @module @linxin666/dsh-pet/service
+ * @module @ltmroberthk915/dsh-pet/service
  */
 
 import { Context, Service } from '@deepseek-ai/cordis'

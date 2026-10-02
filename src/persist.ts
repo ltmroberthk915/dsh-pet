@@ -4,7 +4,7 @@ import { animationFps, animationMode, tickSlope, tickIntercept, DEFAULT_TICK_SLO
  * Pet persistence — tiny JSON store for affinity + display config, written
  * under $DSH_HOME (defaults to ~/.dsh) as `pet.json`. Deliberately minimal:
  * one file, atomic rename write, tolerant read (corrupt file → defaults).
- * @module @linxin666/dsh-pet/persist
+ * @module @ltmroberthk915/dsh-pet/persist
  */
 
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'

@@ -8,7 +8,7 @@
  * those sources, never touching host or client code. Install via
  * 'dsh plugin --profile web add link:<dsh-web>/packages/dsh-pet'; the
  * cordis.patch.yml inserts this plugin row.
- * @module @linxin666/dsh-pet
+ * @module @ltmroberthk915/dsh-pet
  */
 
 import { Context, type Volatile } from '@deepseek-ai/cordis'
@@ -338,7 +338,7 @@ function servedRow(ctx: Context): ServedSettingsRow | undefined {
 }
 
 /** Register the pet service and its API + asset routes on the context. */
-export const apply = mountOnce('@linxin666/dsh-pet', applyImpl)
+export const apply = mountOnce('@ltmroberthk915/dsh-pet', applyImpl)
 
 /** Plugin config: the tuning block a profile may declare plus the pet's settings fields. */
 export type PetPluginConfig = Omit<PetConfig, 'enabled' | 'decorationEnabled'> & PetFormConfig

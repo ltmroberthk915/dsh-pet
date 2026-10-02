@@ -8,7 +8,7 @@
  * slots keep the built-in lines. Picks cycle round-robin within a pool so
  * repeated interactions stay varied while tests stay deterministic (no
  * randomness, no clock).
- * @module @linxin666/dsh-pet/remarks
+ * @module @ltmroberthk915/dsh-pet/remarks
  */
 
 /** Interaction events a reaction line can accompany. */

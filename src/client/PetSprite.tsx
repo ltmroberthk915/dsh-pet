@@ -9,7 +9,7 @@ import { paletteAtlas, paletteFilter } from './palette.ts'
  * to reposition (persisted via setConfig). Everything visual comes from the
  * pet definition the host serves ('/api/pet/pets' + the state snapshot's
  * pet id), so one component renders every registry entry.
- * @module @linxin666/dsh-pet/client/PetSprite
+ * @module @ltmroberthk915/dsh-pet/client/PetSprite
  */
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'

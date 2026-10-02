@@ -6,7 +6,7 @@
  *
  * The validation lives in this pure module so the wire contract has exactly
  * one home and stays testable without the cordis service.
- * @module @linxin666/dsh-pet/announce
+ * @module @ltmroberthk915/dsh-pet/announce
  */
 
 /** One plugin-authored announcement bubble. */

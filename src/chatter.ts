@@ -24,7 +24,7 @@
  * {@link VoicePoolsProvider}: the built-in pools are the fallback layer, and
  * voice packs (per-pet voice.json / the global .voice.json) layer their
  * pools on top at draw time.
- * @module @linxin666/dsh-pet/chatter
+ * @module @ltmroberthk915/dsh-pet/chatter
  */
 
 /** Status copy scenes — the situations a session bubble can report. */

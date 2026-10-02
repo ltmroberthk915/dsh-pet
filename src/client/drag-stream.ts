@@ -3,7 +3,7 @@
  * contract's { get, subscribe } shape, so renderers with a dedicated drag
  * track (frames2d) can follow the chrome-owned drag gesture. Dispatch is
  * change-only, mirroring the phase stream.
- * @module @linxin666/dsh-pet/client/drag-stream
+ * @module @ltmroberthk915/dsh-pet/client/drag-stream
  */
 
 /** The renderer-facing drag stream. */

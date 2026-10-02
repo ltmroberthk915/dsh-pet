@@ -9,7 +9,7 @@
  * JSON API, the asset prefix, and the Live2D runtime prefix are loopback-only
  * by default; a live paired-device cookie is an extra allow path when
  * remote-web-ui is loaded.
- * @module @linxin666/dsh-pet/routes
+ * @module @ltmroberthk915/dsh-pet/routes
  */
 
 import { existsSync, realpathSync, statSync } from 'node:fs'

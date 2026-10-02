@@ -3,7 +3,7 @@
  * implementation (pet-center M2 P4, issue #623). Unknown kinds never blank
  * the pet: a fallback card names the problem and reports the kinds this
  * build actually supports.
- * @module @linxin666/dsh-pet/client/renderers/registry
+ * @module @ltmroberthk915/dsh-pet/client/renderers/registry
  */
 
 import type { PetRenderer, PetRendererContext, PetRendererHandle } from '../../contracts/renderer.ts'
