@@ -61,7 +61,6 @@ export function installDesktopPet({ owner, request, openMain }) {
   function watchOwner(main) {
     if (watchedOwners.has(main)) return
     watchedOwners.add(main)
-    let wasTop = main.isAlwaysOnTop()
     const raisePets = () => {
       // Keep the pet available above a main-window attention prompt, without
       // moving keyboard focus or making pets owned/minimized with that window.
@@ -70,9 +69,9 @@ export function installDesktopPet({ owner, request, openMain }) {
     main.on('focus', raisePets)
     main.on('always-on-top-changed', raisePets)
     if (process.platform === 'win32') main.hookWindowMessage(0x0047, () => {
-      const top = main.isAlwaysOnTop()
-      if (top && !wasTop) raisePets()
-      wasTop = top
+      // Repeated native promotions can reorder an already-topmost main window
+      // without changing its topmost flag or focus. Pets still take priority.
+      if (main.isAlwaysOnTop()) raisePets()
     })
   }
   function syncPointer(record) {
