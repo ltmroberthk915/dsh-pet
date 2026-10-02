@@ -7,6 +7,9 @@ import { SECONDARY_SCALE, artworkRect, findOpenPosition } from './pet-layout.js'
 const PAGE = 'dsh-app://pet/index.html'
 const DIR = fileURLToPath(new URL('.', import.meta.url))
 const PREFIX = 'dsh-pet-v1:'
+// Electron's default floating level is placed behind the Windows taskbar;
+// that can also clear WS_EX_TOPMOST. Keep independent pets above that band.
+const TOP_LEVEL = 'screen-saver'
 const WIDTH = 420, HEIGHT = 460
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; media-src 'self'; object-src 'none'; base-uri 'none'; frame-src 'none'; form-action 'none'"
 const ACTIONS = {
@@ -24,6 +27,7 @@ export function installDesktopPet({ owner, request, openMain }) {
   let enabled = false, closing = false, currentSessionId, revision = 0
   let stateFlight, reconcileFlight, cache, cacheAt = 0, pollTimer, saveTimer, savedBounds
   let petDefinitions = [], definitionsFlight
+  const watchedOwners = new WeakSet()
   const positionFile = join(app.getPath('userData'), 'dsh-pet-window.json')
   const petSession = session.fromPartition('dsh-pet-v1')
   petSession.setPermissionRequestHandler((_wc, _permission, callback) => callback(false))
@@ -31,6 +35,67 @@ export function installDesktopPet({ owner, request, openMain }) {
   petSession.on('will-download', event => event.preventDefault())
   const live = record => record && !record.win.isDestroyed()
   const primary = () => [...windows.values()].find(r => live(r) && r.view.primary && !r.retiring)
+  function keepOnTop(record) {
+    if (!live(record) || !enabled || closing || record.retiring || !record.win.isVisible()) return
+    if (!record.win.isAlwaysOnTop() && Date.now() >= (record.nextTopRetry ?? 0)) {
+      // Bound retries if a native window manager refuses the request. Our own
+      // WM_WINDOWPOSCHANGED must not create a self-sustaining repair loop.
+      record.nextTopRetry = Date.now() + 250
+      record.win.setAlwaysOnTop(true, TOP_LEVEL)
+      if (record.win.isAlwaysOnTop()) record.nextTopRetry = 0
+    }
+  }
+  function scheduleTopRepair(record, raise = false) {
+    if (!live(record) || closing || record.retiring) return
+    record.raisePending ||= raise
+    if (record.topRepair !== undefined) return
+    // Native activation helpers can demote a window without an Electron event.
+    // Repair only after a window event, without activating or continuously raising it.
+    record.topRepair = setTimeout(() => {
+      record.topRepair = undefined
+      keepOnTop(record)
+      if (record.raisePending && live(record) && enabled && !closing && !record.retiring && record.win.isVisible()) record.win.moveTop()
+      record.raisePending = false
+    }, 32)
+  }
+  function watchOwner(main) {
+    if (watchedOwners.has(main)) return
+    watchedOwners.add(main)
+    let wasTop = main.isAlwaysOnTop()
+    const raisePets = () => {
+      // Keep the pet available above a main-window attention prompt, without
+      // moving keyboard focus or making pets owned/minimized with that window.
+      for (const record of windows.values()) scheduleTopRepair(record, true)
+    }
+    main.on('focus', raisePets)
+    main.on('always-on-top-changed', raisePets)
+    if (process.platform === 'win32') main.hookWindowMessage(0x0047, () => {
+      const top = main.isAlwaysOnTop()
+      if (top && !wasTop) raisePets()
+      wasTop = top
+    })
+  }
+  function syncPointer(record) {
+    if (!live(record)) return
+    let interactive = record.wantsInteractive
+    if (record.hitRegions !== undefined) {
+      const cursor = screen.getCursorScreenPoint(), bounds = record.win.getBounds()
+      const x = cursor.x - bounds.x, y = cursor.y - bounds.y
+      interactive = record.hitRegions.some(([left, top, width, height]) =>
+        x >= left && y >= top && x < left + width && y < top + height)
+    }
+    const ignore = record.retiring || (!record.drag && !interactive)
+    if (record.ignoreMouse === ignore) return
+    record.ignoreMouse = ignore
+    record.win.setIgnoreMouseEvents(ignore, { forward: true })
+  }
+  function endDrag(record) {
+    if (!record.drag || !live(record)) return
+    record.drag = undefined
+    separateOverlaps()
+    savePosition(record)
+    syncPointer(record)
+  }
   function assertOwner(event) {
     const main = owner()
     if (!main || event.sender !== main.webContents || event.senderFrame !== main.webContents.mainFrame) throw new Error('Unowned pet request')
@@ -174,20 +239,27 @@ export function installDesktopPet({ owner, request, openMain }) {
       y = Math.min(area.y + area.height - top - geometry.artwork.height - 4, Math.max(area.y - top + 4, y))
     }
     const bounds = fit({ x, y }, geometry)
-    const win = new BrowserWindow({ ...bounds, title: 'DSH Pet', frame: false, transparent: true, backgroundColor: '#00000000',
+    const win = new BrowserWindow({ ...bounds, title: 'DSH Pet', type: 'toolbar', frame: false, transparent: true, backgroundColor: '#00000000',
       alwaysOnTop: true, skipTaskbar: true, resizable: false, minimizable: false, maximizable: false, fullscreenable: false,
       hasShadow: false, show: false, autoHideMenuBar: true,
       webPreferences: { preload: join(DIR, 'pet-preload.cjs'), session: petSession, nodeIntegration: false, contextIsolation: true,
         sandbox: true, webSecurity: true, backgroundThrottling: false, spellcheck: false, devTools: false } })
-    const record = { win, view, geometry, lastInteractive: false, lastMove: 0 }
+    const record = { win, view, geometry, wantsInteractive: false, ignoreMouse: true, lastMove: 0 }
     windows.set(view.key, record)
+    win.setAlwaysOnTop(true, TOP_LEVEL)
     win.setIgnoreMouseEvents(true, { forward: true })
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
     win.webContents.on('will-navigate', (event, url) => { if (url !== PAGE) event.preventDefault() })
     win.webContents.on('will-redirect', event => event.preventDefault())
     win.webContents.on('will-attach-webview', event => event.preventDefault())
-    win.on('closed', () => { clearInterval(record.returnTimer); if (windows.get(view.key) === record) windows.delete(view.key) })
+    win.on('closed', () => { clearInterval(record.returnTimer); clearTimeout(record.topRepair); if (windows.get(view.key) === record) windows.delete(view.key) })
     win.on('move', () => savePosition(record))
+    win.on('focus', () => scheduleTopRepair(record))
+    win.on('blur', () => { endDrag(record); syncPointer(record); scheduleTopRepair(record) })
+    win.on('always-on-top-changed', () => scheduleTopRepair(record))
+    if (process.platform === 'win32') win.hookWindowMessage(0x0047, () => {
+      if (!win.isAlwaysOnTop()) scheduleTopRepair(record)
+    }) // WM_WINDOWPOSCHANGED
     try {
       await win.loadURL(PAGE)
       if (live(record) && enabled && !closing) {
@@ -217,7 +289,7 @@ export function installDesktopPet({ owner, request, openMain }) {
           y: bounds.y + previous.dimensions.height - geometry.dimensions.height }, geometry))
       }
       if (previous.artwork.width !== geometry.artwork.width || previous.artwork.height !== geometry.artwork.height) layoutNeeded = true
-      if (record.win.isVisible() && !record.win.isAlwaysOnTop()) record.win.setAlwaysOnTop(true)
+      keepOnTop(record)
       publish(record)
     }
     const destination = primary()
@@ -225,8 +297,7 @@ export function installDesktopPet({ owner, request, openMain }) {
     if (layoutNeeded) separateOverlaps()
     for (const record of windows.values()) if (live(record) && record.showPending && !record.retiring) {
       record.showPending = false
-      record.win.showInactive(); record.win.setAlwaysOnTop(true)
-      setTimeout(() => { if (live(record)) record.win.setAlwaysOnTop(true) }, 250)
+      record.win.showInactive(); keepOnTop(record)
     }
   }
   async function fetchState(force = false) {
@@ -252,6 +323,7 @@ export function installDesktopPet({ owner, request, openMain }) {
   function poll() {
     clearTimeout(pollTimer)
     if (!enabled || closing) return
+    for (const record of windows.values()) keepOnTop(record)
     void fetchState().catch(() => {
       for (const record of windows.values()) if (live(record)) {
         record.lastSent = undefined
@@ -274,6 +346,7 @@ export function installDesktopPet({ owner, request, openMain }) {
   ipcMain.handle(PREFIX + 'configure', async (event, options) => {
     assertOwner(event)
     if (!options || typeof options.enabled !== 'boolean' || (options.currentSessionId !== undefined && (typeof options.currentSessionId !== 'string' || options.currentSessionId.length > 200))) throw new Error('Invalid pet configuration')
+    watchOwner(owner())
     if (enabled !== options.enabled || currentSessionId !== options.currentSessionId) { revision++; cacheAt = 0 }
     enabled = options.enabled; currentSessionId = options.currentSessionId
     if (!enabled) destroyAll()
@@ -290,19 +363,28 @@ export function installDesktopPet({ owner, request, openMain }) {
     else poll()
     return result
   })
-  ipcMain.on(PREFIX + 'interactive', (event, interactive) => {
+  ipcMain.on(PREFIX + 'interactive', (event, interactive, regions) => {
     try {
       const record = assertPet(event)
-      if (typeof interactive !== 'boolean' || record.drag || record.retiring || record.lastInteractive === interactive) return
-      record.lastInteractive = interactive; record.win.setIgnoreMouseEvents(!interactive, { forward: true })
+      if (typeof interactive !== 'boolean' || record.retiring) return
+      if (regions !== undefined) {
+        if (!Array.isArray(regions) || regions.length > 64 || regions.some(rect =>
+          !Array.isArray(rect) || rect.length !== 4 || rect.some(n => !Number.isFinite(n) || Math.abs(n) > 32768)
+          || rect[2] < 0 || rect[3] < 0)) return
+        record.hitRegions = regions
+      }
+      // Retain the newest hit regions during dragging and apply them on release.
+      // A synthetic mouseleave/blur cannot punch through a pet under the cursor.
+      record.wantsInteractive = interactive
+      syncPointer(record)
     } catch {}
   })
   ipcMain.on(PREFIX + 'drag', (event, phase) => {
     try {
       const record = assertPet(event), win = record.win
       if (record.retiring) return
-      if (phase === 'start') { record.drag = { cursor: screen.getCursorScreenPoint(), bounds: win.getBounds() }; win.setIgnoreMouseEvents(false); return }
-      if (phase === 'end') { record.drag = undefined; separateOverlaps(); savePosition(record); return }
+      if (phase === 'start') { record.drag = { cursor: screen.getCursorScreenPoint(), bounds: win.getBounds() }; syncPointer(record); keepOnTop(record); return }
+      if (phase === 'end') { endDrag(record); return }
       if (phase !== 'move' || !record.drag || Date.now() - record.lastMove < 8) return
       record.lastMove = Date.now()
       const cursor = screen.getCursorScreenPoint(), drag = record.drag

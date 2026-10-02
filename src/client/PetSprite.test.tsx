@@ -89,6 +89,7 @@ beforeAll(() => {
 
 afterEach(() => {
   cleanup()
+  delete window.dshPetOverlay
   vi.restoreAllMocks()
 })
 
@@ -191,6 +192,45 @@ function renderPet(overrides: Partial<PetSpriteProps> = {}): {
   const result = render(<PetSprite {...petProps({ onRename, onOpenSession, ...overrides })} />)
   return { onRename, onOpenSession, result }
 }
+
+describe('desktop pointer lifecycle', () => {
+  function desktop() {
+    const drag = vi.fn()
+    window.dshPetOverlay = { drag, call: vi.fn(), interactive: vi.fn(), openMain: vi.fn(), subscribe: () => () => {} }
+    return drag
+  }
+  it('detects a native window drag when local coordinates stay fixed', () => {
+    const drag = desktop(), onPet = vi.fn(), onDraggingChange = vi.fn()
+    renderPet({ onPet, onDraggingChange })
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    fireEvent.pointerDown(sprite, { button: 0, pointerId: 1, clientX: 30, clientY: 30, screenX: 300, screenY: 300 })
+    fireEvent.pointerMove(sprite, { pointerId: 1, clientX: 30, clientY: 30, screenX: 330, screenY: 300 })
+    fireEvent.pointerUp(sprite, { button: 0, pointerId: 1 })
+    fireEvent.click(sprite)
+    expect(drag.mock.calls.map(args => args[0])).toEqual(['start', 'move', 'end'])
+    expect(onDraggingChange.mock.calls.map(args => args[0])).toEqual([true, false])
+    expect(onPet).not.toHaveBeenCalled()
+  })
+  it.each(['lostpointercapture', 'pointercancel'])('ends a drag on %s once', event => {
+    const drag = desktop()
+    renderPet()
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    fireEvent.pointerDown(sprite, { button: 0, pointerId: 1 })
+    fireEvent(sprite, new PointerEvent(event, { bubbles: true, pointerId: 1 }))
+    fireEvent.pointerUp(sprite, { button: 0, pointerId: 1 })
+    expect(drag.mock.calls.map(args => args[0])).toEqual(['start', 'end'])
+  })
+  it('releases a drag on focus loss and ignores the right mouse button', () => {
+    const drag = desktop()
+    renderPet()
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    fireEvent.pointerDown(sprite, { button: 2, pointerId: 1 })
+    expect(drag).not.toHaveBeenCalled()
+    fireEvent.pointerDown(sprite, { button: 0, pointerId: 2 })
+    fireEvent.blur(window)
+    expect(drag.mock.calls.map(args => args[0])).toEqual(['start', 'end'])
+  })
+})
 
 /** Hover the sprite to open the panel, then click the rename button. */
 function openRename(): HTMLInputElement {

@@ -9,7 +9,7 @@ declare global {
     dshPetOverlay?: {
       call(action: string, body?: unknown): Promise<any>
       drag(phase: 'start' | 'move' | 'end'): void
-      interactive(value: boolean): void
+      interactive(value: boolean, regions?: [number, number, number, number][]): void
       openMain(sessionId?: string): Promise<void>
       subscribe(update: (state: import('../service.ts').PetStateView) => void, disconnected: () => void, retire: () => void): () => void
     }

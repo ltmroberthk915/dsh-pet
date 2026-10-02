@@ -20,4 +20,6 @@ The archive includes prebuilt JavaScript and assets, with no install-time script
 
 Build with `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm prepare`, `pnpm typecheck`, and `pnpm build:local`. Source validation: 599 passing tests with the documented optional-asset/Windows exclusions; 50 isolated Electron checks passed. Completion-review state is transient and released when the host session or application is disposed.
 
+Version 1.0.2 keeps pets above the Windows taskbar and restores their topmost state after external activation, without stealing keyboard focus or continuously raising idle windows. Native tool-window identity prevents computer-use helpers from confusing pets with the DSH main window. Pointer hit regions survive synthetic leave/blur events, and interrupted drags release cleanly.
+
 Version 1.0.1 distinguishes model generation from tool execution: reasoning, answers and other tool arguments run right; file writing/editing/patch arguments run left. Both generation directions follow the conversation footer tok/s with the same editable k and b; actual tool execution uses native timing. The whale voice pack keeps every upstream scene with three concise lines per category.

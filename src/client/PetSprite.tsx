@@ -526,21 +526,22 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   useEffect(() => () => clearHideTimer(), [])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>): void => {
-    if (props.dragDisabled === true) return
+    if (props.dragDisabled === true || e.button !== 0) return
     window.dshPetOverlay?.drag('start')
     endWalk(false)
     e.preventDefault()
-    ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+    e.currentTarget.setPointerCapture?.(e.pointerId)
     const current = dragPos ?? { right: display.right, bottom: display.bottom }
-    dragRef.current = { startX: e.clientX, startY: e.clientY, ...current }
+    dragRef.current = { startX: window.dshPetOverlay ? e.screenX : e.clientX,
+      startY: window.dshPetOverlay ? e.screenY : e.clientY, ...current }
     draggedRef.current = false
     setHovered(false)
   }
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>): void => {
     const drag = dragRef.current
     if (drag === null) return
-    const dx = e.clientX - drag.startX
-    const dy = e.clientY - drag.startY
+    const dx = (window.dshPetOverlay ? e.screenX : e.clientX) - drag.startX
+    const dy = (window.dshPetOverlay ? e.screenY : e.clientY) - drag.startY
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
       if (!draggedRef.current) props.onDraggingChange?.(true)
       draggedRef.current = true
@@ -557,6 +558,13 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
     if (draggedRef.current) props.onDraggingChange?.(false)
     if (dragPos !== null) props.onDragEnd(dragPos.right, dragPos.bottom)
   }
+  const endDragRef = useRef(onPointerUp)
+  endDragRef.current = onPointerUp
+  useEffect(() => {
+    const cancel = () => endDragRef.current()
+    window.addEventListener('blur', cancel)
+    return () => { window.removeEventListener('blur', cancel); cancel() }
+  }, [])
 
   const pos = dragPos ?? { right: display.right, bottom: display.bottom }
   const spriteWidth = Math.round(cell.width * spriteScale)
@@ -774,6 +782,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
+          onLostPointerCapture={onPointerUp}
           onDoubleClick={() => { if (snapshot?.primary === false && snapshot.sessionId) props.onOpenSession(snapshot.sessionId) }}
           onClick={(e) => {
             // A pointer sequence that moved (dragged) still fires a trailing

@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { createPetStore } from './pet-store.ts'
 import { PetDockEntry } from './PetDockEntry.tsx'
 import { t } from './locales.ts'
+import { installDesktopHitTesting } from './desktop-hit-test.ts'
 import type { PetStateView } from '../service.ts'
 import type { PetDefinition } from '../registry.ts'
 
@@ -45,23 +46,11 @@ function App() {
       document.body.dataset.connected = 'true'
     }, () => { document.body.dataset.connected = 'false' }, () => { document.body.dataset.retiring = 'true' })
     void refresh()
-    let interactive: boolean | undefined
-    const setInteractive = (on: boolean) => {
-      if (interactive !== on) { interactive = on; bridge.interactive(on) }
-    }
-    const mouse = (e: MouseEvent) => {
-      setInteractive(e.target instanceof Element && e.target.closest('[role="button"],button,input,select,textarea') !== null)
-    }
-    const leave = () => setInteractive(false)
-    document.addEventListener('mousemove', mouse)
-    document.addEventListener('mouseleave', leave)
-    window.addEventListener('blur', leave)
+    const stopHitTesting = installDesktopHitTesting(bridge)
     window.addEventListener('resize', renderState)
     return () => {
       unsubscribe()
-      document.removeEventListener('mousemove', mouse)
-      document.removeEventListener('mouseleave', leave)
-      window.removeEventListener('blur', leave)
+      stopHitTesting()
       window.removeEventListener('resize', renderState)
     }
   }, [])
