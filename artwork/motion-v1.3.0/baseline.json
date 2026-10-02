@@ -1,0 +1,1490 @@
+[
+  {
+    "dir": "assets/blue-whale-business",
+    "definition": {
+      "id": "blue-whale-business",
+      "displayName": "小蓝鲸（商务版）",
+      "description": "现代商务小蓝鲸：陶瓷蓝与银白工业设计，轻微科幻质感，九种克制动作与简洁状态提示。",
+      "renderer": "sprite2d",
+      "cell": {
+        "width": 192,
+        "height": 128
+      },
+      "columns": 4,
+      "rows": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "atlasRows": 9,
+      "tracks": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            900,
+            300,
+            350,
+            350
+          ],
+          "loop": true
+        },
+        "running-right": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300
+          ],
+          "loop": true
+        },
+        "running-left": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300
+          ],
+          "loop": true
+        },
+        "waving": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            300,
+            350,
+            350,
+            400
+          ],
+          "loop": true
+        },
+        "jumping": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            250,
+            300,
+            350,
+            400
+          ],
+          "loop": false,
+          "fallback": "idle"
+        },
+        "failed": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            250,
+            300,
+            350,
+            400
+          ],
+          "loop": false,
+          "fallback": "idle"
+        },
+        "waiting": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300
+          ],
+          "loop": true
+        },
+        "running": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300
+          ],
+          "loop": true
+        },
+        "review": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300
+          ],
+          "loop": true
+        }
+      },
+      "atlasUrl": "/pet/blue-whale-business/spritesheet.webp",
+      "manifestUrl": "/pet/blue-whale-business/pet.json",
+      "panel": {
+        "labels": {
+          "feed": "补充能量",
+          "rename": "命名",
+          "hide": "隐藏",
+          "confirm": "保存"
+        },
+        "stats": {
+          "rank": "协作等级 {rank}",
+          "treats": "能量 ×{n}",
+          "points": "协作积分 {points}"
+        }
+      }
+    }
+  },
+  {
+    "dir": "assets/miku",
+    "definition": {
+      "id": "miku",
+      "displayName": "MIKU（会话版）",
+      "description": "原作者 v0.4.4 Miku 素材与玩法，补齐九种会话动作、左右跑、多会话配色与 tok/s 调速。",
+      "renderer": "frames2d",
+      "frames2d": {
+        "tracks": {
+          "idle": {
+            "frames": [
+              "/pet/miku/thumb/idle/miku-pet-stop1.webp",
+              "/pet/miku/thumb/idle/miku-pet-stop2.webp",
+              "/pet/miku/thumb/idle/miku-pet-stop3.webp",
+              "/pet/miku/thumb/idle/miku-pet-stop4.webp"
+            ],
+            "durations": [
+              1500,
+              280,
+              120,
+              480
+            ],
+            "loop": true
+          },
+          "drag": {
+            "frames": [
+              "/pet/miku/thumb/drag/miku-pet-move1.webp",
+              "/pet/miku/thumb/drag/miku-pet-move2.webp",
+              "/pet/miku/thumb/drag/miku-pet-move3.webp",
+              "/pet/miku/thumb/drag/miku-pet-move4.webp",
+              "/pet/miku/thumb/drag/miku-pet-move5.webp",
+              "/pet/miku/thumb/drag/miku-pet-move6.webp",
+              "/pet/miku/thumb/drag/miku-pet-move7.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": true
+          },
+          "standup": {
+            "frames": [
+              "/pet/miku/thumb/standup/miku-pet-yun1.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun2.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun3.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun4.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun5.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun6.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun7.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun8.webp",
+              "/pet/miku/thumb/standup/miku-pet-yun9.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "sleep-intro": {
+            "frames": [
+              "/pet/miku/thumb/sleep-intro/miku-pet-sleep1.webp",
+              "/pet/miku/thumb/sleep-intro/miku-pet-sleep2.webp",
+              "/pet/miku/thumb/sleep-intro/miku-pet-sleep3.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "sleep"
+          },
+          "sleep": {
+            "frames": [
+              "/pet/miku/thumb/sleep/miku-pet-sleep4.webp",
+              "/pet/miku/thumb/sleep/miku-pet-sleep5.webp",
+              "/pet/miku/thumb/sleep/miku-pet-sleep6.webp",
+              "/pet/miku/thumb/sleep/miku-pet-sleep7.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": true
+          },
+          "work": {
+            "frames": [
+              "/pet/miku/thumb/work/miku-pet-working1.webp",
+              "/pet/miku/thumb/work/miku-pet-working2.webp",
+              "/pet/miku/thumb/work/miku-pet-working3.webp",
+              "/pet/miku/thumb/work/miku-pet-working4.webp",
+              "/pet/miku/thumb/work/miku-pet-working5.webp",
+              "/pet/miku/thumb/work/miku-pet-working6.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": true
+          },
+          "success": {
+            "frames": [
+              "/pet/miku/thumb/success/miku-pet-workingyes1.webp",
+              "/pet/miku/thumb/success/miku-pet-workingyes2.webp",
+              "/pet/miku/thumb/success/miku-pet-workingyes3.webp",
+              "/pet/miku/thumb/success/miku-pet-workingyes4.webp",
+              "/pet/miku/thumb/success/miku-pet-workingyes5.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "fail": {
+            "frames": [
+              "/pet/miku/thumb/fail/miku-pet-workerr1.webp",
+              "/pet/miku/thumb/fail/miku-pet-workerr2.webp",
+              "/pet/miku/thumb/fail/miku-pet-workerr3.webp",
+              "/pet/miku/thumb/fail/miku-pet-workerr4.webp",
+              "/pet/miku/thumb/fail/miku-pet-workerr5.webp",
+              "/pet/miku/thumb/fail/miku-pet-workerr6.webp",
+              "/pet/miku/thumb/fail/miku-pet-workerr7.webp",
+              "/pet/miku/thumb/fail/miku-pet-workerr8.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "happy": {
+            "frames": [
+              "/pet/miku/thumb/happy/miku-pet-happy1.webp",
+              "/pet/miku/thumb/happy/miku-pet-happy2.webp",
+              "/pet/miku/thumb/happy/miku-pet-happy3.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "shy": {
+            "frames": [
+              "/pet/miku/thumb/shy/miku-pet-shy1.webp",
+              "/pet/miku/thumb/shy/miku-pet-shy2.webp",
+              "/pet/miku/thumb/shy/miku-pet-shy3.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "flirty": {
+            "frames": [
+              "/pet/miku/thumb/flirty/miku-pet-flirty1.webp",
+              "/pet/miku/thumb/flirty/miku-pet-flirty2.webp",
+              "/pet/miku/thumb/flirty/miku-pet-flirty3.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "angry": {
+            "frames": [
+              "/pet/miku/thumb/angry/miku-pet-angry1.webp",
+              "/pet/miku/thumb/angry/miku-pet-angry2.webp",
+              "/pet/miku/thumb/angry/miku-pet-angry3.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "scratch": {
+            "frames": [
+              "/pet/miku/thumb/scratch/miku-pet-stand1.webp",
+              "/pet/miku/thumb/scratch/miku-pet-stand2.webp",
+              "/pet/miku/thumb/scratch/miku-pet-stand3.webp",
+              "/pet/miku/thumb/scratch/miku-pet-stand4.webp",
+              "/pet/miku/thumb/scratch/miku-pet-stand5.webp",
+              "/pet/miku/thumb/scratch/miku-pet-stand6.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "blink1": {
+            "frames": [
+              "/pet/miku/thumb/blink1/miku-pet-closeeyes1.webp",
+              "/pet/miku/thumb/blink1/miku-pet-closeeyes2.webp"
+            ],
+            "durations": [
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "blink2": {
+            "frames": [
+              "/pet/miku/thumb/blink2/miku-pet-closeeye1.webp",
+              "/pet/miku/thumb/blink2/miku-pet-closeeye2.webp"
+            ],
+            "durations": [
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "eat": {
+            "frames": [
+              "/pet/miku/thumb/eat/miku-pet-eat1.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat2.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat3.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat4.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat5.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat6.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat7.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat8.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat9.webp",
+              "/pet/miku/thumb/eat/miku-pet-eat10.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "shop": {
+            "frames": [
+              "/pet/miku/thumb/shop/miku-pet-shop1.webp",
+              "/pet/miku/thumb/shop/miku-pet-shop2.webp",
+              "/pet/miku/thumb/shop/miku-pet-shop4.webp",
+              "/pet/miku/thumb/shop/miku-pet-shop6.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "running-right": {
+            "frames": [
+              "/pet/miku/thumb/running-right/frame-1.webp",
+              "/pet/miku/thumb/running-right/frame-2.webp",
+              "/pet/miku/thumb/running-right/frame-3.webp",
+              "/pet/miku/thumb/running-right/frame-4.webp",
+              "/pet/miku/thumb/running-right/frame-5.webp",
+              "/pet/miku/thumb/running-right/frame-6.webp",
+              "/pet/miku/thumb/running-right/frame-7.webp",
+              "/pet/miku/thumb/running-right/frame-8.webp"
+            ],
+            "durations": [
+              125,
+              125,
+              125,
+              125,
+              125,
+              125,
+              125,
+              125
+            ],
+            "loop": true
+          },
+          "running-left": {
+            "frames": [
+              "/pet/miku/thumb/running-left/frame-1.webp",
+              "/pet/miku/thumb/running-left/frame-2.webp",
+              "/pet/miku/thumb/running-left/frame-3.webp",
+              "/pet/miku/thumb/running-left/frame-4.webp",
+              "/pet/miku/thumb/running-left/frame-5.webp",
+              "/pet/miku/thumb/running-left/frame-6.webp",
+              "/pet/miku/thumb/running-left/frame-7.webp",
+              "/pet/miku/thumb/running-left/frame-8.webp"
+            ],
+            "durations": [
+              125,
+              125,
+              125,
+              125,
+              125,
+              125,
+              125,
+              125
+            ],
+            "loop": true
+          },
+          "waving": {
+            "frames": [
+              "/pet/miku/thumb/waving/frame-1.webp",
+              "/pet/miku/thumb/waving/frame-2.webp",
+              "/pet/miku/thumb/waving/frame-3.webp",
+              "/pet/miku/thumb/waving/frame-4.webp"
+            ],
+            "durations": [
+              350,
+              350,
+              350,
+              350
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "jumping": {
+            "frames": [
+              "/pet/miku/thumb/jumping/frame-1.webp",
+              "/pet/miku/thumb/jumping/frame-2.webp",
+              "/pet/miku/thumb/jumping/frame-3.webp",
+              "/pet/miku/thumb/jumping/frame-4.webp"
+            ],
+            "durations": [
+              220,
+              220,
+              220,
+              220
+            ],
+            "loop": false,
+            "fallback": "idle"
+          },
+          "waiting": {
+            "frames": [
+              "/pet/miku/thumb/waiting/frame-1.webp",
+              "/pet/miku/thumb/waiting/frame-2.webp",
+              "/pet/miku/thumb/waiting/frame-3.webp",
+              "/pet/miku/thumb/waiting/frame-4.webp"
+            ],
+            "durations": [
+              350,
+              350,
+              350,
+              350
+            ],
+            "loop": true
+          },
+          "review": {
+            "frames": [
+              "/pet/miku/thumb/review/frame-1.webp",
+              "/pet/miku/thumb/review/frame-2.webp",
+              "/pet/miku/thumb/review/frame-3.webp",
+              "/pet/miku/thumb/review/frame-4.webp"
+            ],
+            "durations": [
+              350,
+              350,
+              350,
+              350
+            ],
+            "loop": true
+          },
+          "running": {
+            "frames": [
+              "/pet/miku/thumb/running/frame-1.webp",
+              "/pet/miku/thumb/running/frame-2.webp",
+              "/pet/miku/thumb/running/frame-3.webp",
+              "/pet/miku/thumb/running/frame-4.webp",
+              "/pet/miku/thumb/running/frame-5.webp",
+              "/pet/miku/thumb/running/frame-6.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": true
+          },
+          "failed": {
+            "frames": [
+              "/pet/miku/thumb/failed/frame-1.webp",
+              "/pet/miku/thumb/failed/frame-2.webp",
+              "/pet/miku/thumb/failed/frame-3.webp",
+              "/pet/miku/thumb/failed/frame-4.webp",
+              "/pet/miku/thumb/failed/frame-5.webp",
+              "/pet/miku/thumb/failed/frame-6.webp",
+              "/pet/miku/thumb/failed/frame-7.webp",
+              "/pet/miku/thumb/failed/frame-8.webp"
+            ],
+            "durations": [
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "loop": false,
+            "fallback": "idle"
+          }
+        },
+        "phases": {
+          "idle": "idle",
+          "waiting": "waiting",
+          "thinking": "running-right",
+          "tool": "running",
+          "review": "review",
+          "done": "jumping",
+          "failed": "failed"
+        }
+      },
+      "gameplay": {
+        "stats": {
+          "hunger": {
+            "max": 100,
+            "initial": 100,
+            "decayPerMinute": 1,
+            "workingDecayPerMinute": 5
+          },
+          "mood": {
+            "max": 100,
+            "initial": 100,
+            "decayPerMinute": 0.5
+          },
+          "energy": {
+            "max": 100,
+            "initial": 100,
+            "decayPerMinute": 0.25
+          },
+          "affection": {
+            "max": 500,
+            "initial": 100,
+            "idleDecayPerMinute": 0.2
+          }
+        },
+        "idleDirector": {
+          "intervalMs": 5000,
+          "maxMiss": 2,
+          "idleWeight": 40,
+          "acts": [
+            {
+              "track": "scratch",
+              "weight": 12,
+              "phrases": [
+                "头有点痒~",
+                "在想事情呢…",
+                "肚肚也有点饿了..."
+              ]
+            },
+            {
+              "track": "blink1",
+              "weight": 12,
+              "phrases": [
+                "眼睛进沙子啦~",
+                "眨眨眼~",
+                "灯光有点刺眼~"
+              ]
+            },
+            {
+              "track": "blink2",
+              "weight": 12,
+              "phrases": [
+                "好困…",
+                "先眯一会儿~",
+                "打个哈欠再说~"
+              ]
+            },
+            {
+              "track": "eat",
+              "weight": 24,
+              "phrases": [
+                "好吃!再来一碗~",
+                "这块蛋糕真不错~",
+                "吃饱啦~",
+                "零食储备+1~"
+              ]
+            }
+          ]
+        },
+        "hitBox": {
+          "x0": 0.05,
+          "y0": 0.07,
+          "x1": 0.95,
+          "y1": 0.95
+        },
+        "touch": {
+          "zones": [
+            {
+              "name": "head",
+              "y0": 0,
+              "y1": 0.55,
+              "branches": [
+                {
+                  "probability": 0.05,
+                  "effects": [
+                    {
+                      "stat": "affection",
+                      "amount": 5
+                    }
+                  ],
+                  "state": "happy",
+                  "stateMs": 3000,
+                  "phrases": [
+                    "*我好开心!*"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "body",
+              "y0": 0.55,
+              "y1": 0.75,
+              "branches": [
+                {
+                  "probability": 0.1,
+                  "effects": [
+                    {
+                      "stat": "affection",
+                      "amount": 10
+                    }
+                  ],
+                  "state": "shy",
+                  "stateMs": 3000,
+                  "phrases": [
+                    "**色狼**你干嘛!**"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "legs",
+              "y0": 0.75,
+              "y1": 1,
+              "branches": [
+                {
+                  "probability": 0.1,
+                  "effects": [
+                    {
+                      "stat": "affection",
+                      "amount": 30
+                    }
+                  ],
+                  "state": "flirty",
+                  "stateMs": 3000,
+                  "phrases": [
+                    "***是你想要我主动一点吗?***"
+                  ]
+                },
+                {
+                  "probability": 0.9,
+                  "effects": [
+                    {
+                      "stat": "affection",
+                      "amount": -5
+                    }
+                  ],
+                  "state": "angry",
+                  "stateMs": 3000,
+                  "phrases": [
+                    "哼!"
+                  ]
+                }
+              ]
+            }
+          ],
+          "clickBoost": {
+            "stat": "mood",
+            "min": 0,
+            "max": 3
+          }
+        },
+        "work": {
+          "state": "work",
+          "successState": "success",
+          "failState": "fail",
+          "tickMs": 10000,
+          "successProbability": 0.5,
+          "resultMs": {
+            "success": 1300,
+            "fail": 1900
+          },
+          "success": {
+            "effects": [
+              {
+                "currency": "treats",
+                "amount": 1
+              }
+            ]
+          }
+        },
+        "sleep": {
+          "state": "sleep-intro",
+          "restore": {
+            "stat": "energy",
+            "amount": 4,
+            "intervalMs": 30000
+          }
+        },
+        "passiveIncome": {
+          "currency": "treats",
+          "amount": 1,
+          "intervalMs": 1800000
+        },
+        "shop": {
+          "items": [
+            {
+              "id": "food1",
+              "label": "香浓可口的超级无敌黄油面包",
+              "price": 2,
+              "currency": "treats",
+              "image": "/pet/miku/thumb/shop/miku-pet-shop1.webp",
+              "effects": [
+                {
+                  "stat": "hunger",
+                  "amount": 40
+                }
+              ]
+            },
+            {
+              "id": "food2",
+              "label": "闪闪发亮新鲜出炉的红豆沙包",
+              "price": 4,
+              "currency": "treats",
+              "image": "/pet/miku/thumb/shop/miku-pet-shop2.webp",
+              "effects": [
+                {
+                  "stat": "hunger",
+                  "amount": 80
+                }
+              ]
+            },
+            {
+              "id": "lottery",
+              "label": "幸运彩票",
+              "price": 3,
+              "currency": "treats",
+              "image": "/pet/miku/thumb/shop/miku-pet-shop6.webp",
+              "lottery": {
+                "tiers": [
+                  {
+                    "probability": 0.0001,
+                    "prize": 100
+                  },
+                  {
+                    "probability": 0.0008,
+                    "prize": 50
+                  },
+                  {
+                    "probability": 0.0035,
+                    "prize": 20
+                  },
+                  {
+                    "probability": 0.012,
+                    "prize": 10
+                  },
+                  {
+                    "probability": 0.9836,
+                    "prize": 5
+                  }
+                ],
+                "effects": [
+                  {
+                    "stat": "hunger",
+                    "amount": 10
+                  },
+                  {
+                    "stat": "mood",
+                    "amount": 10
+                  },
+                  {
+                    "stat": "energy",
+                    "amount": 10
+                  },
+                  {
+                    "stat": "affection",
+                    "amount": 10
+                  }
+                ],
+                "currency": "treats"
+              }
+            }
+          ]
+        },
+        "dragState": "drag",
+        "dragEndState": "standup"
+      },
+      "cell": {
+        "width": 512,
+        "height": 512
+      },
+      "columns": 8,
+      "rows": [
+        6,
+        8,
+        8,
+        4,
+        5,
+        8,
+        6,
+        6,
+        6
+      ],
+      "atlasRows": 9,
+      "tracks": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "durations": [
+            500,
+            500,
+            600,
+            500,
+            500,
+            600
+          ],
+          "loop": true
+        },
+        "running-right": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            400
+          ],
+          "loop": true
+        },
+        "running-left": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            400
+          ],
+          "loop": true
+        },
+        "waving": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            450,
+            450,
+            450,
+            450
+          ],
+          "loop": true
+        },
+        "jumping": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "durations": [
+            400,
+            400,
+            400,
+            450,
+            450
+          ],
+          "loop": false,
+          "fallback": "idle"
+        },
+        "failed": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            550,
+            550,
+            550,
+            600,
+            650,
+            700,
+            550,
+            550
+          ],
+          "loop": false,
+          "fallback": "idle"
+        },
+        "waiting": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "durations": [
+            550,
+            550,
+            600,
+            550,
+            550,
+            600
+          ],
+          "loop": true
+        },
+        "running": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "durations": [
+            330,
+            330,
+            330,
+            330,
+            330,
+            400
+          ],
+          "loop": true
+        },
+        "review": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "durations": [
+            650,
+            650,
+            650,
+            650,
+            650,
+            650
+          ],
+          "loop": true
+        }
+      },
+      "atlasUrl": "/pet/miku/thumb/idle/miku-pet-stop1.webp",
+      "manifestUrl": "/pet/miku/pet.json",
+      "panel": {
+        "labels": {
+          "feed": "喂零食"
+        },
+        "stats": {
+          "treats": "零食 ×{n}"
+        }
+      }
+    }
+  },
+  {
+    "dir": "assets/whale-refined",
+    "definition": {
+      "id": "whale-girl-refined",
+      "displayName": "鲸鱼娘（精致版）",
+      "description": "基于鲸鱼娘形象进行 AI 辅助二次创作、修复与细节精修的内置变体。",
+      "renderer": "sprite2d",
+      "cell": {
+        "width": 192,
+        "height": 208
+      },
+      "columns": 16,
+      "rows": [
+        16,
+        8,
+        8,
+        14,
+        16,
+        16,
+        16,
+        16,
+        16
+      ],
+      "atlasRows": 9,
+      "tracks": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "durations": [
+            520,
+            180,
+            180,
+            180,
+            180,
+            180,
+            65,
+            65,
+            65,
+            65,
+            180,
+            180,
+            180,
+            180,
+            180,
+            520
+          ],
+          "loop": true
+        },
+        "running-right": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            400
+          ],
+          "loop": true
+        },
+        "running-left": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            300,
+            400
+          ],
+          "loop": true
+        },
+        "waving": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "durations": [
+            150,
+            115,
+            115,
+            115,
+            115,
+            115,
+            115,
+            115,
+            115,
+            115,
+            115,
+            115,
+            115,
+            180
+          ],
+          "loop": true
+        },
+        "jumping": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "durations": [
+            120,
+            100,
+            90,
+            90,
+            90,
+            110,
+            100,
+            90,
+            90,
+            90,
+            100,
+            110,
+            90,
+            100,
+            110,
+            150
+          ],
+          "loop": false,
+          "fallback": "idle"
+        },
+        "failed": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "durations": [
+            200,
+            130,
+            130,
+            130,
+            130,
+            130,
+            130,
+            240,
+            130,
+            130,
+            130,
+            130,
+            130,
+            130,
+            180,
+            180
+          ],
+          "loop": false,
+          "fallback": "idle"
+        },
+        "waiting": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "durations": [
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "running": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "durations": [
+            230,
+            160,
+            150,
+            150,
+            80,
+            80,
+            65,
+            65,
+            65,
+            80,
+            150,
+            150,
+            150,
+            150,
+            150,
+            230
+          ],
+          "loop": true
+        },
+        "review": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "durations": [
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170,
+            170
+          ],
+          "loop": true
+        }
+      },
+      "sequences": {
+        "idle": [
+          "idle",
+          "running",
+          "idle",
+          "running",
+          "idle"
+        ]
+      },
+      "atlasUrl": "/pet/whale-girl-refined/spritesheet.webp",
+      "manifestUrl": "/pet/whale-girl-refined/pet.json"
+    }
+  }
+]

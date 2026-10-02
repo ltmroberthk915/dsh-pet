@@ -25,5 +25,5 @@ export declare function effectiveFps(display: {
 /** Both running directions share the selected FPS policy, including tool execution. */
 export declare function retimeTracks<T extends {
     durations: number[];
-}>(tracks: Record<string, T>, fps?: number, runningTrack?: 'running-right' | 'running-left'): Record<string, T>;
+}>(tracks: Record<string, T>, fps?: number, runningTrack?: 'running-right' | 'running-left', density?: number): Record<string, T>;
 //# sourceMappingURL=animation.d.ts.map

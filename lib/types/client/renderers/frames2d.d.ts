@@ -34,6 +34,7 @@ export interface Frames2dTrackConfig {
 }
 /** The frames2d block as served inside the pet definition. */
 export interface PetFrames2dConfig {
+    frameDensity?: number;
     tracks: Record<string, Frames2dTrackConfig>;
     phases: Partial<Record<ActivityPhase, string>> & {
         idle: string;

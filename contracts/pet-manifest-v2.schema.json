@@ -37,6 +37,12 @@
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$"
     },
+    "frameDensity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4,
+      "description": "In-between drawings per baseline frame; preserves cycle speed under fixed/tok-s timing. Default 1."
+    },
     "author": {
       "type": "string",
       "maxLength": 128

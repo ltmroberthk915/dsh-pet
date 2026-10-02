@@ -226,6 +226,21 @@ describe('desktop pointer lifecycle', () => {
     window.dshPetOverlay = { drag, call: vi.fn(), interactive: vi.fn(), openMain: vi.fn(), subscribe: () => () => {} }
     return drag
   }
+  it('owns a stationary hold immediately and ignores unrelated pointers', () => {
+    const drag = desktop(), onDraggingChange = vi.fn(), onPet = vi.fn()
+    renderPet({ onDraggingChange, onPet })
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    fireEvent.pointerDown(sprite, { button: 0, pointerId: 1 })
+    expect(onDraggingChange).toHaveBeenLastCalledWith(true)
+    fireEvent.pointerDown(sprite, { button: 0, pointerId: 2 })
+    fireEvent.pointerUp(sprite, { button: 0, pointerId: 2 })
+    expect(drag.mock.calls.map(args => args[0])).toEqual(['start'])
+    expect(onDraggingChange).toHaveBeenCalledTimes(1)
+    fireEvent.pointerUp(sprite, { button: 0, pointerId: 1 })
+    expect(onDraggingChange.mock.calls.map(args => args[0])).toEqual([true, false])
+    fireEvent.click(sprite)
+    expect(onPet).toHaveBeenCalledOnce()
+  })
   it('detects a native window drag when local coordinates stay fixed', () => {
     const drag = desktop(), onPet = vi.fn(), onDraggingChange = vi.fn()
     renderPet({ onPet, onDraggingChange })

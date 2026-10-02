@@ -3,10 +3,10 @@
 适用插件：`@ltmroberthk915/dsh-pet` v1.2.0 起。原生 Windows DSH 安装并启用插件后，独立窗口自动启动；新电脑无需 Agent、PowerShell 补丁、额外 Node 或 Electron 安装，也无需退出 DSH。
 
 ```powershell
-dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/download/v1.2.0/dsh-session-pet.tgz
+dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/download/v1.3.0/dsh-session-pet.tgz
 ```
 
-在「设置 → 宠物」勾选「独立桌面宠物」并保存（默认开启）。首次准备需等待运行库复制和校验完成，设置页随后显示「独立窗口已运行 · 1.2.0」。鲸鱼娘、MIKU、商务小蓝鲸共用这套窗口，插件更新时渲染器一同更新。
+在「设置 → 宠物」勾选「独立桌面宠物」并保存（默认开启）。首次准备需等待运行库复制和校验完成，设置页随后显示「独立窗口已运行 · 1.3.0」。鲸鱼娘、MIKU、商务小蓝鲸共用这套窗口，插件更新时渲染器一同更新。
 
 如果已经安装旧版，可使用插件管理器的更新操作，或 `dsh plugin --profile desktop update @ltmroberthk915/dsh-pet`；固定旧版 URL 的依赖应改用上面的新版 URL。避免反复用 GUI「安装」提交完全相同的 URL，DSH 可能无法识别此次依赖变化。原生桌面使用 `desktop` profile，`web` 仅用于 Web 宿主。
 
@@ -33,7 +33,7 @@ dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/relea
 
 ## 1. 安装插件
 
-从[同版本 Release](https://github.com/ltmroberthk915/dsh-pet/releases/tag/v1.2.0)下载主包 `dsh-session-pet.tgz`，在 DSH 外部终端执行：
+从[同版本 Release](https://github.com/ltmroberthk915/dsh-pet/releases/tag/v1.3.0)下载主包 `dsh-session-pet.tgz`，在 DSH 外部终端执行：
 
 ```powershell
 dsh plugin --profile desktop add .\dsh-session-pet.tgz

@@ -12,16 +12,21 @@ it('ships all three companions with a stable whale default and every declared fr
   expect(registry.defaultEntry().id).toBe('whale-girl-refined')
   const miku = registry.byId('miku')!
   for (const name of PET_ROW_ORDER) expect(miku.frames2d!.tracks[name]?.frames.length, name).toBeGreaterThan(0)
-  expect(miku.frames2d!.tracks['running-right']!.frames).toHaveLength(8)
+  expect(miku.frames2d!.tracks['running-right']!.frames).toHaveLength(16)
+  expect(Object.values(miku.frames2d!.tracks).reduce((sum,track)=>sum+track.frames.length,0)).toBe(256)
   expect(miku.gameplay?.dragState).toBe('drag')
   expect(miku.gameplay?.sleep?.state).toBe('sleep-intro')
   expect(miku.gameplay?.shop?.items).toHaveLength(3)
   for (const pet of registry.entries) {
+    expect(pet.frameDensity, pet.id).toBe(2)
     for (const path of pet.servable) expect(existsSync(join(pet.dir,path)),pet.id+':'+path).toBe(true)
   }
   expect(miku.servable).toContain('palettes/gpt/thumb/running-left/frame-1.webp')
   const business = registry.byId('blue-whale-business')!
-  expect(business.rows).toEqual([4,4,4,4,4,4,4,4,4])
-  expect(imageDimensions(readFileSync(join(business.dir,'spritesheet.webp')))).toEqual({width:768,height:1152})
+  expect(business.rows).toEqual([8,8,8,8,8,8,8,8,8])
+  expect(imageDimensions(readFileSync(join(business.dir,'spritesheet.webp')))).toEqual({width:1536,height:1152})
+  const whale = registry.byId('whale-girl-refined')!
+  expect(whale.columns).toBe(32)
+  expect(whale.rows.reduce((sum,count)=>sum+count,0)).toBe(252)
   expect(business.voice?.overrides.whispers?.categories?.thinking).toEqual([])
 })

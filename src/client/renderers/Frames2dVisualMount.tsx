@@ -45,7 +45,7 @@ export function Frames2dVisualMount(props: {
   const [invalid, setInvalid] = useState(false)
   const palette = props.snapshot?.color?.palette
   const frames2d = useMemo(() => props.definition.frames2d === undefined ? undefined
-    : paletteFrames2d(props.definition.frames2d, props.definition.id, props.snapshot?.color),
+    : { ...paletteFrames2d(props.definition.frames2d, props.definition.id, props.snapshot?.color), frameDensity: props.definition.frameDensity },
   [props.definition, palette])
   const hasSessionMotion = sessionMotionPet(props.definition.id)
     && frames2d?.tracks['running-right'] !== undefined && frames2d.tracks['running-left'] !== undefined
@@ -79,7 +79,11 @@ export function Frames2dVisualMount(props: {
     // producers from fighting over the slot.
     if (props.bus !== undefined) {
       const gameplayBus = props.bus
-      gameplayBus.setTrack = (track) => { handleRef.current?.setState(track) }
+      gameplayBus.setTrack = (track) => {
+        // An earlier ambient act or an async wake-up can finish after grab.
+        // Its cleanup must not replace the held pose with a fall/standup act.
+        if (!props.drag.get()) handleRef.current?.setState(track)
+      }
       gameplayBus.setIdleTrack = (track) => { handleRef.current?.setIdleTrack(track) }
       // The HUD latches the wanted base idle (skin selection, restored from the
       // host snapshot): apply it on activation, so a late or repeated mount
@@ -103,6 +107,7 @@ export function Frames2dVisualMount(props: {
       handle.setState(props.definition.gameplay?.dragEndState)
     })
     cleanups.push(offDrag)
+    if (props.drag.get() && dragTrack !== undefined) handle.setState(dragTrack)
     return () => {
       handleRef.current = null
       for (const fn of cleanups.splice(0)) fn()
@@ -137,7 +142,7 @@ export function Frames2dVisualMount(props: {
   }, [waveKey, waveBlocked, hasSessionMotion, frames2d])
 
   useEffect(() => {
-    if (hasSessionMotion && props.feedback?.kind === 'feed' && props.snapshot?.gameplay?.mode == null) {
+    if (hasSessionMotion && !props.drag.get() && props.feedback?.kind === 'feed' && props.snapshot?.gameplay?.mode == null) {
       handleRef.current?.setState('eat')
     }
   }, [props.feedback?.at, props.feedback?.kind, hasSessionMotion, frames2d])

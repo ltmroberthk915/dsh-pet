@@ -52,9 +52,9 @@ export function effectiveFps(display: { animationMode?: AnimationMode; animation
 }
 
 /** Both running directions share the selected FPS policy, including tool execution. */
-export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number, runningTrack: 'running-right' | 'running-left' = 'running-right'): Record<string, T> {
+export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number, runningTrack: 'running-right' | 'running-left' = 'running-right', density = 1): Record<string, T> {
   if (fps === undefined) return tracks
-  const ms = 1000 / animationFps(fps)
+  const ms = 1000 / (animationFps(fps) * Math.max(1, Math.min(4, density)))
   return Object.fromEntries(Object.entries(tracks).map(([key, track]) => [key, key === runningTrack
     ? { ...track, durations: track.durations.map(() => ms) } : track]))
 }

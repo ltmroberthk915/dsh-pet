@@ -187,6 +187,7 @@ export interface PetDefinition {
     id: string;
     displayName: string;
     description: string;
+    frameDensity?: number;
     /** The renderer this entry mounts with (pet-center M2). */
     renderer: PetRendererKind;
     /** Live2d render block; present exactly when renderer is 'live2d' (M3). */

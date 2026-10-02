@@ -1,4 +1,5 @@
 import type { PetAnimation } from '../state.ts'
+import { denseWhaleTops } from './whale-dense-geometry.ts'
 
 // Alpha > 128 bounds measured from the packaged 16-column DS atlas. All five
 // palettes share its alpha geometry. CSS registration keeps the original
@@ -15,8 +16,9 @@ const tops: Record<PetAnimation, readonly number[]> = {
   review: [12,10,9,11,20,18,15,18,20,11,9,10,12,10,9,10],
 }
 
-export function whaleFramePose(animation: PetAnimation, column: number) {
-  const top = tops[animation][column] ?? tops[animation][0]!
+export function whaleFramePose(animation: PetAnimation, column: number, columns = 16) {
+  const geometry = columns === 32 ? denseWhaleTops : tops
+  const top = geometry[animation][column] ?? geometry[animation][0]!
   const locomotion = animation === 'running-left' || animation === 'running-right'
   const planted = !locomotion && animation !== 'jumping'
   // Keep the shared skirt/leg seam anchored. A bow and crouching hop retain

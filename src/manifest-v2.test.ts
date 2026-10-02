@@ -61,6 +61,16 @@ describe('safeManifestPath', () => {
   })
 })
 
+it('validates optional drawing density without changing legacy manifests', () => {
+  const plain = parsePetManifest(v2Sprite(), 'pet')
+  const dense = parsePetManifest(v2Sprite({ frameDensity: 2 }), 'pet')
+  expect(plain.ok && plain.manifest.frameDensity).toBeUndefined()
+  expect(dense.ok && dense.manifest.frameDensity).toBe(2)
+  for (const frameDensity of [0, 5, 1.5, '2', null]) {
+    expect(parsePetManifest(v2Sprite({ frameDensity }), 'pet').ok).toBe(false)
+  }
+})
+
 describe('parsePetManifest v1 compat read', () => {
   it('maps a bare Codex manifest onto a sprite2d v2 shape with a migration hint', () => {
     const result = parsePetManifest({ id: 'whale-girl', displayName: '鲸鱼娘' }, 'assets/whale')

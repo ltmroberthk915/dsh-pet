@@ -142,6 +142,8 @@ export interface PetManifestV2 {
     displayName: string;
     description?: string;
     version?: string;
+    /** Number of drawings per baseline animation frame (in-between density). */
+    frameDensity?: number;
     author?: string;
     /** Required by v2; v1 compat reads may lack it (warning, not rejection). */
     license?: string;

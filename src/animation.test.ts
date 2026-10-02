@@ -45,4 +45,13 @@ describe('playback modes and footer speed', () => {
     expect(source.idle.durations).toEqual([500,600])
     expect(source['running-right'].durations).toEqual([300,400])
   })
+  it('keeps cycle speed when a pet has twice as many distinct drawings', () => {
+    const old = { 'running-right': { durations: Array(8).fill(125) } }
+    const dense = { 'running-right': { durations: Array(16).fill(62.5) } }
+    for (const fps of [6,12,30,50,60]) {
+      const cycle = (tracks: Record<string, { durations: number[] }>) => tracks['running-right']!.durations.reduce((a,b)=>a+b,0)
+      expect(cycle(retimeTracks(dense,fps,'running-right',2))).toBeCloseTo(cycle(retimeTracks(old,fps)))
+    }
+    expect(retimeTracks(dense,undefined,'running-right',2)).toBe(dense)
+  })
 })

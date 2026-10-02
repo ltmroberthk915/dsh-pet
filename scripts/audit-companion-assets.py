@@ -28,14 +28,15 @@ for path in sorted((target/'thumb').rglob('*.webp')):
         checks.append(check)
 
 measurements = []
-for i in range(8):
-    right = np.array(Image.open(target/'thumb/running-right'/f'frame-{i+1}.webp').convert('RGBA'))
-    left = np.array(Image.open(target/'thumb/running-left'/f'frame-{i+1}.webp').convert('RGBA'))
+manifest = json.loads((target/'pet.json').read_text(encoding='utf-8'))
+for file in manifest['frames2d']['tracks']['running-right']['frames']:
+    right = np.array(Image.open(target/'thumb/running-right'/file).convert('RGBA'))
+    left = np.array(Image.open(target/'thumb/running-left'/file).convert('RGBA'))
     # Transparent WebP RGB is unspecified; compare visible pixels and alpha.
     mirror = right[:,::-1]
     assert np.array_equal(left[...,3],mirror[...,3])
     visible = left[...,3] > 0
-    assert np.array_equal(left[visible],mirror[visible]), str(i)
+    assert np.array_equal(left[visible],mirror[visible]), file
     measurements.append(head_anchor(Image.fromarray(right)))
 span = np.array([m['span'] for m in measurements])
 centers = np.array([[m['x'],m['y']] for m in measurements])
@@ -56,18 +57,20 @@ assert not failures, failures
 
 business = ROOT/'assets/blue-whale-business'
 atlas = np.array(Image.open(business/'spritesheet.webp').convert('RGBA'))
-assert atlas.shape == (1152,768,4)
+business_manifest = json.loads((business/'pet.json').read_text(encoding='utf-8'))
+columns = business_manifest['sprite2d']['columns']
+assert atlas.shape == (1152,192*columns,4)
 for palette in ['ds']+palettes:
     sibling = np.array(Image.open(business/'palettes'/f'{palette}.png').convert('RGBA'))
     assert np.array_equal(sibling[...,3],atlas[...,3]), palette
 for row in range(9):
-    for col in range(4):
+    for col in range(columns):
         alpha = atlas[row*128:(row+1)*128,col*192:(col+1)*192,3]
         assert (alpha > 128).sum() > 1200
         edge = np.concatenate([alpha[0,:],alpha[-1,:],alpha[:,0],alpha[:,-1]])
         assert not (edge > 32).any(), (row,col)
 result = {'status':'passed','mikuRuntimeFrames':report['runtimeFrames'],'mikuNewFrames':len(checks),
-          'mikuPaletteFrames':report['runtimeFrames']*4,'businessFrames':36,'businessPalettes':5,
+          'mikuPaletteFrames':report['runtimeFrames']*4,'businessFrames':sum(business_manifest['sprite2d']['frames']),'businessPalettes':5,
           'upstreamGitBlobs':len(source['files']),'edgeFailures':0,'headsetSpanCvPercent':report['runHeadsetSpan']['cvPercent']}
 (ROOT/'output/companion-verification/asset-results.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(result,indent=2))

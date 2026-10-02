@@ -37,7 +37,7 @@ dsh plugin --profile desktop update @ltmroberthk915/dsh-pet
 如果旧依赖固定在旧版下载地址，请改为本次明确的版本地址：
 
 ```sh
-dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/download/v1.2.0/dsh-session-pet.tgz
+dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/download/v1.3.0/dsh-session-pet.tgz
 ```
 
 不要用 GUI「安装」反复提交同一个 URL 来重装已存在的依赖；DSH 可能报 `ambiguous-install`。当前使用 GitHub 预编译包分发；Git 分支也带有 `lib/`，无 `prepare` 或消费者构建步骤，不需要 `allowBuilds`、pnpm shim 或修改全局构建策略。

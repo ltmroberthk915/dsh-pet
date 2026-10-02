@@ -1,14 +1,14 @@
-# MIKU 与商务小蓝鲸 · v1.1.1
+# MIKU 与商务小蓝鲸 · v1.3.0
 
 在「设置 → 宠物」中选择「MIKU（会话版）」或「小蓝鲸（商务版）」。鲸鱼娘精致版仍是默认形象，已有大小、位置、配色、调速参数和累计互动记录继续使用。
 
-本地安装包为 `dsh-session-pet-1.1.1.tgz`，内含编译后的 host、页面 client、桌面 renderer 及三套形象素材，没有安装时脚本。将下载的包放到当前目录后，在 DSH 外部终端运行：
+本地安装包为 `dsh-session-pet-1.3.0.tgz`，内含编译后的 host、页面 client、桌面 renderer 及三套形象素材，没有安装时脚本。将下载的包放到当前目录后，在 DSH 外部终端运行：
 
 ```powershell
-dsh plugin --profile desktop add ./dsh-session-pet-1.1.1.tgz
+dsh plugin --profile desktop add ./dsh-session-pet-1.3.0.tgz
 ```
 
-独立桌面窗口沿用已有的宿主适配器；支持范围与接入方式见[桌面说明](desktop-refined-pet.md)。
+独立桌面窗口随插件自动启用；安装方式见 [Windows 安装指南](install-desktop-windows.md)。
 
 ## 会话行为
 
@@ -38,8 +38,10 @@ MIKU 原素材取自原作者仓库 `v0.4.4` 的固定 tree `0985aa2d5b0b556232c
 
 新增动作通过内置 image_gen 生成。跑步采用相反的手臂前后位置，并剔除伸直前臂、看似挥拳的画稿；以红色耳机条的主轴跨度统一整个人物大小和位置，只对整张画稿等比缩放，不拉伸身体局部。清理源图相邻格残片，并验证左右跑及四套派生颜色具有相同透明轮廓。逐帧检查同时包含最后一帧回到第一帧的循环衔接。几何指标用于校准，动作和手臂结构仍需目视复核。
 
-商务小蓝鲸有九组动作，每组四帧，单格 192 × 128，采用真实透明背景。所有生成源图和提示词保存在 `artwork/blue-whale-business/`。重建工具为 `scripts/build-companion-assets.py`，跑步单独重建可加 `--pet miku --runs-only`；需要 Python、Pillow、NumPy 和 SciPy。
+商务小蓝鲸有九组动作，每组八帧，单格 192 × 128，采用真实透明背景。所有生成源图和提示词保存在 `artwork/blue-whale-business/`。当前重建工具为 `scripts/build-dense-animation.py`，随后运行 `scripts/build-palettes.py`；补帧源图和提示词在 `artwork/motion-v1.3.0/`；需要 Python、Pillow、NumPy 和 SciPy。
 
 提示词：`artwork/miku-v0.4.4/prompts.json`、`edge-cleanup-prompt.json`、`accepted-prompts.json`，以及 `artwork/blue-whale-business/prompts.json`。打包后的来源、尺寸、帧位与五色检查报告位于各自 `assets/` 目录，源图只保存在开发目录。
 
 验证记录保存在 `output/companion-verification/`：源码测试报告、透明轮廓与比例审计、32 项隔离 Electron 检查及实际桌面窗口截图。桌面检查加载生产 bundle，覆盖两套形象的九种动作、五色资源路径、MIKU 帧率更新和商务鲸鱼 3:2 显示比例。
+
+当前三角色共有 580 帧；完整补帧、游泳和拖拽修复记录见 [v1.3.0 动画说明](motion-v1.3.0.md)。固定 FPS 与 tok/s 设置保持原动作速度，内部使用两倍图像密度。

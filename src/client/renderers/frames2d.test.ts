@@ -159,6 +159,22 @@ describe('frames2dRenderer', () => {
     handle.dispose()
   })
 
+  it('displays the extra in-between image without slowing the run cycle', () => {
+    const { ctx, img } = setup()
+    const run = { frames: ['/run/key1.webp','/run/mid1.webp','/run/key2.webp','/run/mid2.webp'], durations: [50,50,50,50], loop: true }
+    const config = { ...CONFIG, frameDensity: 2, tracks: { ...CONFIG.tracks, 'running-right': run } }
+    const handle = frames2dRenderer.mount(ctx, frames2dRenderer.validateConfig(config)) as Frames2dRendererHandle
+    handle.setActivityTrack('running-right')
+    handle.setPlaybackFps(10)
+    vi.advanceTimersByTime(50)
+    expect(img().getAttribute('src')).toBe('/run/mid1.webp')
+    vi.advanceTimersByTime(50)
+    expect(img().getAttribute('src')).toBe('/run/key2.webp')
+    vi.advanceTimersByTime(100)
+    expect(img().getAttribute('src')).toBe('/run/key1.webp')
+    handle.dispose()
+  })
+
   it('swaps the base idle target via setIdleTrack (skin semantics)', () => {
     const skinConfig: PetFrames2dConfig = {
       tracks: {

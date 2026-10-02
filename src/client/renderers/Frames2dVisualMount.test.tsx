@@ -71,6 +71,21 @@ describe('Frames2dVisualMount', () => {
     const handle = mountWith({})
     expect(handle.setIdleTrack).not.toHaveBeenCalled()
   })
+  it('keeps a grabbed pose when an earlier ambient action ends or the visual remounts', () => {
+    const def=definition(), drag=createDragStream(), bus: GameplayBus={}
+    def.frames2d!.tracks.drag=def.frames2d!.tracks.idle!
+    const handle={dispose:vi.fn(),setState:vi.fn(),setIdleTrack:vi.fn(),currentTrack:()=> 'drag'}
+    vi.spyOn(defaultPetRendererRegistry,'mount').mockReturnValue(handle)
+    drag.push(true)
+    render(<Frames2dVisualMount definition={def} phase="idle" onPet={()=>{}} drag={drag} bus={bus} t={t} />)
+    expect(handle.setState).toHaveBeenLastCalledWith('drag')
+    bus.setTrack?.('standup')
+    bus.setTrack?.(undefined)
+    expect(handle.setState).toHaveBeenCalledTimes(1)
+    drag.push(false)
+    bus.setTrack?.('sleep')
+    expect(handle.setState).toHaveBeenLastCalledWith('sleep')
+  })
 
   it('keeps one renderer and decoded cache when per-session footer FPS changes', () => {
     const def = definition()

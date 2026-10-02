@@ -284,7 +284,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   // the native flag alone is not a safe submit/cancel guard (#303).
   const composingRef = useRef(false)
   const [dragPos, setDragPos] = useState<{ right: number; bottom: number } | null>(null)
-  const dragRef = useRef<{ startX: number; startY: number; right: number; bottom: number } | null>(null)
+  const dragRef = useRef<{ pointerId: number; startX: number; startY: number; right: number; bottom: number } | null>(null)
   const hideTimerRef = useRef<number | null>(null)
   const frameRef = useRef<{ track: PetAnimation | null; index: number; elapsed: number }>({
     track: null,
@@ -297,7 +297,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const columns = definition.columns
   const rows = definition.rows
   const stabilizeWhale = props.visual === undefined && definition.id === 'whale-girl-refined'
-    && columns === 16 && cell.width === 192 && cell.height === 208
+    && (columns === 16 || columns === 32) && cell.width === 192 && cell.height === 208
   const phase = snapshot?.phase ?? 'idle'
   const baseAnimation = snapshot?.animation ?? 'idle'
   const waveKey = !sessionMotionPet(definition.id) ? undefined
@@ -329,7 +329,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
     ? animation === 'running-right' || animation === 'running-left'
     : usesRightRun
   const fps = canRetime ? effectiveFps(display, snapshot?.performance?.tokensPerSecond) : undefined
-  const tracks = useMemo(() => retimeTracks(definition.tracks, fps, runningTrack) as typeof definition.tracks, [definition.tracks, fps, runningTrack])
+  const tracks = useMemo(() => retimeTracks(definition.tracks, fps, runningTrack, definition.frameDensity) as typeof definition.tracks, [definition.tracks, fps, runningTrack, definition.frameDensity])
   // Hover-panel chrome from the pet's voice pack (pet-center M4, issue
   // #677): every slot falls back to the i18n dictionary when unset. Stat
   // formats carry {rank}/{n}/{points} placeholders the host validated.
@@ -443,7 +443,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
       if (spriteRef.current !== null) spriteRef.current.style.backgroundPosition = pos
       const upper = whaleUpperRef.current, frame = whaleFrameRef.current, legs = whaleLegsRef.current
       if (!stabilizeWhale || !upper || !frame || !legs) return
-      const pose = whaleFramePose(action, column)
+      const pose = whaleFramePose(action, column, columns)
       frame.style.backgroundPosition = pos
       frame.style.transformOrigin = `${84 / 192 * 100}% ${pose.pivotY / 208 * 100}%`
       frame.style.transform = `translateY(${pose.offsetY * scaleRef.current}px) scale(${pose.scale})`
@@ -543,24 +543,26 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   useEffect(() => () => clearHideTimer(), [])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>): void => {
-    if (props.dragDisabled === true || e.button !== 0) return
+    if (props.dragDisabled === true || e.button !== 0 || dragRef.current !== null) return
     window.dshPetOverlay?.drag('start')
     endWalk(false)
     e.preventDefault()
     e.currentTarget.setPointerCapture?.(e.pointerId)
     const current = dragPos ?? { right: display.right, bottom: display.bottom }
-    dragRef.current = { startX: window.dshPetOverlay ? e.screenX : e.clientX,
+    dragRef.current = { pointerId: e.pointerId, startX: window.dshPetOverlay ? e.screenX : e.clientX,
       startY: window.dshPetOverlay ? e.screenY : e.clientY, ...current }
     draggedRef.current = false
+    // A stationary held pointer owns the pet too. Waiting for a movement
+    // threshold lets the idle director replace MIKU's held pose while grabbed.
+    props.onDraggingChange?.(true)
     setHovered(false)
   }
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>): void => {
     const drag = dragRef.current
-    if (drag === null) return
+    if (drag === null || e.pointerId !== drag.pointerId) return
     const dx = (window.dshPetOverlay ? e.screenX : e.clientX) - drag.startX
     const dy = (window.dshPetOverlay ? e.screenY : e.clientY) - drag.startY
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-      if (!draggedRef.current) props.onDraggingChange?.(true)
       draggedRef.current = true
     }
     if (window.dshPetOverlay) { window.dshPetOverlay.drag('move'); return }
@@ -568,12 +570,13 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
     const bottom = clampOffset(drag.bottom - dy, window.innerHeight - 40)
     setDragPos({ right, bottom })
   }
-  const onPointerUp = (): void => {
+  const onPointerUp = (e?: ReactPointerEvent<HTMLDivElement>): void => {
     if (dragRef.current === null) return
+    if (e !== undefined && e.pointerId !== dragRef.current.pointerId) return
     dragRef.current = null
     window.dshPetOverlay?.drag('end')
-    if (draggedRef.current) props.onDraggingChange?.(false)
-    if (dragPos !== null) props.onDragEnd(dragPos.right, dragPos.bottom)
+    props.onDraggingChange?.(false)
+    if (draggedRef.current && dragPos !== null) props.onDragEnd(dragPos.right, dragPos.bottom)
   }
   const endDragRef = useRef(onPointerUp)
   endDragRef.current = onPointerUp

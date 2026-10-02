@@ -382,12 +382,22 @@ export function installDesktopPet({ owner, request, openMain }) {
     try {
       const record = assertPet(event), win = record.win
       if (record.retiring) return
-      if (phase === 'start') { record.drag = { cursor: screen.getCursorScreenPoint(), bounds: win.getBounds() }; syncPointer(record); keepOnTop(record); return }
+      if (phase === 'start') {
+        // Captured pointer events can be re-delivered after a native move.
+        // Keep the original screen anchor for the entire held gesture.
+        record.drag ??= { cursor: screen.getCursorScreenPoint(), bounds: win.getBounds() }
+        syncPointer(record); keepOnTop(record); return
+      }
       if (phase === 'end') { endDrag(record); return }
       if (phase !== 'move' || !record.drag || Date.now() - record.lastMove < 8) return
       record.lastMove = Date.now()
       const cursor = screen.getCursorScreenPoint(), drag = record.drag
-      win.setPosition(Math.round(drag.bounds.x + cursor.x - drag.cursor.x), Math.round(drag.bounds.y + cursor.y - drag.cursor.y))
+      const x = Math.round(drag.bounds.x + cursor.x - drag.cursor.x)
+      const y = Math.round(drag.bounds.y + cursor.y - drag.cursor.y)
+      const current = win.getBounds()
+      // Moving a transparent HWND emits more pointer/move messages. A held
+      // cursor must not keep issuing native moves back into that feedback loop.
+      if (current.x !== x || current.y !== y) win.setPosition(x, y)
     } catch {}
   })
   ipcMain.handle(PREFIX + 'open-main', (event, id) => {

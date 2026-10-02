@@ -283,7 +283,6 @@ describe('pet client apply', () => {
 
 function desktopFixture() {
   vi.useFakeTimers()
-  vi.stubGlobal('fetch', vi.fn(async () => Response.json([])))
   let snapshot: PetStateView = {
     animation: 'idle', phase: 'idle', sessionActive: false,
     display: { visible: true, size: 163, right: 24, bottom: 20, bubbleScale: 1, desktopEnabled: true, multiPetEnabled: true },
@@ -291,6 +290,11 @@ function desktopFixture() {
     pet: { id: 'whale-girl-refined', displayName: '鲸鱼娘', description: '' }, name: '鲸鱼娘', treats: { stocked: 0, max: 20 },
   }
   const state = vi.fn(async () => snapshot)
+  // State is served by the plugin API even when a legacy desktop bridge is
+  // present; the bridge only owns window configuration and gestures.
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => Response.json(
+    url.startsWith('/api/pet/state') ? await state() : [],
+  )))
   const configure = vi.fn(async (options: { enabled: boolean; currentSessionId?: string }) => ({ active: options.enabled }))
   window.dshPetDesktop = { state, configure, resetPosition: vi.fn(async () => ({ active: true })) }
   const lifecycle = fakeContext()

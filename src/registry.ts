@@ -246,6 +246,7 @@ export interface PetDefinition {
   id: string
   displayName: string
   description: string
+  frameDensity?: number
   /** The renderer this entry mounts with (pet-center M2). */
   renderer: PetRendererKind
   /** Live2d render block; present exactly when renderer is 'live2d' (M3). */
@@ -889,7 +890,8 @@ function scanPetDir(dir: string, options: { assetPrefix?: string; warnings?: str
     if (entry === undefined) continue
     // Optional voice pack (voice.json) — pure content, warn-and-drop (M4).
     const voice = loadVoicePackFile(join(entryDir, 'voice.json'), options)
-    entries.push({ ...entry, ...(voice === undefined ? {} : { voice }) })
+    entries.push({ ...entry, ...(verdict.manifest.frameDensity === undefined ? {} : { frameDensity: verdict.manifest.frameDensity }),
+      ...(voice === undefined ? {} : { voice }) })
   }
   return entries
 }
@@ -1219,6 +1221,7 @@ export function petEntryView(entry: PetEntry, globalVoice?: VoicePack): PetDefin
     displayName: entry.displayName,
     description: entry.description,
     renderer: entry.renderer,
+    ...(entry.frameDensity === undefined ? {} : { frameDensity: entry.frameDensity }),
     ...(entry.live2d === undefined ? {} : { live2d: entry.live2d }),
     ...(entry.frames2d === undefined ? {} : { frames2d: entry.frames2d }),
     ...(entry.gameplay === undefined ? {} : { gameplay: entry.gameplay }),

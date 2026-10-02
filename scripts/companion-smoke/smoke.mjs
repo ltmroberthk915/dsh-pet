@@ -1,4 +1,4 @@
-import { app, BrowserWindow, protocol, session } from 'electron'
+import { app, BrowserWindow, protocol, session, screen } from 'electron'
 import { mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -82,6 +82,52 @@ app.whenReady().then(async()=> {
     const rect=sprite?.getBoundingClientRect();
     return {animation:sprite?.dataset.dshPetAnimation,track:canvas?.dataset.dshPetTrack,pixels:canvas?.getContext('2d')?.getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0),atlas:sprite?.style.backgroundImage,position:sprite?.style.backgroundPosition,width:rect?.width,height:rect?.height,canvases:document.querySelectorAll('canvas[data-dsh-pet-frames2d]').length,connected:document.body.dataset.connected,html:document.body.innerHTML.slice(0,1200)};
   })()`)
+  // Exercise a real renderer pointer capture while the native cursor remains
+  // held still. Only this isolated fixture owns the fake screen cursor.
+  const realCursor = screen.getCursorScreenPoint
+  const boundsBeforeHold = win.getBounds()
+  const spriteRect = await win.webContents.executeJavaScript(`(() => {
+    const r=document.querySelector('[data-dsh-pet-animation]').getBoundingClientRect();
+    return {x:Math.round(r.x+r.width/2),y:Math.round(r.y+r.height/2)};
+  })()`)
+  let cursor = {x:boundsBeforeHold.x+spriteRect.x,y:boundsBeforeHold.y+spriteRect.y}
+  screen.getCursorScreenPoint = () => cursor
+  win.setIgnoreMouseEvents(false)
+  win.webContents.focus()
+  await win.webContents.executeJavaScript(`window.testPointerEvents=[];for(const type of ['pointerdown','pointermove','pointerup','lostpointercapture','blur'])window.addEventListener(type,e=>window.testPointerEvents.push({type:e.type,x:e.clientX,y:e.clientY,sx:e.screenX,sy:e.screenY,buttons:e.buttons,target:e.target.outerHTML?.slice(0,250)}),true)`)
+  win.webContents.sendInputEvent({type:'mouseMove',...spriteRect})
+  win.webContents.sendInputEvent({type:'mouseDown',...spriteRect,button:'left',clickCount:1})
+  await pause(100)
+  const pressed = await inspect()
+  report.holdBeforeMove = {track:pressed.track,bounds:win.getBounds()}
+  cursor = {x:cursor.x+30,y:cursor.y+20}
+  win.webContents.sendInputEvent({type:'mouseMove',x:spriteRect.x+30,y:spriteRect.y+20,modifiers:['leftButtonDown']})
+  await pause(100)
+  const heldBounds = win.getBounds()
+  report.holdSamples=[]
+  for (let i=0;i<150;i++) {
+    // Native window moves generate fresh pointer events with changed local
+    // coordinates. They must never accumulate into another window movement.
+    win.webContents.sendInputEvent({type:'mouseMove',...spriteRect,modifiers:['leftButtonDown']})
+    await pause(100)
+    const rect=await win.webContents.executeJavaScript(`(() => {const r=document.querySelector('[data-dsh-pet-animation]').getBoundingClientRect();return {x:r.x,y:r.y}})()`)
+    report.holdSamples.push({bounds:win.getBounds(),rect,track:(await inspect()).track})
+  }
+  win.webContents.sendInputEvent({type:'mouseUp',...spriteRect,button:'left',clickCount:1})
+  await pause(50)
+  screen.getCursorScreenPoint = realCursor
+  report.pointerEvents=await win.webContents.executeJavaScript('window.testPointerEvents')
+  check('MIKU press owns the pose before pointer movement',pressed.track==='drag',report.holdBeforeMove)
+  check('MIKU held drag keeps native origin',report.holdSamples.every(s=>s.bounds.x===heldBounds.x&&s.bounds.y===heldBounds.y),{heldBounds,samples:report.holdSamples})
+  check('MIKU held drag keeps renderer origin',report.holdSamples.every(s=>s.rect.x===report.holdSamples[0].rect.x&&s.rect.y===report.holdSamples[0].rect.y),report.holdSamples)
+  check('MIKU stays in drag pose for a 15 second hold',report.holdSamples.every(s=>s.track==='drag'),report.holdSamples)
+  // Remount after the release/standup sequence so gesture feedback does not
+  // leak into the independent activity/palette rendering assertions below.
+  current=makeState('blue-whale-business')
+  win=await refresh()
+  // Offscreen input has screenX/Y=0, so Chromium treats the release as a
+  // click too. Let the normal 2.6s pet-feedback lifetime finish before QA.
+  await pause(2800)
   const motions=['idle','running-right','running-left','waving','jumping','failed','waiting','running','review']
   for (const id of ['miku','blue-whale-business']) {
     for (const animation of motions) {

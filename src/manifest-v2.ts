@@ -146,6 +146,8 @@ export interface PetManifestV2 {
   displayName: string
   description?: string
   version?: string
+  /** Number of drawings per baseline animation frame (in-between density). */
+  frameDensity?: number
   author?: string
   /** Required by v2; v1 compat reads may lack it (warning, not rejection). */
   license?: string
@@ -183,7 +185,7 @@ const SEMVER_PATTERN = /^\d+\.\d+\.\d+$/
 export const KNOWN_TOP_LEVEL = new Set([
   '$schema', 'petManifestVersion', 'id', 'displayName', 'description', 'version',
   'author', 'license', 'homepage', 'renderer', 'sprite2d', 'live2d', 'frames2d', 'sequences', 'remarks',
-  'gameplay',
+  'gameplay', 'frameDensity',
 ])
 /** sprite2d block field allow-list (drift-locked to the schema file). */
 export const KNOWN_SPRITE2D = new Set(['spritesheetPath', 'cell', 'columns', 'atlasRows', 'frames', 'tracks'])
@@ -691,6 +693,11 @@ function parseV2(source: Record<string, unknown>, diag: Diagnostics): PetManifes
   if (source.version !== undefined) {
     if (typeof source.version !== 'string' || !SEMVER_PATTERN.test(source.version)) diag.error('version must be a semver string (x.y.z)')
     else manifest.version = source.version
+  }
+  if (source.frameDensity !== undefined) {
+    if (!Number.isInteger(source.frameDensity) || (source.frameDensity as number) < 1 || (source.frameDensity as number) > 4) {
+      diag.error('frameDensity must be an integer from 1 to 4')
+    } else manifest.frameDensity = source.frameDensity as number
   }
   if (source.author !== undefined) {
     if (typeof source.author !== 'string' || source.author.length > 128) diag.error('author must be a string of at most 128 chars')

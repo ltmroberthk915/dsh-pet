@@ -38,6 +38,7 @@ export interface Frames2dTrackConfig {
 
 /** The frames2d block as served inside the pet definition. */
 export interface PetFrames2dConfig {
+  frameDensity?: number
   tracks: Record<string, Frames2dTrackConfig>
   phases: Partial<Record<ActivityPhase, string>> & { idle: string }
   /** Selectable skins; each swaps the base idle target while selected. */
@@ -156,7 +157,9 @@ function validateFrames2dConfig(config: unknown): PetFrames2dConfig {
     }
     if (resolved.length > 0) skins = resolved
   }
-  return { tracks, phases: phases as PetFrames2dConfig['phases'], ...(skins === undefined ? {} : { skins }) }
+  const frameDensity = Number.isInteger(config.frameDensity) && (config.frameDensity as number) >= 1 && (config.frameDensity as number) <= 4
+    ? config.frameDensity as number : 1
+  return { tracks, frameDensity, phases: phases as PetFrames2dConfig['phases'], ...(skins === undefined ? {} : { skins }) }
 }
 
 interface DecodedFrame {
@@ -338,7 +341,7 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       : activityTrack === config.phases.idle ? baseIdle : activityTrack
 
     const frameDuration = (): number => playbackFps !== undefined && (track === 'running-right' || track === 'running-left')
-      ? 1000 / playbackFps : config.tracks[track]?.durations[frameIndex] ?? 200
+      ? 1000 / (playbackFps * (config.frameDensity ?? 1)) : config.tracks[track]?.durations[frameIndex] ?? 200
 
     /** Canvas path: paints the newest requested frame; stale draws drop out. */
     const paintCanvas = (url: string): void => {
