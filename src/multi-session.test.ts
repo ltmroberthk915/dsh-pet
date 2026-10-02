@@ -18,6 +18,29 @@ function setup() {
   return { ctx, dir, registry, service, session, phase }
 }
 describe('per-conversation desktop pets', () => {
+  it('keeps left/right generation and critical bubbles isolated to their own session', async () => {
+    const f = setup(), a = f.session('motion-a', 'gpt-6', 264), b = f.session('motion-b', 'claude', 80)
+    await f.service.setConfig({ multiPetEnabled: true, animationMode: 'tick', animationTickSlope: .18, animationTickIntercept: 5 })
+    const stream = (session: any, chunk: any) => f.ctx.emit('agent/assistant-stream', { agent: { session }, frame: { type: 'chunk', attemptId: session.id, revision: 1, chunk } } as any)
+    stream(a, { type: 'reasoning-delta', index: 0, text: 'reasoning' })
+    stream(b, { type: 'tool-call-delta', index: 0, id: 'edit', name: 'apply_patch', argumentsDelta: 'patch' })
+    const state = await f.service.state(a.id)
+    expect(state).toMatchObject({ animation: 'running-right', generation: 'reasoning', performance: { tokensPerSecond: 264 } })
+    expect(state.companions?.find(c => c.sessionId === b.id)).toMatchObject({ primary: false, animation: 'running-left', generation: 'tool-arguments', performance: { tokensPerSecond: 80 } })
+    expect((await f.service.state(b.id)).companions?.find(c => c.sessionId === b.id)?.primary).toBe(true)
+    f.ctx.emit('session/event', b as any, { type: 'turn/end', data: { turn: 1, reason: { kind: 'error', error: { message: 'boom' } } } } as any)
+    const failed = await f.service.state(b.id)
+    expect(failed).toMatchObject({ animation: 'failed', generation: undefined })
+    expect(failed.sessions?.[0]?.bubble).toBe('这一轮出错了')
+    expect(failed.sessions?.[0]?.whisper).toBeUndefined()
+    expect(failed.companions?.find(c => c.sessionId === b.id)?.whisper).toBeUndefined()
+    expect(failed.companions?.find(c => c.sessionId === a.id)?.generation).toBe('reasoning')
+    f.ctx.emit('session/event', a as any, { type: 'turn/end', data: { turn: 1, reason: { kind: 'blocked' } } } as any)
+    const blocked = await f.service.state(a.id)
+    expect(blocked).toMatchObject({ animation: 'waiting', generation: undefined })
+    expect(blocked.sessions?.[0]?.whisper).toBeUndefined()
+    expect(blocked.display).toMatchObject({ animationTickSlope: .18, animationTickIntercept: 5 })
+  })
   it('shares feeding, affinity, treats and cooldowns across sessions, mode changes and restart', async () => {
     vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-01T12:00:00Z'))
     const f = setup(), a = f.session('shared-a', 'gpt-6'), b = f.session('shared-b', 'claude')
@@ -54,7 +77,8 @@ describe('per-conversation desktop pets', () => {
   })
   it('single mode binds animation, bubbles and footer speed to the same selected session', async () => {
     const f = setup(), a = f.session('a', 'gpt-6', 264), b = f.session('b', 'claude', 80)
-    f.phase(a, 'thinking'); f.phase(b, 'tool')
+    f.ctx.emit('agent/assistant-stream', { agent: { session: a }, frame: { type: 'chunk', attemptId: 'a-1', revision: 1, chunk: { type: 'reasoning-delta', index: 0, text: 'thinking' } } } as any)
+    f.phase(b, 'tool')
     const state = await f.service.state('a')
     expect(state.animation).toBe('running-right')
     expect(state.sessions?.map(s => s.sessionId)).toEqual(['a'])

@@ -437,7 +437,7 @@ export function apply(ctx: ClientContext): void {
           petApi.interact('pet').then((result) => {
             setFeedback({
               text: result.reaction,
-              kind: 'pet',
+                kind: result.delta > 0 ? 'pet' : 'none',
               at: Date.now(),
             })
           }, () => {

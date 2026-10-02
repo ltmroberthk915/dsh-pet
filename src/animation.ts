@@ -51,10 +51,10 @@ export function effectiveFps(display: { animationMode?: AnimationMode; animation
   return animationFps(display.animationFps)
 }
 
-/** Only right-running changes speed. Every other track keeps its original timing. */
-export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number): Record<string, T> {
+/** Retime only the selected generation track; tool execution keeps native timing. */
+export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number, runningTrack: 'running-right' | 'running-left' = 'running-right'): Record<string, T> {
   if (fps === undefined) return tracks
   const ms = 1000 / animationFps(fps)
-  return Object.fromEntries(Object.entries(tracks).map(([key, track]) => [key, key === 'running-right'
+  return Object.fromEntries(Object.entries(tracks).map(([key, track]) => [key, key === runningTrack
     ? { ...track, durations: track.durations.map(() => ms) } : track]))
 }

@@ -111,6 +111,54 @@ function petProps(overrides: Partial<PetSpriteProps> = {}): PetSpriteProps {
   }
 }
 
+describe('refined whale token playback', () => {
+  it.each(['running-right', 'running-left'] as const)('retimes %s only during generation and preserves frame position when tok/s changes', animation => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
+    let now = 0
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
+    let tick: FrameRequestCallback | undefined
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => { tick = callback; return 1 })
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {})
+    const definition = { ...petDefinition(), id: 'whale-girl-refined' }
+    const state: PetStateView = { ...snapshot, animation, phase: 'tool', generation: 'tool-arguments',
+      performance: { tokensPerSecond: 150, source: 'sessionStats', sessionId: 'a' } }
+    const display = { ...snapshot.display, animationMode: 'tick' as const, animationTickSlope: .1, animationTickIntercept: 5 }
+    const props = petProps({ definition, snapshot: state, display })
+    const view = render(<PetSprite {...props} />)
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    expect(parseFloat(sprite.style.backgroundPosition)).toBe(0)
+    now = 51; act(() => tick?.(now))
+    const advanced = sprite.style.backgroundPosition
+    expect(parseFloat(advanced)).toBeLessThan(0)
+    view.rerender(<PetSprite {...props} snapshot={{ ...state, performance: { ...state.performance!, tokensPerSecond: 250 } }} />)
+    expect(sprite.style.backgroundPosition).toBe(advanced)
+    view.rerender(<PetSprite {...props} snapshot={{ ...state, generation: undefined }} />)
+    now = 110; act(() => tick?.(now))
+    expect(sprite.style.backgroundPosition).toBe(advanced)
+  })
+
+  it('waves once for a request, then waits, and never masks token generation or retries the same greeting', () => {
+    vi.useFakeTimers()
+    try {
+      const definition = { ...petDefinition(), id: 'whale-girl-refined' }
+      const state: PetStateView = { ...snapshot, phase: 'tool', animation: 'waiting', waveKey: 'ask-1' }
+      const props = petProps({ definition, snapshot: state })
+      const view = render(<PetSprite {...props} />)
+      const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+      expect(sprite.style.backgroundPosition).toBe('0px -480px')
+      act(() => vi.advanceTimersByTime(1401))
+      expect(sprite.style.backgroundPosition).toBe('0px -960px')
+      view.rerender(<PetSprite {...props} snapshot={{ ...state }} />)
+      expect(sprite.style.backgroundPosition).toBe('0px -960px')
+      view.rerender(<PetSprite {...props} snapshot={{ ...state, waveKey: 'ask-2', generation: 'text', animation: 'running-right' }} />)
+      expect(sprite.style.backgroundPosition).toBe('0px -160px')
+      view.rerender(<PetSprite {...props} snapshot={{ ...state, waveKey: 'ask-2' }} />)
+      expect(sprite.style.backgroundPosition).toBe('0px -960px')
+      view.unmount()
+    } finally { vi.useRealTimers() }
+  })
+})
+
 describe('small companion bubble permissions', () => {
   it('suppresses status, whisper and feedback while small, then restores them on promotion', () => {
     const small: PetStateView = { ...snapshot, primary: false, sessionId: 'secondary', bubble: 'status copy',

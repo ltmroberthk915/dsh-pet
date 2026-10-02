@@ -110,14 +110,12 @@ function assistantChunk(
   chunk: AssistantChunk,
   seq: number,
 ): AssistantStreamPayload {
-  void turn
-  void step
   return {
     agent: { session } as Agent,
     frame: {
       type: 'chunk',
-      attemptId: attemptId(`attempt-${seq}`),
-      revision: 1,
+      attemptId: attemptId(`attempt-${turn}-${step}`),
+      revision: seq,
       index: seq,
       time: seq,
       chunk,
@@ -295,7 +293,8 @@ describe('PetService (rc.6 session events)', () => {
       }, 5))
       expect(await service.state()).toMatchObject({ animation: 'review', bubble: '整理回复中' })
 
-      ctx.emit('session/event', session, toolCall(1, 1, 'call-1', 'shell', 6))
+      ctx.emit('agent/assistant-stream', assistantChunk(session, 1, 1, { type: 'finish', reason: { kind: 'stop' } }, 6))
+      ctx.emit('session/event', session, toolCall(1, 1, 'call-1', 'shell', 7))
       expect(await service.state()).toMatchObject({
         animation: 'running-right',
         bubble: '正在使用 shell',

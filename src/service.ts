@@ -63,6 +63,7 @@ import {
   type PetStateConfig,
   type PetStateInput,
   type PetStateSnapshot,
+  type PetMotion,
 } from './state.ts'
 import {
   applyGameplayEffects,
@@ -162,7 +163,7 @@ export interface PetSessionView {
 export const MAX_SESSION_BUBBLES = 12
 
 /** One live conversation (or the sole main-window idle companion). */
-export interface PetCompanionView {
+export interface PetCompanionView extends PetMotion {
   sessionId: string
   primary: boolean
   /** Completion revision awaiting an explicit foreground-view acknowledgement. */
@@ -177,7 +178,7 @@ export interface PetCompanionView {
 }
 
 /** Snapshot returned by `pet.state`. */
-export interface PetStateView {
+export interface PetStateView extends PetMotion {
   primary?: boolean
   awaitingView?: number
   sessionId?: string
@@ -516,6 +517,7 @@ export class PetService extends Service {
           // declared as a durable event type by this package because current
           // Harness installations publish the official session vocabulary.
           if ((event.type as string) === 'activity/status') {
+            if (runtime.stream?.input !== undefined) return
             const payload = ((event as unknown as { data?: unknown }).data ?? {}) as ActivityStatusEventLike
             if (typeof payload.phase !== 'string' || !isActivityPhase(payload.phase)) return
             this.applyActivity(session, {
@@ -970,8 +972,10 @@ export class PetService extends Service {
         const state = activity.machine.render()
         if (state.animation === 'idle' && !activity.retainUntilViewed) continue
         const id = String(session.id)
-        const whisper = activity.whisper && Date.now() - activity.whisper.at < WHISPER_TTL_MS ? activity.whisper.text : undefined
+        const whisper = (entry.id !== 'whale-girl-refined' || (state.phase !== 'failed' && state.phase !== 'waiting' && state.toolCategory !== 'ask'))
+          && activity.whisper && Date.now() - activity.whisper.at < WHISPER_TTL_MS ? activity.whisper.text : undefined
         companions.push({ sessionId: id, primary: id === currentSessionId,
+          generation: state.generation, waveKey: state.waveKey, toolCategory: state.toolCategory,
           awaitingView: this.awaitingView(activity),
           animation: boundAnimation(entry.id, state), phase: state.phase, sessionActive: true,
           bubble: state.bubble, whisper, performance: this.footerPerformance(id),
@@ -1003,7 +1007,8 @@ export class PetService extends Service {
       // Each session's whisper rides its own bubble while fresh; an expired
       // whisper simply stops appearing (the client's 2 s poll drops it).
       const whisper = activity.whisper
-      const freshWhisper = whisper !== undefined && Date.now() - whisper.at < WHISPER_TTL_MS
+      const freshWhisper = (entry.id !== 'whale-girl-refined' || (perSession.phase !== 'failed' && perSession.phase !== 'waiting' && perSession.toolCategory !== 'ask'))
+        && whisper !== undefined && Date.now() - whisper.at < WHISPER_TTL_MS
         ? whisper.text
         : undefined
       sessions.push({
@@ -1042,6 +1047,7 @@ export class PetService extends Service {
     const skin = this.persistedSkin(entry)
     return {
       animation: boundAnimation(entry.id, snapshot),
+      generation: snapshot.generation, waveKey: snapshot.waveKey, toolCategory: snapshot.toolCategory,
       ...(snapshot.bubble === undefined ? {} : { bubble: snapshot.bubble }),
       phase: snapshot.phase,
       sessionActive: snapshot.sessionActive,

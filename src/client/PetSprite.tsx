@@ -292,12 +292,37 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const columns = definition.columns
   const rows = definition.rows
   const phase = snapshot?.phase ?? 'idle'
-  const animation = snapshot?.animation ?? 'idle'
+  const baseAnimation = snapshot?.animation ?? 'idle'
+  const waveKey = definition.id !== 'whale-girl-refined' ? undefined
+    : feedback?.kind === 'pet' ? 'pet:' + feedback.at : snapshot?.waveKey
+  const [wave, setWave] = useState<string | undefined>()
+  const seenWaves = useRef(new Set<string>())
+  const waveBlocked = snapshot?.generation !== undefined || phase === 'failed' || phase === 'done'
+  useEffect(() => {
+    const seen = waveKey !== undefined && seenWaves.current.has(waveKey)
+    if (waveKey !== undefined) {
+      seenWaves.current.add(waveKey)
+      if (seenWaves.current.size > 32) seenWaves.current.delete(seenWaves.current.values().next().value!)
+    }
+    if (waveKey === undefined || waveBlocked || seen) {
+      setWave(undefined)
+      return
+    }
+    setWave(waveKey)
+    const duration = definition.tracks.waving.durations.reduce((a, b) => a + b, 0)
+    const timer = window.setTimeout(() => setWave(undefined), duration)
+    return () => window.clearTimeout(timer)
+  }, [waveKey, waveBlocked, definition.tracks.waving])
+  const animation = wave !== undefined && wave === waveKey && !waveBlocked ? 'waving' : baseAnimation
   const sequences = definition.sequences
   const selectedSequence = animation === animationForPhase(phase) ? sequences?.[phase] : undefined
   const usesRightRun = animation === 'running-right' || selectedSequence?.includes('running-right') === true
-  const fps = usesRightRun ? effectiveFps(display, snapshot?.performance?.tokensPerSecond) : undefined
-  const tracks = useMemo(() => retimeTracks(definition.tracks, fps) as typeof definition.tracks, [definition.tracks, fps])
+  const runningTrack = animation === 'running-left' ? 'running-left' : 'running-right'
+  const canRetime = definition.id === 'whale-girl-refined'
+    ? snapshot?.generation !== undefined && (animation === 'running-right' || animation === 'running-left')
+    : usesRightRun
+  const fps = canRetime ? effectiveFps(display, snapshot?.performance?.tokensPerSecond) : undefined
+  const tracks = useMemo(() => retimeTracks(definition.tracks, fps, runningTrack) as typeof definition.tracks, [definition.tracks, fps, runningTrack])
   // Hover-panel chrome from the pet's voice pack (pet-center M4, issue
   // #677): every slot falls back to the i18n dictionary when unset. Stat
   // formats carry {rank}/{n}/{points} placeholders the host validated.
@@ -401,14 +426,16 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
     const track = trimTrack(tracks[leadAnimation], rows[row] ?? tracks[leadAnimation].frames.length)
     // Paint one static sprite frame up front either way, so the pet is never
     // blank while the loop heat-up runs.
-    const leadCol = blinkFrame(leadAnimation, track.frames[0]!)
+    // A footer-rate update changes frame duration, not the current frame index.
+    if (frameRef.current.track !== leadAnimation) frameRef.current = { track: leadAnimation, index: 0, elapsed: 0 }
+    frameRef.current.index = Math.min(frameRef.current.index, track.frames.length - 1)
+    const leadCol = blinkFrame(leadAnimation, track.frames[frameRef.current.index]!)
     const lead = framePosition(cell, row, leadCol, scaleRef.current)
     let lastPosStr = lead.x + 'px ' + lead.y + 'px'
     if (spriteRef.current !== null) {
       spriteRef.current.style.backgroundPosition = lastPosStr
     }
     if (reduceMotion) return
-    frameRef.current = { track: null, index: 0, elapsed: 0 }
     let raf = 0
     let frameTimer: ReturnType<typeof setTimeout> | undefined
     let last = performance.now()

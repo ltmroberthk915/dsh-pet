@@ -83,19 +83,25 @@ describe('installed desktop plugin integration', () => {
     await service.setPetId('whale-girl-refined')
     const session = { id: 'mapping', header: {} } as any
     const event = (type: string, data: any) => ctx.emit('session/event', session, { type, data } as any)
-    const stream = (type: string) => ctx.emit('agent/assistant-stream', { agent: { session }, frame: { type: 'chunk', chunk: { type, text: 'x' } } } as any)
+    let attempt = 0
+    const stream = (type: string) => {
+      ctx.emit('agent/assistant-stream', { agent: { session }, frame: { type: 'start', attemptId: 'mapping-' + ++attempt, revision: 1 } } as any)
+      ctx.emit('agent/assistant-stream', { agent: { session }, frame: { type: 'chunk', attemptId: 'mapping-' + attempt, revision: 2, chunk: { type, text: 'x' } } } as any)
+    }
     stream('reasoning-delta')
     expect((await service.state()).animation).toBe('running-right')
+    ctx.emit('agent/assistant-stream', { agent: { session }, frame: { type: 'end', attemptId: 'mapping-1', revision: 3 } } as any)
     event('tool/call', { callId: 'cmd', name: 'exec_command', arguments: '{"command":"echo test"}' })
     expect((await service.state()).animation).toBe('running')
     event('tool/call', { callId: 'write', name: 'write_file', arguments: '{"path":"sample.txt"}' })
-    expect((await service.state()).animation).toBe('running-right')
+    expect((await service.state()).animation).toBe('running-left')
+    expect((await service.state()).generation).toBeUndefined()
     event('tool/result', { message: { toolCallId: 'write' } })
     expect((await service.state()).animation).toBe('running')
     event('tool/result', { message: { toolCallId: 'cmd' } })
-    expect((await service.state()).animation).toBe('running-right')
-    stream('text-delta')
     expect((await service.state()).animation).toBe('review')
+    stream('text-delta')
+    expect((await service.state()).animation).toBe('running-right')
     event('turn/end', { reason: { kind: 'aborted' }, turn: 1 })
     expect((await service.state()).animation).toBe('idle')
     expect(registry.byId('whale-girl-refined')!.sequences?.idle).toEqual(['idle', 'running', 'idle', 'running', 'idle'])
@@ -110,6 +116,7 @@ describe('installed desktop plugin integration', () => {
     const session = { id: 'other-pet', header: {} } as any
     ctx.emit('agent/assistant-stream', { agent: { session }, frame: { type: 'chunk', chunk: { type: 'reasoning-delta', text: 'x' } } } as any)
     expect((await service.state()).animation).toBe('running')
+    ctx.emit('agent/assistant-stream', { agent: { session }, frame: { type: 'chunk', chunk: { type: 'finish', reason: { kind: 'stop' } } } } as any)
     ctx.emit('session/event', session, { type: 'tool/call', data: { callId: 'other', name: 'powershell', arguments: '{}' } } as any)
     expect((await service.state()).animation).toBe('running-right')
     await service.setPetId('whale-girl-refined')

@@ -34,7 +34,7 @@ async function action(name: string, body?: unknown) {
   return result
 }
 function interact(kind: 'pet' | 'feed') {
-  action(kind).then(result => store.actions.setFeedback({ text: result.reaction, kind, at: Date.now() })).catch(() => {})
+  action(kind).then(result => store.actions.setFeedback({ text: result.reaction, kind: result.delta > 0 ? kind : 'none', at: Date.now() })).catch(() => {})
 }
 
 function App() {
