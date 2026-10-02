@@ -21,6 +21,7 @@ import { makePetRoutes } from './routes.ts'
 import { loadPetRegistry, petPackageRoot } from './registry.ts'
 import { BUBBLE_SCALE_MAX, BUBBLE_SCALE_MIN, BUBBLE_SCALE_STEP, DEFAULT_PET_ID, DISPLAY_INSET_MAX, DISPLAY_SIZE_MAX, DISPLAY_SIZE_MIN, type PetDisplayConfig } from './persist.ts'
 import { mountOnce } from './mount-once.ts'
+import { createDesktopCompanion } from './desktop-companion.ts'
 import { DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT } from './animation.ts'
 
 export { PetService, MAX_SESSION_BUBBLES } from './service.ts'
@@ -377,7 +378,12 @@ function applyImpl(ctx: Context, config: PetPluginConfig = {}): void {
   // pattern as dsh-remote-web-ui's /api/pair family). The routes are
   // registered while the plugin is enabled; toggling the setting off makes
   // the pet API disappear until it is re-enabled.
-  const routes = makePetRoutes({ service, ctx })
+  const desktop = createDesktopCompanion({
+    routes: () => routes,
+    enabled: () => current().enabled !== false && service.display().visible && service.display().desktopEnabled !== false,
+  })
+  const routes = makePetRoutes({ service, ctx, desktop })
+  ctx.effect(() => () => desktop.dispose(), 'pet: desktop companion')
   let disposeRoutes: (() => void) | undefined
   const syncRoutes = (): void => {
     const enabled = current().enabled ?? true
@@ -404,6 +410,7 @@ function applyImpl(ctx: Context, config: PetPluginConfig = {}): void {
     service.applySettingsSection(section)
     service.setEnabled(section.enabled ?? true)
     syncRoutes()
+    desktop.configure({ enabled: section.enabled !== false && section.visible && section.desktopEnabled !== false })
   }
   // A settings edit lands in this row's live config reference and is announced
   // here; the entry is NOT remounted for it, so the pet applies the new section

@@ -7,6 +7,7 @@ const browserPlugins = [{ name: 'unused-node-imports', setup(builder) {
   builder.onResolve({ filter: /^node:/ }, args => ({ path: args.path, external: true, sideEffects: false }))
 } }]
 await build({ ...shared, entryPoints: ['src/index.ts'], outfile: 'lib/index.js', platform: 'node', format: 'esm', packages: 'external' })
+await build({ ...shared, entryPoints: ['src/invariant.ts'], outfile: 'lib/invariant.js', platform: 'node', format: 'esm', packages: 'external' })
 const client = await build({ ...shared, entryPoints: ['src/client/index.ts'], outfile: 'lib/client.js', platform: 'browser', format: 'cjs', write: false,
   plugins: browserPlugins, external: ['@deepseek-ai/*', 'react', 'react-dom', 'react-dom/*', 'react/*'] })
 const js = client.outputFiles.find(f=>f.path.endsWith('.js')).text

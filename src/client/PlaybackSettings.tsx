@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { animationFps, animationMode, tickSlope, tickIntercept, effectiveFps, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, type AnimationMode } from '../animation.ts'
 import type { PetStateView } from '../service.ts'
+import { desktopConnection, desktopRequest } from './desktop-connection.ts'
 
 async function request(action: string, body?: unknown): Promise<any> {
-  if (action === 'state' && window.dshPetDesktop?.state) return window.dshPetDesktop.state()
   const response = await fetch('/api/pet/' + (action === 'config' ? 'set-config' : 'state'), body === undefined ? {} : {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
   })
@@ -61,15 +61,25 @@ export function PlaybackSettings() {
     finally { setBusy(false) }
   }
   async function resetPosition() {
-    if (!window.dshPetDesktop || busy) return
+    const bridge = desktopConnection(snapshot?.desktop)
+    if (!bridge || busy) return
     setBusy(true)
     try {
-      const result = await window.dshPetDesktop.resetPosition()
+      const result = await bridge.resetPosition()
       setMessage(result.active ? '宠物窗口已归位' : '请先保存并启用独立桌面宠物。')
     } catch { setMessage('归位失败，请重试。') }
     finally { setBusy(false) }
   }
   const rate = snapshot?.performance?.tokensPerSecond
+  const desktopStatus = snapshot?.desktop
+  async function retryDesktop() {
+    setBusy(true)
+    try {
+      await desktopRequest('retry')
+      setMessage('正在重新准备独立窗口…')
+    } catch { setMessage('重试失败，请稍后再试。') }
+    finally { setBusy(false) }
+  }
   return <section data-pet-controls style={{ padding: 16, border: '1px solid #7775', borderRadius: 12, display: 'grid', gap: 10, color: 'inherit', fontSize: 13 }}>
     <strong>{snapshot?.pet.displayName ?? '当前形象'} · 生成速度动画</strong>
     <label>播放模式 <select aria-label="播放模式" value={mode} onChange={e => setMode(e.target.value as AnimationMode)}>
@@ -95,11 +105,14 @@ export function PlaybackSettings() {
     <div style={{ opacity: .8, lineHeight: 1.6 }}>所有宠物共享累计：喂食次数、亲密度和小鱼干统一记录。各对话的完成奖励汇入同一份记录，切换对话、开关多宠物或重启都不会拆分或重置。</div>
     <label><input type="checkbox" checked={desktop} onChange={e => setDesktop(e.target.checked)} /> 独立桌面宠物</label>
     <div style={{ opacity: .8 }}>主窗口隐藏或最小化后继续显示；退出 DSH 后关闭。</div>
-    {window.dshPetDesktop && <div><button type="button" onClick={() => void resetPosition()} disabled={busy}>宠物窗口归位</button></div>}
-    {!window.dshPetDesktop && <div>
-      当前宿主没有桌面窗口接口，宠物仍显示在应用内。
-      {' '}<a href="https://github.com/ltmroberthk915/dsh-pet/blob/desktop-refined-pet/docs/install-desktop-windows.md" target="_blank" rel="noopener noreferrer">Windows 桌面补丁安装与回滚说明</a>
+    {desktopStatus?.supported && <div data-pet-desktop-status={desktopStatus.state}>
+      {desktopStatus.state === 'starting' ? '正在首次准备独立窗口，请稍候…'
+        : desktopStatus.state === 'error' ? desktopStatus.message ?? '独立窗口暂不可用，请重试。'
+        : desktopStatus.active ? `独立窗口已运行 · ${desktopStatus.version}` : '独立窗口已随插件集成，保存并启用后自动显示。'}
+      {desktopStatus.state === 'error' && <button type="button" disabled={busy} onClick={() => void retryDesktop()}>重试独立窗口</button>}
     </div>}
+    {(desktopStatus?.supported || window.dshPetDesktop) && <div><button type="button" onClick={() => void resetPosition()} disabled={busy}>宠物窗口归位</button></div>}
+    {desktopStatus && !desktopStatus.supported && !window.dshPetDesktop && <div>独立窗口支持 Windows 原生 DSH；当前环境使用应用内宠物。</div>}
     <div><button type="button" onClick={() => void save()} disabled={busy || !valid || snapshot === null}>{busy ? '保存中…' : '保存动画设置'}</button> <span role="status">{message}</span></div>
   </section>
 }

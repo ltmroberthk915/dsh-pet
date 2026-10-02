@@ -15,6 +15,7 @@ import { boundAnimation } from './animation-bindings.ts'
  */
 
 import { Context, Service } from '@deepseek-ai/cordis'
+import type { DesktopStatus } from './desktop-status.ts'
 import type { AssistantStreamFrame } from '@deepseek-ai/dsh-agent'
 import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
 import type { AffinityConfig, PetAffinityView, PetInteraction } from './affinity.ts'
@@ -179,6 +180,7 @@ export interface PetCompanionView extends PetMotion {
 
 /** Snapshot returned by `pet.state`. */
 export interface PetStateView extends PetMotion {
+  desktop?: DesktopStatus
   primary?: boolean
   awaitingView?: number
   sessionId?: string

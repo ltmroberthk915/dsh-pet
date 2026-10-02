@@ -42,6 +42,8 @@ try {
   if (opened.status!==0) throw new Error(opened.stderr)
   const installed = join(unpack,'package')
   const { loadPetRegistry } = await import(pathToFileURL(join(installed,'lib/index.js')))
+  const { runPetInvariants } = await import(pathToFileURL(join(installed,'lib/invariant.js')))
+  runPetInvariants()
   const registry = loadPetRegistry({packageRoot:installed,singlePet:true,petsDir:'',dshPetsDir:''})
   if (registry.warnings.length) throw new Error(registry.warnings.join('\n'))
   const ids = registry.entries.map(entry=>entry.id).sort()
@@ -51,7 +53,7 @@ try {
     if (!existsSync(join(pet.dir,path))) throw new Error('Missing packaged asset: '+pet.id+'/'+path)
     servedFiles++
   }
-  for (const file of ['desktop/overlay.js','desktop/overlay.css','desktop/bridge-manifest.json','desktop/install-desktop.cjs','desktop/Install-Desktop.ps1','desktop/archive-support.cjs','docs/install-desktop-windows.md','lib/client.js','lib/types/index.d.ts','lib/types/client/index.d.ts']) {
+  for (const file of ['desktop/overlay.js','desktop/overlay.css','desktop/bridge-manifest.json','desktop/install-desktop.cjs','desktop/Install-Desktop.ps1','desktop/archive-support.cjs','desktop/companion-main.cjs','desktop/companion-host.cjs','desktop/companion-runtime.cjs','docs/install-desktop-windows.md','lib/client.js','lib/types/index.d.ts','lib/types/client/index.d.ts']) {
     if (!existsSync(join(installed,file))) throw new Error('Missing packaged entry: '+file)
   }
   require(join(installed,'desktop/archive-support.cjs')).loadPayload(installed)

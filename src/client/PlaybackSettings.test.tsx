@@ -2,11 +2,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { PlaybackSettings } from './PlaybackSettings.tsx'
+import type { DesktopStatus } from '../desktop-status.ts'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers() })
 
-function mockHost() {
+function mockHost(desktop?: DesktopStatus) {
   let snapshot = { pet: { id: 'whale-girl-refined', displayName: '鲸鱼娘' },
+    desktop,
     display: { animationMode: 'tick', animationFps: 20, animationTickSlope: 0.1, animationTickIntercept: 4, desktopEnabled: true },
     performance: { tokensPerSecond: 264 } }
   const writes: unknown[] = []
@@ -22,6 +24,20 @@ function mockHost() {
 }
 
 describe('Tick settings', () => {
+  it('shows the automatically started window version without asking for a patch', async () => {
+    mockHost({ supported: true, state: 'ready', active: true, version: '1.2.0' })
+    render(<PlaybackSettings />)
+    expect(await screen.findByText('独立窗口已运行 · 1.2.0')).toBeTruthy()
+    expect(screen.queryByText(/安装与回滚说明/)).toBeNull()
+    expect(screen.getByText('宠物窗口归位')).toBeTruthy()
+  })
+  it('offers retry for a failed automatic startup', async () => {
+    mockHost({ supported: true, state: 'error', active: false, version: '1.2.0', message: '磁盘空间不足' })
+    render(<PlaybackSettings />)
+    fireEvent.click(await screen.findByText('重试独立窗口'))
+    await screen.findByText('正在重新准备独立窗口…')
+    expect(fetch).toHaveBeenCalledWith('/api/pet/desktop/retry', expect.objectContaining({ method: 'POST', body: '{}' }))
+  })
   it('saves the multi-pet switch together with the existing linear settings', async () => {
     const host = mockHost()
     render(<PlaybackSettings />)

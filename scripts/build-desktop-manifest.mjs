@@ -6,7 +6,7 @@ const {sha256,runtimeFiles,sourceArchives}=require('../desktop/archive-support.c
 const {patchArchive}=require('../desktop/patch-desktop.cjs')
 const root=resolve(import.meta.dirname,'..'),dir=join(root,'desktop')
 const pkg=JSON.parse(readFileSync(join(root,'package.json')))
-const files=[...runtimeFiles,'patch-desktop.cjs','archive-support.cjs','install-desktop.cjs','Install-Desktop.ps1']
+const files=[...runtimeFiles,'patch-desktop.cjs','archive-support.cjs','install-desktop.cjs','Install-Desktop.ps1','companion-runtime.cjs','companion-host.cjs','companion-main.cjs']
 const manifest={schemaVersion:1,packageName:pkg.name,version:pkg.version,hostVersion:'0.2.0-rc.2',files:Object.fromEntries(files.map(name=>[name,sha256(readFileSync(join(dir,name)))])),currentArchives:[]}
 const inputs=process.argv.slice(2)
 if(!inputs.length) throw Error('Supply reviewed original/previous ASAR files to seal the desktop manifest.')

@@ -1,22 +1,25 @@
 {
   "schemaVersion": 1,
   "packageName": "@ltmroberthk915/dsh-pet",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "hostVersion": "0.2.0-rc.2",
   "files": {
-    "pet-main.js": "07576d0b943f7fcab2965afe4c601e0e1c9b5036153644a90bbfe3fe7de73efa",
+    "pet-main.js": "4ee5779b5f759cbc7d047d212c9a2dc06526524a66e469932d6caacf21210a00",
     "pet-layout.js": "a259e913dbc59fa219ce1b8da66ec9a2a28747fa664ad34d35138d2c54145b5a",
     "pet-preload.cjs": "770b6bd9b96555b31fe755ce0134e8856584dc2dfef83db0ac6356cfaa047a8a",
     "pet-window.html": "57789e977aa35aa603e3c2bf9158e1b004f188c41f0728d94d3f14281a2e88ec",
     "overlay.js": "6df60baf5b2030e59982685f5273e5124e1d78e8076a802f6538697bddebebd0",
     "overlay.css": "f3f8c3133a015042842a94a9f38af0caa1b49453153736ea86c1eb22290d582d",
     "patch-desktop.cjs": "740a5225bdb9ae95946988a34d62f02e9418cfb4fdbd24721311d84c666d29da",
-    "archive-support.cjs": "62e2fe729564307b9423c753ff1b06802c60b7ddb4a596e509e2f7511a035400",
-    "install-desktop.cjs": "e260a21408aed2090fec80bd192738c31c0b03226b4e4ae67fb9189722c1cd09",
-    "Install-Desktop.ps1": "38a7946dbd53915e43551a14239ffbc5108656f0d5bfb19d134899730c3a73ca"
+    "archive-support.cjs": "1166368fce795f9ff2443a9038591cb05d6a0c55b90d08f27bff6824ac21b328",
+    "install-desktop.cjs": "369571e56bd9ee9576ac5f01de8c35a3eb4c676d3a8bdb3993b930f5d35d6e97",
+    "Install-Desktop.ps1": "38a7946dbd53915e43551a14239ffbc5108656f0d5bfb19d134899730c3a73ca",
+    "companion-runtime.cjs": "617d756d9c2704779ca5b9e8faa67bdd68de6c2445a425ea9ba894f61498c1e4",
+    "companion-host.cjs": "a63c745bb476f2d53a0c4a727eed2d04d1b58f21fa7235478ecda699553358bd",
+    "companion-main.cjs": "099ec8ba9e26e7d3c9207f5c4b3155ad656ed593f3ec03427bedb8ea78bf46a8"
   },
   "currentArchives": [
-    "43bd7ccd3c9497c018ce4af5775f80aec6df8ff70baae705c4d43b80058d3093",
-    "67197d0a5373ce97b2c5cc87d25b42054a91d489af5865db92b80715027a76a3"
+    "8946befb56a491b198da0652765aa66f10439cef13937469756cacb99409b944",
+    "ab95a157bc47ad6cf528c51386e339267f0e560d948e2d29798ba4bef0f21201"
   ]
 }

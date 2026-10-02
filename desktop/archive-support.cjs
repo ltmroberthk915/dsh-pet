@@ -17,6 +17,9 @@ const sourceArchives = [
   '19e4b007274c8297792484c5e84b95222856837aceea7308a11bfff881ae1825',
   'ddddf21819f9e89a3529e59ad5b58caf2dfbb879567de862618f9969f6a0c571',
   '995878d33beae9db4d3e9c6e1069ad71ed52c7726b77ea246403f34fd77bc05c',
+  // Sealed v1.1.1 outputs, retained for the optional legacy patch upgrade.
+  '43bd7ccd3c9497c018ce4af5775f80aec6df8ff70baae705c4d43b80058d3093',
+  '67197d0a5373ce97b2c5cc87d25b42054a91d489af5865db92b80715027a76a3',
 ];
 function parseArchive(bytes) {
   if (bytes.length<16) throw Error('Invalid ASAR header');
@@ -65,7 +68,7 @@ function loadPayload(pluginDir) {
     if(!/^[a-zA-Z0-9.-]+$/.test(name)) throw Error('Invalid desktop manifest path');
     if(sha256(fs.readFileSync(path.join(dir,name)))!==digest) throw Error('Desktop file checksum mismatch: '+name);
   }
-  for(const name of [...runtimeFiles,'patch-desktop.cjs','archive-support.cjs','install-desktop.cjs','Install-Desktop.ps1']) if(!manifest.files[name]) throw Error('Incomplete desktop manifest: '+name);
+  for(const name of [...runtimeFiles,'patch-desktop.cjs','archive-support.cjs','install-desktop.cjs','Install-Desktop.ps1','companion-runtime.cjs','companion-host.cjs','companion-main.cjs']) if(!manifest.files[name]) throw Error('Incomplete desktop manifest: '+name);
   return {root,dir,manifest};
 }
 function verifyChange(before,after,payload) {

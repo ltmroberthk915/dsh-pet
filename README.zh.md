@@ -12,7 +12,7 @@
 - 所有左右跑步（含工具执行）可用固定 FPS、素材原速或 `FPS = clamp(k × tok/s + b, 1, 60)`；每只跟随自己对话底栏统计。
 - 后台完成的小宠物保留等待查看；打开对话就变为主宠物，不需要输入。前台查看后，切走时回收。
 - 所有宠物共享累计喂食、亲密度及小鱼干；大小、字号、拖动、命名和设置保存继续可用。
-- 桌面适配器支持独立透明窗口、主窗口最小化后继续显示、跨屏自由拖动和避让；采用事件触发布局和空闲低频动画。
+- Windows 原生 DSH 安装插件后自动启动独立透明窗口；主窗口最小化后继续显示，支持跨屏拖动和避让。
 
 ## 安装与更新
 
@@ -24,24 +24,53 @@ dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/relea
 
 Web 宿主使用自己的 web profile。安装前备份 DSH 数据，并移除或停用旧 `@linxin666/dsh-pet` 的加载声明；两版共用宠物服务，不能同时启用。升级时只从此仓库的 Release 更新；不要安装原作者同名旧包覆盖本 fork。配置继续使用 `pet` 行及原养成数据。
 
-包内包含编译好的 host/client 与素材，无安装时脚本。独立桌面窗口使用包内 `desktop/Install-Desktop.ps1`：先以 `-Mode Check` 检查，正常退出 DSH 后以 `-Mode Apply` 安装。自动识别安装路径、优先使用宿主自带 Node，支持旧补丁升级、重复安装检查和 `-Mode Rollback` 精确回滚。只替换经校验的宿主 `app.asar` 并自动备份，不修改会话和账户数据。Release 另附小体积安装工具 ZIP；未知归档会拒绝。见[Windows 安装与回滚步骤](docs/install-desktop-windows.md)。
+**v1.2.0 起，独立窗口随插件自动启用，新机器无需 Agent、补丁脚本或额外安装。** 首次启用会在当前用户缓存中准备 DSH 自带的 Electron 运行库，通常需等待几秒；不下载运行库，不修改宿主 `app.asar`，也不退出或重启 DSH。窗口运行时直接使用本插件的渲染器，更新插件即可同步更新窗口。旧版宿主桥接自动停用，养成数据保留。
+
+设置页显示准备、运行及失败状态，并提供「重试独立窗口」和「宠物窗口归位」。Windows 原生 DSH 0.2.0-rc.2 / Electron 44 已通过隔离实机验证；纯 Web 或其他平台继续使用应用内宠物。详细边界和旧补丁恢复见[Windows 安装说明](docs/install-desktop-windows.md)。
+
+更新时使用插件管理器的更新操作或：
+
+```sh
+dsh plugin --profile desktop update @ltmroberthk915/dsh-pet
+```
+
+如果旧依赖固定在旧版下载地址，请改为本次明确的版本地址：
+
+```sh
+dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/download/v1.2.0/dsh-session-pet.tgz
+```
+
+不要用 GUI「安装」反复提交同一个 URL 来重装已存在的依赖；DSH 可能报 `ambiguous-install`。当前使用 GitHub 预编译包分发；Git 分支也带有 `lib/`，无 `prepare` 或消费者构建步骤，不需要 `allowBuilds`、pnpm shim 或修改全局构建策略。
+
+### 安装故障排查
+
+| 原始错误或状态 | 处理 |
+| --- | --- |
+| `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED` | 正在安装旧 Git 提交。改用本版预编译下载地址；不要为旧提交反复加白名单。 |
+| `pnpm is not recognized` / `ERR_PNPM_IGNORED_BUILDS` / `strictDepBuilds` | 旧 Git 源触发了嵌套构建。安装本版完整包，无须降低全局构建保护。 |
+| `ambiguous-install` / 无法从依赖变更中确定安装了哪一个包 | 使用更新操作；若更换版本，提交新版本的明确下载地址。 |
+| `minimumReleaseAge` | pnpm 的 registry 发布冷却策略可能延后选中刚发布的版本。本项目的明确 Release 文件地址不依赖 registry 自动选版。 |
+| npm 镜像返回 404 | 当前分发入口是上面的 Release 文件；不要将仓库名称当作已发布的 npm 包。 |
+| 独立窗口准备失败 | 查看设置页具体原因，处理磁盘空间或权限后点击重试；应用内宠物仍可使用。 |
 
 ## 开发
 
 ```sh
 pnpm install --frozen-lockfile --ignore-scripts
-pnpm prepare
+pnpm build:entries
 pnpm typecheck
 pnpm build:local
 ```
 
-v1.1.1 包含 155 项相关功能回归、120 项隔离 Electron 检查以及 17 项安装器检查；类型检查通过。安装器使用真实归档副本验证，新电脑尚未现场安装。待查看状态随宿主会话生命周期存在，退出程序后不恢复旧活动。
+自动窗口检查使用真实 Electron 和独立测试数据，覆盖三个形象、启停、沙箱、私有接口、失败重试与退出清理；实际新电脑尚未现场验证。历史 v1.1.1 有 155 项相关回归、120 项隔离 Electron 检查和 17 项安装器检查。待查看状态随宿主会话生命周期存在，退出程序后不恢复旧活动。
 
 ## 来源
 
 [原项目](https://github.com/zhu1090093659/dsh-pet)提供基础框架、素材和交互。此 fork 增加会话级桌面伴侣、配色、调速、回收规则、安全修复与调度优化。见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
 
-v1.1.1：读取命令任务输出时使用托腮动作；五色鲸鱼娘固定站立腿部、统一直立高度。补齐 Windows 桌面适配器的检查、安装、升级和回滚入口，设置页提供缺失接口时的安装说明链接。
+v1.2.0：插件自动启动独立窗口，取消日常安装对宿主补丁的依赖；预编译产物随 Git 和 Release 一起交付，移除 Git 安装的 `prepare`。仓库保留开发及 CI 使用的 pnpm 版本声明，消费者不触发嵌套安装；Release 包也不携带该声明。
+
+v1.1.1：读取命令任务输出时使用托腮动作；五色鲸鱼娘固定站立腿部、统一直立高度。提供了旧版宿主补丁安装器；新版自动窗口无需运行该工具。
 
 v1.1.0：引入原作者 v0.4.4 MIKU，保留养成玩法并补齐九种会话动作；修复跑动不摆臂、伸臂像挥拳及相邻帧边缘残片，统一跑步人物比例。新增现代商务小蓝鲸，简洁状态文案、关闭随机碎碎念。两者兼容现有多会话、模型配色、tok/s 调速与共享互动记录。
 

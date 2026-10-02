@@ -1,7 +1,7 @@
 {
   "name": "@ltmroberthk915/dsh-pet",
   "description": "DSH 多会话桌宠：鲸鱼娘、MIKU 与商务小蓝鲸，模型配色、tok/s 调速及共享亲密度。",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -16,7 +16,7 @@
     "test": "vitest run",
     "pet:cli": "node scripts/dsh-pet.cjs",
     "typecheck": "tsc -b --pretty false && tsc -p tsconfig.test.json --pretty false",
-    "prepare": "tsdown --config tsdown.prepare.config.ts",
+    "build:entries": "tsdown --config tsdown.prepare.config.ts",
     "build:local": "node scripts/build-local.mjs"
   },
   "main": "lib/index.js",
@@ -57,7 +57,8 @@
     "NOTICE",
     "THIRD_PARTY_NOTICES.md",
     "docs/miku-business-pets.md",
-    "docs/desktop-refined-pet.md"
+    "docs/desktop-refined-pet.md",
+    "docs/install-desktop-windows.md"
   ],
   "license": "Apache-2.0",
   "dsh": {

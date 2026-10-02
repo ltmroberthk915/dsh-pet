@@ -81,7 +81,9 @@ function install(options={},dependencies={}) {
   const result={status:info.status,version:payload.manifest.version,hostVersion:info.version,appDir,pluginDir:payload.root,dshHome,sha256:before};
   if(options.mode!=='apply'||info.status==='current') {
     const running=processes().some(p=>!p.ExecutablePath||executablePath(p.ExecutablePath)===executablePath(path.join(appDir,'DeepSeek Harness.exe')));
-    return {...result,running,canApply:!running&&info.status!=='current',userDataModified:false};
+    const preview=patchArchive(original,payload),after=sha256(preview.bytes);
+    const compatible=payload.manifest.currentArchives.includes(after);
+    return {...result,running,compatible,outputSha256:after,canApply:compatible&&!running&&info.status!=='current',userDataModified:false};
   }
   stopped(appDir,processes);
   // Everything is prepared and validated before the installed archive changes.

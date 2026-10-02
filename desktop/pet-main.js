@@ -342,16 +342,16 @@ export function installDesktopPet({ owner, request, openMain }) {
     if (url.pathname.startsWith('/pet/') || url.pathname.startsWith('/api/pet/decoration/') || runtime.includes(url.pathname)) return request(url.pathname, 'GET')
     return new Response(null, { status: 404 })
   })
-  ipcMain.handle(PREFIX + 'configure', async (event, options) => {
-    assertOwner(event)
+  async function configure(options) {
     if (!options || typeof options.enabled !== 'boolean' || (options.currentSessionId !== undefined && (typeof options.currentSessionId !== 'string' || options.currentSessionId.length > 200))) throw new Error('Invalid pet configuration')
-    watchOwner(owner())
+    if (owner()) watchOwner(owner())
     if (enabled !== options.enabled || currentSessionId !== options.currentSessionId) { revision++; cacheAt = 0 }
     enabled = options.enabled; currentSessionId = options.currentSessionId
     if (!enabled) destroyAll()
     else { await fetchState(true); poll() }
     return { active: enabled && [...windows.values()].some(live) }
-  })
+  }
+  ipcMain.handle(PREFIX + 'configure', (event, options) => { assertOwner(event); return configure(options) })
   ipcMain.handle(PREFIX + 'call', async (event, action, body) => {
     const record = assertPet(event)
     if (action === 'state') return record.view
@@ -393,7 +393,7 @@ export function installDesktopPet({ owner, request, openMain }) {
   ipcMain.handle(PREFIX + 'open-main', (event, id) => {
     const record = assertPet(event)
     if (id !== undefined && (typeof id !== 'string' || id.length > 200 || (id !== record.view.sessionId && !record.view.sessions?.some(s => s.sessionId === id)))) throw new Error('Invalid session')
-    openMain()
+    openMain(id)
     if (id) owner()?.webContents.send(PREFIX + 'open-session', id)
   })
   ipcMain.handle(PREFIX + 'owner-state', (event, id) => {
@@ -404,8 +404,7 @@ export function installDesktopPet({ owner, request, openMain }) {
     }
     return fetchState()
   })
-  ipcMain.handle(PREFIX + 'owner-reset', event => {
-    assertOwner(event)
+  function resetPosition() {
     const record = primary()
     if (!live(record)) return { active: false }
     const anchor = defaultBounds(record.geometry)
@@ -416,11 +415,13 @@ export function installDesktopPet({ owner, request, openMain }) {
     }
     separateOverlaps()
     return { active: true }
-  })
+  }
+  ipcMain.handle(PREFIX + 'owner-reset', event => { assertOwner(event); return resetPosition() })
   const refit = () => {
     for (const record of windows.values()) if (live(record)) record.win.setBounds(fit(record.win.getBounds(), record.geometry))
     separateOverlaps()
   }
   screen.on('display-removed', refit); screen.on('display-metrics-changed', refit)
   app.on('before-quit', () => { closing = true; enabled = false; revision++; clearTimeout(saveTimer); destroyAll() })
+  return { configure, resetPosition, isActive: () => enabled && [...windows.values()].some(live) }
 }

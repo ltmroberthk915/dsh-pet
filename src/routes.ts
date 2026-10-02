@@ -24,6 +24,8 @@ import { DECORATION_ASSET_PREFIX, petEntryView, petPackageRoot, type PetEntry, t
 import { isPetAllowed } from './access.ts'
 import { dshHome } from './dsh-home.ts'
 import { readJsonBody, writeJson } from './http.ts'
+import { isLoopbackRequest } from './loopback.ts'
+import type { DesktopCompanion } from './desktop-status.ts'
 
 /** Browser-facing base path of the pet API. */
 export const PET_API_PREFIX = '/api/pet'
@@ -583,14 +585,15 @@ function decorationHandler(ctx: Context, registry: PetRegistry, caps: PetAssetCa
 }
 
 /** Build the full route family (API + assets + runtime) for one service. */
-export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCaps?: PetAssetCaps } & PetRuntimeRoots): WebRoute[] {
-  const { service, ctx } = deps
+export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCaps?: PetAssetCaps; desktop?: DesktopCompanion } & PetRuntimeRoots): WebRoute[] {
+  const { service, ctx, desktop } = deps
   const apiRoutes: WebRoute[] = [
-    getRoute(ctx, PET_API_PREFIX + '/state', (req) => {
+    getRoute(ctx, PET_API_PREFIX + '/state', async (req) => {
       // The browser half reports the GUI's current session id so the bubble
       // stack can lead with the session the user is actually looking at.
       const current = new URL(req.url ?? '/', 'http://pet.local').searchParams.get('current')
-      return service.state(current === null ? undefined : current)
+      const state = await service.state(current === null ? undefined : current)
+      return desktop ? { ...state, desktop: desktop.status() } : state
     }),
     getRoute(ctx, PET_API_PREFIX + '/pets', () => service.pets()),
     getRoute(ctx, PET_API_PREFIX + '/diagnostics', () => service.diagnostics()),
@@ -651,6 +654,20 @@ export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCa
       return service.gameplayBuy(item)
     }),
   ]
+
+  if (desktop) {
+    const nativeRoutes = [
+      getRoute(ctx, PET_API_PREFIX + '/desktop/status', async () => desktop.status()),
+      postRoute(ctx, PET_API_PREFIX + '/desktop/configure', async body => desktop.configure(body as { enabled: boolean; currentSessionId?: string })),
+      postRoute(ctx, PET_API_PREFIX + '/desktop/reset', async () => desktop.resetPosition()),
+      postRoute(ctx, PET_API_PREFIX + '/desktop/retry', async () => desktop.retry()),
+      postRoute(ctx, PET_API_PREFIX + '/desktop/ack-open', async body => desktop.acknowledge(body.revision)),
+    ]
+    for (const route of nativeRoutes) apiRoutes.push({ ...route, handler(req, res) {
+      if (!isLoopbackRequest(req)) { writeJson(res, 403, { error: 'desktop-local-only' }); return }
+      return route.handler(req, res)
+    } })
+  }
 
   const assetRoute: WebRoute = {
     kind: 'prefix',

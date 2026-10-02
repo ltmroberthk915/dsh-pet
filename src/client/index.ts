@@ -44,6 +44,7 @@ import { NS, en, zh, t } from './locales.ts'
 import { mainViewSessionId } from './main-session.ts'
 import { defaultPetRendererRegistry } from './renderers/registry.ts'
 import { frames2dRenderer } from './renderers/frames2d.ts'
+import { desktopConnection, desktopRequest } from './desktop-connection.ts'
 
 /** The host pet API as the browser sees it (same-origin JSON endpoints). */
 interface PetHttpApi {
@@ -241,10 +242,11 @@ export function apply(ctx: ClientContext): void {
   let disposeUi: (() => void) | undefined
   let clearUiTeardown: (() => void) | undefined
   let uiDead = false
+  let nativeBridge: ReturnType<typeof desktopConnection>
   const killUi = (): void => {
     if (uiDead) return
     uiDead = true
-    void window.dshPetDesktop?.configure({ enabled: false }).catch(() => {})
+    void nativeBridge?.configure({ enabled: false }).catch(() => {})
     clearUiTeardown?.()
     clearUiTeardown = undefined
     disposeUi?.()
@@ -264,7 +266,7 @@ export function apply(ctx: ClientContext): void {
       const setFeedback = petStore.actions.setFeedback
       const setDesktopActive = petStore.actions.setDesktopActive
       // Claim desktop presentation before any fallback child can mount.
-      setDesktopActive(window.dshPetDesktop !== undefined)
+      setDesktopActive(false)
 
       // Clicking a session bubble jumps the GUI to that session; the
       // catalog's main-view ownership marker tells which session the main view
@@ -296,6 +298,7 @@ export function apply(ctx: ClientContext): void {
       // response may publish, so a slow older one can never roll the
       // snapshot back.
       let stateSeq = 0
+      let navigationRevision = 0
       const pollNow = (): void => {
         if (uiGone) return
         if (polling) { pollAgain = true; return }
@@ -312,8 +315,7 @@ export function apply(ctx: ClientContext): void {
         const seq = stateSeq + 1
         stateSeq = seq
         const requestedSessionId = currentSessionId()
-        const stateRequest = window.dshPetDesktop
-          ? window.dshPetDesktop.state(requestedSessionId ?? '') : petApi.state(requestedSessionId)
+        const stateRequest = petApi.state(requestedSessionId)
         stateRequest.then((snapshot) => {
           if (uiGone || seq !== stateSeq || requestedSessionId !== currentSessionId()) return
           const publishNativeState = (active: boolean): void => {
@@ -323,19 +325,27 @@ export function apply(ctx: ClientContext): void {
           }
           const nativeOptions = {
             enabled: snapshot.display.desktopEnabled !== false && snapshot.display.visible,
-            currentSessionId: requestedSessionId,
+            currentSessionId: requestedSessionId ?? '',
+          }
+          nativeBridge = desktopConnection(snapshot.desktop)
+          if (snapshot.desktop?.supported) publishNativeState(snapshot.desktop.active)
+          const pending = snapshot.desktop?.pendingOpen
+          if (pending && pending.revision !== navigationRevision) {
+            navigationRevision = pending.revision
+            window.dispatchEvent(new CustomEvent('dsh-pet-open-session', { detail: pending.sessionId }))
+            void desktopRequest('ack-open', { revision: pending.revision }).catch(() => { navigationRevision = 0 })
           }
           const key = JSON.stringify(nativeOptions)
-          if (key !== nativeOptionsKey && window.dshPetDesktop) {
+          if (key !== nativeOptionsKey && nativeBridge) {
             nativeOptionsKey = key
             // Window creation can outlive a poll or session refresh. Only a
             // newer configure request supersedes its acknowledgement.
             const nativeSeq = ++nativeRequestSeq
-            if (nativeOptions.enabled) publishNativeState(true)
-            void window.dshPetDesktop.configure(nativeOptions).then(result => {
+            if (nativeOptions.enabled && !snapshot.desktop?.supported) publishNativeState(true)
+            void nativeBridge.configure(nativeOptions).then(result => {
               if (uiGone || nativeSeq !== nativeRequestSeq) return
               publishNativeState(result.active)
-              if (nativeOptions.enabled && !result.active) nativeOptionsKey = undefined
+              if (nativeOptions.enabled && !result.active && !snapshot.desktop?.supported) nativeOptionsKey = undefined
             }).catch(() => {
               if (uiGone || nativeSeq !== nativeRequestSeq) return
               nativeOptionsKey = undefined
@@ -566,7 +576,7 @@ export function apply(ctx: ClientContext): void {
       // be responsible for bootstrapping the first state/configuration read.
       pollNow()
     } else if (!uiDead && !enabled() && disposeUi !== undefined) {
-      void window.dshPetDesktop?.configure({ enabled: false }).catch(() => {})
+      void nativeBridge?.configure({ enabled: false }).catch(() => {})
       disposeUi()
       disposeUi = undefined
     }

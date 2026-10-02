@@ -1,5 +1,13 @@
 node_modules/
-lib/
+# Precompiled lib/ is intentionally tracked so Git installs never build.
+lib/*
+!lib/index.js
+!lib/client.js
+!lib/invariant.js
+!lib/types/
+lib/types/**
+!lib/types/**/
+!lib/types/**/*.d.ts
 *.tsbuildinfo
 .DS_Store
 
