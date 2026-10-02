@@ -1,1595 +1,4243 @@
 {
   "generator": "built-in image_gen",
+  "artwork": "artwork/motion-v1.0.5",
   "cell": [
     192,
     208
   ],
   "columns": 16,
   "originalRunFrames": true,
+  "baseline": {
+    "faceWidth": 47.0,
+    "faceCenterX": 82.0,
+    "cheekY": 76.0,
+    "headSectionWidth": 91.5,
+    "headbandWidth": 82,
+    "headbandSpan": 81.981,
+    "apronWidth": 44,
+    "apronHeight": 32,
+    "footCenterX": 83.0,
+    "footY": 202,
+    "height": 197,
+    "bounds": [
+      25,
+      6,
+      166,
+      203
+    ],
+    "opaqueArea": 15076
+  },
+  "calibration": "uniform scale by headband PCA span; foot registration; no body warping",
+  "measurementLimits": "2D projection, not true volume. Bow/hop/arm overlap naturally change height and area. Anatomy is visually reviewed separately.",
   "actions": {
     "idle": {
       "frames": 16,
+      "uniqueSourceFrames": 16,
       "durationMs": 3100,
       "packed": [
         {
           "sourceFrame": 1,
           "sourceBounds": [
-            57,
-            12,
-            302,
-            317
+            46,
+            2,
+            285,
+            315
           ],
+          "scale": 0.607231,
           "anchor": [
             84,
             202
           ],
-          "sha256": "8fc644de6e80249f950257db14bdf9c3a1ba1777d278a39692d261d854ab67cf"
+          "sha256": "bdb991ade9778d7c21445b9d092c9f412eb0070ab6ef1f128af4dfaf86f3dcbd",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.5,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 81.995,
+            "apronWidth": 43,
+            "apronHeight": 33,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 188,
+            "bounds": [
+              25,
+              15,
+              168,
+              203
+            ],
+            "opaqueArea": 14912
+          }
         },
         {
           "sourceFrame": 2,
           "sourceBounds": [
-            367,
-            12,
-            613,
-            318
+            344,
+            2,
+            584,
+            315
           ],
+          "scale": 0.607294,
           "anchor": [
             84,
             202
           ],
-          "sha256": "c44e5db77519c4c6390a3af9fa28dcc12507437898cb6675323c3cb24bba0d12"
+          "sha256": "2115937781c0d6006f2d7bff562bf7d521ce4c3d4f76002dbc6e5f961a155b36",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.0,
+            "cheekY": 87.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.037,
+            "apronWidth": 42,
+            "apronHeight": 33,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 188,
+            "bounds": [
+              24,
+              15,
+              168,
+              203
+            ],
+            "opaqueArea": 15122
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            676,
-            13,
-            923,
-            318
+            642,
+            3,
+            885,
+            315
           ],
+          "scale": 0.606894,
           "anchor": [
             84,
             202
           ],
-          "sha256": "8d763b1404cfcc4ed912b0da5bcb3eb653ee953b16af695445b982da18d6a2f4"
+          "sha256": "845d9b569285861746c936cb20a02321dd13ec05577ff534301fbc365aa18035",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 84.5,
+            "cheekY": 87.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.099,
+            "apronWidth": 42,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 187,
+            "bounds": [
+              23,
+              16,
+              168,
+              203
+            ],
+            "opaqueArea": 15100
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            989,
-            13,
-            1234,
-            318
+            949,
+            2,
+            1189,
+            315
           ],
+          "scale": 0.607006,
           "anchor": [
             84,
             202
           ],
-          "sha256": "2fcc806f2fbcef945d90f3922f0ae254754200f65cfd6bd00824063819d90f30"
+          "sha256": "daecf2f22f0e2cbfc57a75b935943abf0ebee62121a6a0c589f760a583d4c25c",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 83.5,
+            "cheekY": 85.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.054,
+            "apronWidth": 42,
+            "apronHeight": 33,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 188,
+            "bounds": [
+              25,
+              15,
+              169,
+              203
+            ],
+            "opaqueArea": 15073
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            59,
-            324,
-            302,
-            630
+            45,
+            316,
+            290,
+            632
           ],
+          "scale": 0.602917,
           "anchor": [
             84,
             202
           ],
-          "sha256": "e548f71b6935ef4700ef01a7ccb59257b7098912f033a37afb0b366a4e96be63"
+          "sha256": "1ae8f90cc15c642082227ec75275be9c86053d62091e6b8abd738ae7bd2427e4",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 85.0,
+            "cheekY": 90.0,
+            "headSectionWidth": 91.5,
+            "headbandWidth": 82,
+            "headbandSpan": 81.997,
+            "apronWidth": 43,
+            "apronHeight": 33,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 189,
+            "bounds": [
+              24,
+              14,
+              170,
+              203
+            ],
+            "opaqueArea": 15148
+          }
         },
         {
           "sourceFrame": 6,
           "sourceBounds": [
-            370,
-            325,
-            612,
-            630
+            343,
+            321,
+            587,
+            632
           ],
+          "scale": 0.598157,
           "anchor": [
             84,
             202
           ],
-          "sha256": "a2fbb6f901ea2a22156cf36b665eeed4645162a3637d1ec75e0db49ff39d78b8"
+          "sha256": "6b1380b5bfa875825e5c12b51ffb21e632f4b94b382f305297d33b0aaeadb1cb",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 82.5,
+            "cheekY": 89.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.024,
+            "apronWidth": 42,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 184,
+            "bounds": [
+              24,
+              19,
+              168,
+              203
+            ],
+            "opaqueArea": 14901
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            678,
-            327,
-            924,
-            630
+            642,
+            322,
+            887,
+            632
           ],
+          "scale": 0.602722,
           "anchor": [
             84,
             202
           ],
-          "sha256": "e495ec38824f2f008cad9160e1d2409a6aa48b69f2b5c947e857cabd96c4a48e"
+          "sha256": "99db3795410de14e55286ff0563d627ff5c9fb9df125f2652ef462b115fdbb26",
+          "metrics": {
+            "faceWidth": 48.0,
+            "faceCenterX": 85.5,
+            "cheekY": 83.0,
+            "headSectionWidth": 93.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.003,
+            "apronWidth": 42,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 185,
+            "bounds": [
+              23,
+              18,
+              169,
+              203
+            ],
+            "opaqueArea": 15174
+          }
         },
         {
           "sourceFrame": 8,
           "sourceBounds": [
-            992,
-            327,
-            1235,
-            631
+            947,
+            318,
+            1190,
+            632
           ],
+          "scale": 0.602425,
           "anchor": [
             84,
             202
           ],
-          "sha256": "d5a7b6b3d82dd91dc1aac96976de52e243486f47fda0ebea614d41d7f83c997d"
+          "sha256": "9764363b2a44fa8493ca5b83c5644b5340006f59358f3b1ea8bb9e7d7de8a3af",
+          "metrics": {
+            "faceWidth": 48.0,
+            "faceCenterX": 85.5,
+            "cheekY": 83.0,
+            "headSectionWidth": 93.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.055,
+            "apronWidth": 42,
+            "apronHeight": 32,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 187,
+            "bounds": [
+              25,
+              16,
+              169,
+              203
+            ],
+            "opaqueArea": 15159
+          }
         },
         {
           "sourceFrame": 9,
           "sourceBounds": [
-            59,
+            45,
             637,
-            305,
-            942
+            290,
+            949
           ],
+          "scale": 0.594022,
           "anchor": [
             84,
             202
           ],
-          "sha256": "bec7c0fca65c0492ada4f9b2467befa7b4658b812d23bbd8ac97d921b0a5b642"
+          "sha256": "7f64b27ab703b5de17eaa66d420f8663232f2de95b9ff2a02f3e77bdd28ea720",
+          "metrics": {
+            "faceWidth": 48.0,
+            "faceCenterX": 84.5,
+            "cheekY": 85.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.024,
+            "apronWidth": 42,
+            "apronHeight": 33,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              169,
+              203
+            ],
+            "opaqueArea": 14795
+          }
         },
         {
           "sourceFrame": 10,
           "sourceBounds": [
-            368,
+            346,
             637,
-            612,
-            941
+            590,
+            949
           ],
+          "scale": 0.598358,
           "anchor": [
             84,
             202
           ],
-          "sha256": "615188def1014aa518416490868ce0efe7804b6c0d00e6d03e78dcd1489b0966"
+          "sha256": "1c7238b03c908a74760d3544d613fc35587c95f8e5258dcfdf4a35d464d88419",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 84.0,
+            "cheekY": 90.0,
+            "headSectionWidth": 92.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.006,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 185,
+            "bounds": [
+              25,
+              18,
+              169,
+              203
+            ],
+            "opaqueArea": 15072
+          }
         },
         {
           "sourceFrame": 11,
           "sourceBounds": [
-            677,
-            636,
-            923,
-            943
+            646,
+            637,
+            891,
+            949
           ],
+          "scale": 0.598288,
           "anchor": [
             84,
             202
           ],
-          "sha256": "169446c8e52248cb618b43b3539229a64cadd0ae806f20fbac31d1cfcc7fdbe1"
+          "sha256": "b4506bbbe258763b736534d42cbc728d9be29a137e5759301acf9c56dc3eb586",
+          "metrics": {
+            "faceWidth": 47.0,
+            "faceCenterX": 85.0,
+            "cheekY": 87.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 83,
+            "headbandSpan": 83.002,
+            "apronWidth": 44,
+            "apronHeight": 33,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 185,
+            "bounds": [
+              25,
+              18,
+              170,
+              203
+            ],
+            "opaqueArea": 15133
+          }
         },
         {
           "sourceFrame": 12,
           "sourceBounds": [
-            991,
+            949,
             637,
-            1235,
-            942
+            1191,
+            948
           ],
+          "scale": 0.602766,
           "anchor": [
             84,
             202
           ],
-          "sha256": "8dda6bee9e81d72d9f31bcfd1936b9fbbe4a1433f2af8b8a5e8626d741878c7b"
+          "sha256": "1bd2930e09d093df8a15442018d37750fabd01457389713f867f5e099fc45ff9",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 85.0,
+            "cheekY": 89.0,
+            "headSectionWidth": 93.0,
+            "headbandWidth": 83,
+            "headbandSpan": 82.988,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 185,
+            "bounds": [
+              25,
+              18,
+              169,
+              203
+            ],
+            "opaqueArea": 15060
+          }
         },
         {
           "sourceFrame": 13,
           "sourceBounds": [
-            59,
-            946,
-            301,
-            1252
+            47,
+            952,
+            289,
+            1265
           ],
+          "scale": 0.594087,
           "anchor": [
             84,
             202
           ],
-          "sha256": "df09ff30e7cae2a50a87aabe16780afd4c92f28c7d8370439152a7ff32e9c846"
+          "sha256": "4cd83a5439da99d4eb5c1cde0b3fe8bb9cce476cd1677fb21cb817308adb473e",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 86.0,
+            "cheekY": 91.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.1,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 184,
+            "bounds": [
+              27,
+              19,
+              169,
+              203
+            ],
+            "opaqueArea": 14766
+          }
         },
         {
           "sourceFrame": 14,
           "sourceBounds": [
-            370,
-            945,
-            615,
-            1252
+            341,
+            951,
+            593,
+            1265
           ],
+          "scale": 0.589702,
           "anchor": [
             84,
             202
           ],
-          "sha256": "acd000bdd83a77b3ffd68d29cd2b8eba1b4e1bcea6121c1c027f192806a85252"
+          "sha256": "a9b207ed60ab4eab9ff3e701ae41b26ff57354192729d1aa51c2a5101edce69b",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 83.5,
+            "cheekY": 88.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.138,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              23,
+              20,
+              170,
+              203
+            ],
+            "opaqueArea": 14844
+          }
         },
         {
           "sourceFrame": 15,
           "sourceBounds": [
-            679,
-            946,
-            926,
-            1252
+            645,
+            952,
+            892,
+            1265
           ],
+          "scale": 0.598148,
           "anchor": [
             84,
             202
           ],
-          "sha256": "11395ec240645647873843d495b5c55ad430519f6c2a75e2651afca4ed8250d8"
+          "sha256": "c28ca1e92c5329342d94e46d11d2dcfbe9027478c5d2ca5b8f966a7f9f61727c",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.0,
+            "cheekY": 89.0,
+            "headSectionWidth": 93.5,
+            "headbandWidth": 83,
+            "headbandSpan": 82.993,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 185,
+            "bounds": [
+              24,
+              18,
+              170,
+              203
+            ],
+            "opaqueArea": 15040
+          }
         },
         {
           "sourceFrame": 16,
           "sourceBounds": [
-            992,
-            945,
-            1237,
-            1252
+            946,
+            955,
+            1192,
+            1265
           ],
+          "scale": 0.598004,
           "anchor": [
             84,
             202
           ],
-          "sha256": "dbca7f01bfa1f26330a53d3b6e629148c2cbe95cb08fddcd779aee033e9c3a15"
+          "sha256": "6563628e426f23b78c483a977a9907e069ebeddac8b71dc5d59426da7953fd48",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 85.5,
+            "cheekY": 90.0,
+            "headSectionWidth": 93.0,
+            "headbandWidth": 83,
+            "headbandSpan": 83.012,
+            "apronWidth": 42,
+            "apronHeight": 31,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              170,
+              203
+            ],
+            "opaqueArea": 14944
+          }
         }
-      ]
+      ],
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.1,
+          "max": 83.012,
+          "mean": 82.158,
+          "cvPercent": 0.691,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 41.0,
+          "max": 48.0,
+          "mean": 44.938,
+          "cvPercent": 4.552,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 42.0,
+          "max": 44.0,
+          "mean": 42.562,
+          "cvPercent": 1.431,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 183.0,
+          "max": 189.0,
+          "mean": 185.562,
+          "cvPercent": 1.043,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14766.0,
+          "max": 15174.0,
+          "mean": 15015.188,
+          "cvPercent": 0.871,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
     },
     "waving": {
       "frames": 14,
+      "uniqueSourceFrames": 14,
       "durationMs": 1710,
       "packed": [
         {
           "sourceFrame": 1,
           "sourceBounds": [
-            58,
-            6,
-            298,
-            311
+            68,
+            8,
+            300,
+            319
           ],
+          "scale": 0.627803,
           "anchor": [
             84,
             202
           ],
-          "sha256": "72dc13614e36e1b77ec98a8dc8476d8c2e2e859c03641adc4487cf2b277aeb5b"
+          "sha256": "cab5d222e366cc8dfb7e7a18c72121274763c788ff9c174679b9afea16a90149",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 82.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.369,
+            "apronWidth": 44,
+            "apronHeight": 33,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              23,
+              10,
+              167,
+              203
+            ],
+            "opaqueArea": 15528
+          }
         },
         {
           "sourceFrame": 2,
           "sourceBounds": [
-            371,
-            5,
-            612,
-            311
+            356,
+            7,
+            589,
+            318
           ],
+          "scale": 0.627745,
           "anchor": [
             84,
             202
           ],
-          "sha256": "e72ac89a33877cfa0e422dea5e2b1a9dc4f1b65e4efaf983eac4430889826c67"
+          "sha256": "92fc00d639f352c80d9297dda864a4bd86b4e54ed1785d52a5731a2286c01f83",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 81.0,
+            "cheekY": 86.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.373,
+            "apronWidth": 44,
+            "apronHeight": 33,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              23,
+              10,
+              167,
+              203
+            ],
+            "opaqueArea": 15443
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            684,
-            4,
-            924,
-            311
+            648,
+            8,
+            878,
+            317
           ],
+          "scale": 0.627514,
           "anchor": [
             84,
             202
           ],
-          "sha256": "e32aa9da475b2db6fbc50ae52fe6eb8219295e11b5788ffa4a90dc96b249058d"
+          "sha256": "a896f694b76f9cb2c799461ee0d95e01e0f933f5e9142cf48e2512c721f72f3a",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 81.5,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.492,
+            "apronWidth": 44,
+            "apronHeight": 33,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 192,
+            "bounds": [
+              23,
+              11,
+              165,
+              203
+            ],
+            "opaqueArea": 15350
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            996,
-            4,
-            1237,
-            311
+            943,
+            7,
+            1173,
+            317
           ],
+          "scale": 0.630968,
           "anchor": [
             84,
             202
           ],
-          "sha256": "88df10326bee8b1e0406bd1914fc38a12b68aba8e4eeeb78725afa5d3d11887d"
+          "sha256": "9f4d032311911f632c1682e40ff1330239e2b709254bbef309b11106d85b9ff6",
+          "metrics": {
+            "faceWidth": 40.0,
+            "faceCenterX": 82.0,
+            "cheekY": 86.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.462,
+            "apronWidth": 43,
+            "apronHeight": 33,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 194,
+            "bounds": [
+              23,
+              9,
+              166,
+              203
+            ],
+            "opaqueArea": 15563
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            60,
-            318,
-            298,
-            624
+            68,
+            323,
+            303,
+            632
           ],
+          "scale": 0.618347,
           "anchor": [
             84,
             202
           ],
-          "sha256": "bd7c69198c5164e5193cca59c0dbfb02fb7974e3891bc3df3e0fec93cc2eb596"
+          "sha256": "3a334910444aeb7a00de30c3b4c0564aea24985b644774635c5d13fde8d415cc",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 82.0,
+            "cheekY": 86.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.43,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 189,
+            "bounds": [
+              25,
+              14,
+              168,
+              203
+            ],
+            "opaqueArea": 15177
+          }
         },
         {
           "sourceFrame": 6,
           "sourceBounds": [
-            370,
-            317,
-            612,
-            624
+            356,
+            323,
+            589,
+            632
           ],
+          "scale": 0.618958,
           "anchor": [
             84,
             202
           ],
-          "sha256": "4a0f9337ce39e27f1ede32f15e5b0675f381ccf849f84654da536475ce2d7f37"
+          "sha256": "ba424872405b5a1a58cdd04b642fd76fd2db708028b3020b15fa4326860fa6d4",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 83.0,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.381,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 189,
+            "bounds": [
+              24,
+              14,
+              166,
+              203
+            ],
+            "opaqueArea": 15159
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            682,
-            318,
-            924,
-            624
+            648,
+            323,
+            881,
+            632
           ],
+          "scale": 0.623581,
           "anchor": [
             84,
             202
           ],
-          "sha256": "145f25a5ef63442a586d5b931ae90676abe3917fc911f82e7bd45b94f59fe0b7"
+          "sha256": "910abfaa6c75bbd310586fdbadd556e6be767bd753c213fade45272006728a5a",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 81.5,
+            "cheekY": 86.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.293,
+            "apronWidth": 44,
+            "apronHeight": 33,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 191,
+            "bounds": [
+              24,
+              12,
+              167,
+              203
+            ],
+            "opaqueArea": 15461
+          }
+        },
+        {
+          "sourceFrame": 8,
+          "sourceBounds": [
+            942,
+            324,
+            1175,
+            632
+          ],
+          "scale": 0.622946,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "5c77c878fac94ed362e35b43f2890595193747cfba6b43ea6f4422687e61d415",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 81.5,
+            "cheekY": 86.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.288,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 190,
+            "bounds": [
+              24,
+              13,
+              167,
+              203
+            ],
+            "opaqueArea": 15308
+          }
         },
         {
           "sourceFrame": 9,
           "sourceBounds": [
-            57,
-            631,
-            297,
-            938
+            67,
+            638,
+            302,
+            946
           ],
+          "scale": 0.614044,
           "anchor": [
             84,
             202
           ],
-          "sha256": "509b497d6ae5286e2a99c3f239d696a2a86ecdf7e0e60df03b6bf0327d5044c1"
+          "sha256": "f7f4947ac1f71744a73bb86cf0c74ef58c4f1c2b48265d521551aca9d42070b2",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 82.5,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.413,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 187,
+            "bounds": [
+              25,
+              16,
+              167,
+              203
+            ],
+            "opaqueArea": 15087
+          }
         },
         {
           "sourceFrame": 10,
           "sourceBounds": [
-            371,
-            631,
-            612,
-            937
+            356,
+            638,
+            591,
+            947
           ],
+          "scale": 0.622431,
           "anchor": [
             84,
             202
           ],
-          "sha256": "268a965873682364fdada6d6910136fcebd4007bb549979c2983fe633f5caee6"
+          "sha256": "432af4bc11f023aaf1a4943afc84bac2af05eacc3f8b4a7591ae15c3644c2434",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 81.5,
+            "cheekY": 87.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.488,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 190,
+            "bounds": [
+              23,
+              13,
+              167,
+              203
+            ],
+            "opaqueArea": 15446
+          }
         },
         {
-          "sourceFrame": 12,
+          "sourceFrame": 11,
           "sourceBounds": [
-            998,
-            631,
-            1237,
-            937
+            647,
+            639,
+            881,
+            947
           ],
+          "scale": 0.622582,
           "anchor": [
             84,
             202
           ],
-          "sha256": "6e3666c65552704bda5478b5147c37655101b66764c965ec17bf095a8a943784"
+          "sha256": "8ad7e3bb655aa7c70cb27b126d9cb9d53bcb2212fc5d20f71c52b692cee47065",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 80.5,
+            "cheekY": 87.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.55,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 190,
+            "bounds": [
+              22,
+              13,
+              166,
+              203
+            ],
+            "opaqueArea": 15486
+          }
         },
         {
           "sourceFrame": 13,
           "sourceBounds": [
-            58,
-            944,
-            298,
-            1251
+            67,
+            954,
+            301,
+            1264
           ],
+          "scale": 0.615053,
           "anchor": [
             84,
             202
           ],
-          "sha256": "c22743cc1142677a616eb73e33c5abc3b8859cf43f8601abc4fae66e2cf479d5"
-        },
-        {
-          "sourceFrame": 14,
-          "sourceBounds": [
-            371,
-            944,
-            612,
-            1251
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "0e4e797b74dd19744425463214b88abef10618e088bb544c5bd9d5b5f5cb305f"
+          "sha256": "42e9cb7c49a31668e7a39386b063d7f1b61c2304d128285ef1520188ea4cf9e6",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 82.0,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.242,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 189,
+            "bounds": [
+              24,
+              14,
+              166,
+              203
+            ],
+            "opaqueArea": 15229
+          }
         },
         {
           "sourceFrame": 15,
           "sourceBounds": [
-            684,
-            944,
-            924,
-            1251
+            648,
+            955,
+            880,
+            1265
           ],
+          "scale": 0.61929,
           "anchor": [
             84,
             202
           ],
-          "sha256": "f251f91320b060e0efea81cd1fb542c8456df7af7e796fc871136f17316dc331"
+          "sha256": "9da4db8791ddb2172d235d6384c9ef5137b822694c0471d52522107b6732e515",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 81.0,
+            "cheekY": 86.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.322,
+            "apronWidth": 45,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 190,
+            "bounds": [
+              23,
+              13,
+              165,
+              203
+            ],
+            "opaqueArea": 15349
+          }
         },
         {
           "sourceFrame": 16,
           "sourceBounds": [
-            999,
-            944,
-            1238,
-            1251
+            943,
+            954,
+            1176,
+            1265
           ],
+          "scale": 0.618762,
           "anchor": [
             84,
             202
           ],
-          "sha256": "9c52f4e71a7b09b134629f9514bec6918d9f950e377facaf4bb62766d153a76e"
+          "sha256": "2df5ca0cdccbf64534b63d7f6925dc2d6bb5646674b22725a647485d47b8f8c4",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.5,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.272,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 190,
+            "bounds": [
+              25,
+              13,
+              167,
+              203
+            ],
+            "opaqueArea": 15230
+          }
         }
-      ]
+      ],
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.381,
+          "max": 82.462,
+          "mean": 81.955,
+          "cvPercent": 0.53,
+          "measurableFrames": 14
+        },
+        "faceWidth": {
+          "min": 40.0,
+          "max": 45.0,
+          "mean": 42.643,
+          "cvPercent": 3.27,
+          "measurableFrames": 14
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 45.0,
+          "mean": 43.857,
+          "cvPercent": 1.174,
+          "measurableFrames": 14
+        },
+        "height": {
+          "min": 187.0,
+          "max": 194.0,
+          "mean": 190.5,
+          "cvPercent": 0.967,
+          "measurableFrames": 14
+        },
+        "opaqueArea": {
+          "min": 15087.0,
+          "max": 15563.0,
+          "mean": 15344.0,
+          "cvPercent": 0.941,
+          "measurableFrames": 14
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 14
+        }
+      }
     },
     "jumping": {
       "frames": 16,
+      "uniqueSourceFrames": 11,
       "durationMs": 1630,
       "packed": [
         {
           "sourceFrame": 1,
           "sourceBounds": [
             59,
-            44,
-            284,
-            307
+            10,
+            297,
+            303
           ],
+          "scale": 0.589677,
           "anchor": [
             84,
             202
           ],
-          "sha256": "ab7beac2cde1996b232c71b181b5c0001adc625a44f8bd7b0af7eb6bfbddde97"
+          "sha256": "4adf936538aab0402b40b83259a8600a463de5c003aa782d35ffdf806a94c04f",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 81.5,
+            "cheekY": 105.0,
+            "headSectionWidth": 83.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.009,
+            "apronWidth": 43,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 171,
+            "bounds": [
+              25,
+              32,
+              163,
+              203
+            ],
+            "opaqueArea": 13754
+          }
         },
         {
-          "sourceFrame": 3,
+          "sourceFrame": 2,
           "sourceBounds": [
-            687,
-            44,
-            914,
-            307
+            386,
+            10,
+            625,
+            303
           ],
+          "scale": 0.59407,
           "anchor": [
             84,
             202
           ],
-          "sha256": "b429d38fa8e76eb527b34173fc65a6027a9c698d852e975e82b8ba7e6b3cf416"
+          "sha256": "3cd240cbdb11c62d4fe67c4925e6c855e46b8112cf9325e6f670150e794e358c",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 81.5,
+            "cheekY": 108.0,
+            "headSectionWidth": 84.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.035,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 172,
+            "bounds": [
+              23,
+              31,
+              163,
+              203
+            ],
+            "opaqueArea": 13968
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            997,
-            38,
-            1226,
-            307
+            1040,
+            16,
+            1280,
+            303
           ],
+          "scale": 0.594082,
           "anchor": [
             84,
             202
           ],
-          "sha256": "83e1860e476bf835549130d845ee886aab1d05673be429f6f983328a4e042030"
+          "sha256": "9b249c3bea0d148d50c6725702c8e69717a96202a3e4db6d9ba42e9d7c5e7059",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 81.5,
+            "cheekY": 108.0,
+            "headSectionWidth": 84.0,
+            "headbandWidth": 83,
+            "headbandSpan": 82.989,
+            "apronWidth": 44,
+            "apronHeight": 29,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 169,
+            "bounds": [
+              23,
+              34,
+              164,
+              203
+            ],
+            "opaqueArea": 13846
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            58,
-            345,
-            288,
-            614
+            54,
+            317,
+            298,
+            602
           ],
+          "scale": 0.585553,
           "anchor": [
             84,
-            199
+            202
           ],
-          "sha256": "8fc05b5cc08c980df1a31827312543f734eb86966b8055a7962f1b46042ea827"
+          "sha256": "e5bd9e111679581776ed6b24a4723394b8b75249552b6f32bc17201e1efc8460",
+          "metrics": {
+            "faceWidth": 40.0,
+            "faceCenterX": 81.5,
+            "cheekY": 114.0,
+            "headSectionWidth": 83.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.013,
+            "apronWidth": 42,
+            "apronHeight": 28,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 165,
+            "bounds": [
+              21,
+              38,
+              161,
+              203
+            ],
+            "opaqueArea": 13645
+          }
+        },
+        {
+          "sourceFrame": 6,
+          "sourceBounds": [
+            381,
+            323,
+            625,
+            602
+          ],
+          "scale": 0.593687,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "f523ffd91af81747bd1665fa4f38dbc293e295544dfddc2a2d272ccd01f8b405",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 81.5,
+            "cheekY": 113.0,
+            "headSectionWidth": 84.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.046,
+            "apronWidth": 44,
+            "apronHeight": 28,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 164,
+            "bounds": [
+              20,
+              39,
+              163,
+              203
+            ],
+            "opaqueArea": 13803
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            677,
-            335,
-            916,
-            606
+            699,
+            311,
+            954,
+            591
           ],
+          "scale": 0.589452,
           "anchor": [
             84,
-            196
+            199
           ],
-          "sha256": "cacc59c76e492bfd99734450ea4ed3b3b9735d5787948d321d02ed216722fe56"
+          "sha256": "7791b1458570325defddfef42a0ad2eccf8fc64ee63e7868d25c4316b64f63e1",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 80.5,
+            "cheekY": 109.0,
+            "headSectionWidth": 89.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.052,
+            "apronWidth": 44,
+            "apronHeight": 26,
+            "footCenterX": 84.5,
+            "footY": 199,
+            "height": 163,
+            "bounds": [
+              15,
+              37,
+              163,
+              200
+            ],
+            "opaqueArea": 14111
+          }
         },
         {
           "sourceFrame": 8,
           "sourceBounds": [
-            988,
-            330,
-            1227,
-            603
+            1021,
+            311,
+            1283,
+            590
           ],
+          "scale": 0.589745,
           "anchor": [
             84,
-            195
+            194
           ],
-          "sha256": "d4c75e1d4a1e655576fdb933c60370ac39545b749fd7857e7eb0b8b512e0c123"
+          "sha256": "fac6b551c178ff022a6fd9c3613690771063d5df4293791b8a76575485184e5e",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 79.5,
+            "cheekY": 102.0,
+            "headSectionWidth": 90.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.002,
+            "apronWidth": 46,
+            "apronHeight": 25,
+            "footCenterX": 84.0,
+            "footY": 194,
+            "height": 163,
+            "bounds": [
+              11,
+              32,
+              164,
+              195
+            ],
+            "opaqueArea": 14341
+          }
         },
         {
           "sourceFrame": 9,
           "sourceBounds": [
-            54,
-            649,
-            287,
-            913
+            41,
+            611,
+            299,
+            891
           ],
+          "scale": 0.589681,
           "anchor": [
             84,
-            193
+            197
           ],
-          "sha256": "cd183f2dd6fd227ebae41b33f814c6aee4875a3ab367dbb1fd85f1878346794a"
+          "sha256": "d67ace18d5ff911ff01b2c88119b63ea05140b6d9a38daa1f04f63e4dc27ca31",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 80.5,
+            "cheekY": 106.0,
+            "headSectionWidth": 89.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.041,
+            "apronWidth": 45,
+            "apronHeight": 26,
+            "footCenterX": 84.0,
+            "footY": 197,
+            "height": 163,
+            "bounds": [
+              13,
+              35,
+              163,
+              198
+            ],
+            "opaqueArea": 14140
+          }
         },
         {
           "sourceFrame": 10,
           "sourceBounds": [
-            368,
-            663,
-            605,
-            919
+            375,
+            624,
+            626,
+            901
           ],
+          "scale": 0.589753,
           "anchor": [
             84,
-            196
+            201
           ],
-          "sha256": "19cfc5bcab560e4d44544ad3e6a276c3db88eae9046a76a1e16fc4438557ef28"
+          "sha256": "791d8e8b28153d51fb71fc0889f29c1354746d084c55a6b942aba208910d2696",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 80.5,
+            "cheekY": 112.0,
+            "headSectionWidth": 84.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.029,
+            "apronWidth": 43,
+            "apronHeight": 26,
+            "footCenterX": 83.5,
+            "footY": 201,
+            "height": 161,
+            "bounds": [
+              17,
+              41,
+              163,
+              202
+            ],
+            "opaqueArea": 13533
+          }
         },
         {
           "sourceFrame": 11,
           "sourceBounds": [
-            680,
-            672,
-            919,
-            926
+            704,
+            623,
+            953,
+            901
           ],
+          "scale": 0.589363,
           "anchor": [
             84,
-            199
+            202
           ],
-          "sha256": "2a3e880ad2cf6f6b95db827f860c9db471415fece96ea32d244197be4edbd03a"
+          "sha256": "d6fabecd4c6e4cf45e3badfcbc9391df89d26cccc73fe8954a9c17bf036df10f",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 82.0,
+            "cheekY": 115.0,
+            "headSectionWidth": 88.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.091,
+            "apronWidth": 43,
+            "apronHeight": 27,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 162,
+            "bounds": [
+              18,
+              41,
+              163,
+              203
+            ],
+            "opaqueArea": 13619
+          }
         },
         {
-          "sourceFrame": 12,
+          "sourceFrame": 5,
           "sourceBounds": [
-            990,
-            679,
-            1234,
-            926
-          ],
-          "anchor": [
-            84,
-            199
-          ],
-          "sha256": "a67b7fa677ec30da28a0f310a14f0c98050099058edc80adeb4754d2c0494c2b"
-        },
-        {
-          "sourceFrame": 13,
-          "sourceBounds": [
-            50,
-            990,
+            54,
+            317,
             298,
-            1233
+            602
           ],
+          "scale": 0.585553,
           "anchor": [
             84,
             202
           ],
-          "sha256": "f56c51d7d963a8edbe9d344f882bfda53f14795c8adc571464d010552477a572"
-        },
-        {
-          "sourceFrame": 14,
-          "sourceBounds": [
-            367,
-            992,
-            613,
-            1233
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "32bde1208d400beaeeebb69b38550590c00022e9a0e3e1ef034a71eb3ee052f3"
-        },
-        {
-          "sourceFrame": 12,
-          "sourceBounds": [
-            990,
-            679,
-            1234,
-            926
-          ],
-          "anchor": [
-            84,
-            199
-          ],
-          "sha256": "a67b7fa677ec30da28a0f310a14f0c98050099058edc80adeb4754d2c0494c2b"
-        },
-        {
-          "sourceFrame": 11,
-          "sourceBounds": [
-            680,
-            672,
-            919,
-            926
-          ],
-          "anchor": [
-            84,
-            199
-          ],
-          "sha256": "2a3e880ad2cf6f6b95db827f860c9db471415fece96ea32d244197be4edbd03a"
+          "sha256": "e5bd9e111679581776ed6b24a4723394b8b75249552b6f32bc17201e1efc8460",
+          "metrics": {
+            "faceWidth": 40.0,
+            "faceCenterX": 81.5,
+            "cheekY": 114.0,
+            "headSectionWidth": 83.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.013,
+            "apronWidth": 42,
+            "apronHeight": 28,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 165,
+            "bounds": [
+              21,
+              38,
+              161,
+              203
+            ],
+            "opaqueArea": 13645
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            997,
-            38,
-            1226,
-            307
+            1040,
+            16,
+            1280,
+            303
           ],
+          "scale": 0.594082,
           "anchor": [
             84,
             202
           ],
-          "sha256": "83e1860e476bf835549130d845ee886aab1d05673be429f6f983328a4e042030"
+          "sha256": "9b249c3bea0d148d50c6725702c8e69717a96202a3e4db6d9ba42e9d7c5e7059",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 81.5,
+            "cheekY": 108.0,
+            "headSectionWidth": 84.0,
+            "headbandWidth": 83,
+            "headbandSpan": 82.989,
+            "apronWidth": 44,
+            "apronHeight": 29,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 169,
+            "bounds": [
+              23,
+              34,
+              164,
+              203
+            ],
+            "opaqueArea": 13846
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            687,
-            44,
-            914,
-            307
+            714,
+            10,
+            953,
+            303
           ],
+          "scale": 0.589681,
           "anchor": [
             84,
             202
           ],
-          "sha256": "b429d38fa8e76eb527b34173fc65a6027a9c698d852e975e82b8ba7e6b3cf416"
+          "sha256": "3dcb968c9cc942cf8c8a57152a5f6f670526bef36c910affe33d3c81c0669fda",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 81.0,
+            "cheekY": 106.0,
+            "headSectionWidth": 83.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.018,
+            "apronWidth": 43,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 171,
+            "bounds": [
+              24,
+              32,
+              163,
+              203
+            ],
+            "opaqueArea": 13772
+          }
+        },
+        {
+          "sourceFrame": 2,
+          "sourceBounds": [
+            386,
+            10,
+            625,
+            303
+          ],
+          "scale": 0.59407,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "3cd240cbdb11c62d4fe67c4925e6c855e46b8112cf9325e6f670150e794e358c",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 81.5,
+            "cheekY": 108.0,
+            "headSectionWidth": 84.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.035,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 172,
+            "bounds": [
+              23,
+              31,
+              163,
+              203
+            ],
+            "opaqueArea": 13968
+          }
+        },
+        {
+          "sourceFrame": 1,
+          "sourceBounds": [
+            59,
+            10,
+            297,
+            303
+          ],
+          "scale": 0.589677,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "4adf936538aab0402b40b83259a8600a463de5c003aa782d35ffdf806a94c04f",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 81.5,
+            "cheekY": 105.0,
+            "headSectionWidth": 83.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.009,
+            "apronWidth": 43,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 171,
+            "bounds": [
+              25,
+              32,
+              163,
+              203
+            ],
+            "opaqueArea": 13754
+          }
+        },
+        {
+          "sourceFrame": 1,
+          "sourceBounds": [
+            59,
+            10,
+            297,
+            303
+          ],
+          "scale": 0.589677,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "4adf936538aab0402b40b83259a8600a463de5c003aa782d35ffdf806a94c04f",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 81.5,
+            "cheekY": 105.0,
+            "headSectionWidth": 83.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.009,
+            "apronWidth": 43,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 171,
+            "bounds": [
+              25,
+              32,
+              163,
+              203
+            ],
+            "opaqueArea": 13754
+          }
         }
-      ]
+      ],
+      "measurements": {
+        "headbandSpan": {
+          "min": 82.002,
+          "max": 82.989,
+          "mean": 82.149,
+          "cvPercent": 0.387,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 40.0,
+          "max": 45.0,
+          "mean": 43.0,
+          "cvPercent": 3.943,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 42.0,
+          "max": 46.0,
+          "mean": 43.438,
+          "cvPercent": 2.298,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 161.0,
+          "max": 172.0,
+          "mean": 167.0,
+          "cvPercent": 2.357,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 13533.0,
+          "max": 14341.0,
+          "mean": 13843.688,
+          "cvPercent": 1.505,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 194.0,
+          "max": 202.0,
+          "mean": 200.938,
+          "cvPercent": 1.119,
+          "measurableFrames": 16
+        }
+      }
     },
     "failed": {
       "frames": 16,
+      "uniqueSourceFrames": 8,
       "durationMs": 2360,
       "packed": [
         {
           "sourceFrame": 1,
           "sourceBounds": [
-            51,
-            11,
-            275,
-            310
+            123,
+            8,
+            349,
+            290
           ],
+          "scale": 0.625647,
           "anchor": [
             84,
             202
           ],
-          "sha256": "c0bbc6d458e15784224d0b39b7ff4546c4ebc632a446d22153cf1c6d8873aac6"
+          "sha256": "a365851207df270a81c98411fe66852feea1252454cf6db7770bf25e9dba3715",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 84.0,
+            "cheekY": 98.0,
+            "headSectionWidth": 94.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.025,
+            "apronWidth": 44,
+            "apronHeight": 24,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 174,
+            "bounds": [
+              24,
+              29,
+              163,
+              203
+            ],
+            "opaqueArea": 14315
+          }
         },
         {
           "sourceFrame": 2,
           "sourceBounds": [
-            364,
-            17,
-            590,
-            310
+            442,
+            9,
+            668,
+            290
           ],
+          "scale": 0.621049,
           "anchor": [
             84,
             202
           ],
-          "sha256": "f51f9eaee0d8b6d4c96fff99a6dd3086d558f254399dcfff76cb7bf9c36d64b1"
+          "sha256": "38bae726f55e92bb150a3f7def0ab76d2844c360455eef28220b48e088489395",
+          "metrics": {
+            "faceWidth": 47.0,
+            "faceCenterX": 83.0,
+            "cheekY": 98.0,
+            "headSectionWidth": 94.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.056,
+            "apronWidth": 43,
+            "apronHeight": 25,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 173,
+            "bounds": [
+              24,
+              30,
+              162,
+              203
+            ],
+            "opaqueArea": 14154
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            678,
-            21,
-            903,
-            310
+            776,
+            15,
+            1001,
+            290
           ],
+          "scale": 0.615325,
           "anchor": [
             84,
             202
           ],
-          "sha256": "3fdc5b10597cdb3c82a98088ed067c89005163b6d6f723566ed4e67b44a9223c"
+          "sha256": "7232889843c8acf3b3e244b30b4f3e9c8f891eb59bf31dd7227201c87e487b4e",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 84.0,
+            "cheekY": 111.0,
+            "headSectionWidth": 94.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.279,
+            "apronWidth": 43,
+            "apronHeight": 23,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 167,
+            "bounds": [
+              25,
+              36,
+              161,
+              203
+            ],
+            "opaqueArea": 13543
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            992,
-            26,
-            1217,
-            310
+            1109,
+            21,
+            1336,
+            290
           ],
+          "scale": 0.620946,
           "anchor": [
             84,
             202
           ],
-          "sha256": "5e994a74378f18cdcf2e8fde3ca523391b5d078bfeb9ae371df1de6915029a59"
+          "sha256": "b46a5c3a0746756d3384cec0edc246cd2a27e6c0e60ab39e0035fae726cbb093",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 83.0,
+            "cheekY": 117.0,
+            "headSectionWidth": 94.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.0,
+            "apronWidth": 43,
+            "apronHeight": 23,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 165,
+            "bounds": [
+              23,
+              38,
+              162,
+              203
+            ],
+            "opaqueArea": 13476
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            53,
-            343,
-            275,
-            625
+            124,
+            299,
+            351,
+            560
           ],
+          "scale": 0.620866,
           "anchor": [
             84,
             202
           ],
-          "sha256": "dc9500dfc6f8ea8641b92239ae21ddbd8619cd6fff804f23aadc128e868b4f09"
+          "sha256": "43a38042fb69d8c1999b7097cd3ca9db113e1c562c097176669abf7452daa78a",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 83.5,
+            "cheekY": 117.0,
+            "headSectionWidth": 95.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.018,
+            "apronWidth": 44,
+            "apronHeight": 23,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 160,
+            "bounds": [
+              23,
+              43,
+              162,
+              203
+            ],
+            "opaqueArea": 13371
+          }
         },
         {
           "sourceFrame": 6,
           "sourceBounds": [
-            366,
-            353,
-            592,
-            625
+            449,
+            305,
+            675,
+            560
           ],
+          "scale": 0.616074,
           "anchor": [
             84,
             202
           ],
-          "sha256": "50d097d2f5d9541204249e4e9586721508193230737d7a18e4e6432f34833330"
+          "sha256": "7aca38a56375bfa8bbdd7691bed95938b51af4fb80ea117e504fc900f509cbb2",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 84.5,
+            "cheekY": 122.0,
+            "headSectionWidth": 96.5,
+            "headbandWidth": 81,
+            "headbandSpan": 81.071,
+            "apronWidth": null,
+            "apronHeight": 11,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 155,
+            "bounds": [
+              24,
+              48,
+              161,
+              203
+            ],
+            "opaqueArea": 12824
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            679,
-            358,
-            905,
-            625
+            783,
+            307,
+            1011,
+            559
           ],
+          "scale": 0.611648,
           "anchor": [
             84,
             202
           ],
-          "sha256": "9e353b064311ba4d4af8f7f21aca20cb0be895c101e27b3459f344d8e31bf6f9"
+          "sha256": "ad1282061bad8ed0df968245286922226675ac946781b52ec5d1d5560b38b914",
+          "metrics": {
+            "faceWidth": 47.0,
+            "faceCenterX": 83.0,
+            "cheekY": 120.0,
+            "headSectionWidth": 95.5,
+            "headbandWidth": 81,
+            "headbandSpan": 81.036,
+            "apronWidth": null,
+            "apronHeight": 16,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 152,
+            "bounds": [
+              24,
+              51,
+              161,
+              203
+            ],
+            "opaqueArea": 12499
+          }
         },
         {
           "sourceFrame": 8,
           "sourceBounds": [
-            994,
-            363,
-            1219,
-            625
+            1115,
+            313,
+            1345,
+            557
           ],
+          "scale": 0.607262,
           "anchor": [
             84,
             202
           ],
-          "sha256": "ea4aa31a849e00f4771590286d0bac9865948e48a98819bf2db7596a93dbdff6"
+          "sha256": "486ed89a3965766b720ce2aeb2c8c254ae83fd1f12c124728c0018f45a912399",
+          "metrics": {
+            "faceWidth": 40.0,
+            "faceCenterX": 84.0,
+            "cheekY": 130.0,
+            "headSectionWidth": 97.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.004,
+            "apronWidth": null,
+            "apronHeight": 13,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 146,
+            "bounds": [
+              23,
+              57,
+              161,
+              203
+            ],
+            "opaqueArea": 12192
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            679,
-            358,
-            905,
-            625
+            783,
+            307,
+            1011,
+            559
           ],
+          "scale": 0.611648,
           "anchor": [
             84,
             202
           ],
-          "sha256": "9e353b064311ba4d4af8f7f21aca20cb0be895c101e27b3459f344d8e31bf6f9"
+          "sha256": "ad1282061bad8ed0df968245286922226675ac946781b52ec5d1d5560b38b914",
+          "metrics": {
+            "faceWidth": 47.0,
+            "faceCenterX": 83.0,
+            "cheekY": 120.0,
+            "headSectionWidth": 95.5,
+            "headbandWidth": 81,
+            "headbandSpan": 81.036,
+            "apronWidth": null,
+            "apronHeight": 16,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 152,
+            "bounds": [
+              24,
+              51,
+              161,
+              203
+            ],
+            "opaqueArea": 12499
+          }
         },
         {
           "sourceFrame": 6,
           "sourceBounds": [
-            366,
-            353,
-            592,
-            625
+            449,
+            305,
+            675,
+            560
           ],
+          "scale": 0.616074,
           "anchor": [
             84,
             202
           ],
-          "sha256": "50d097d2f5d9541204249e4e9586721508193230737d7a18e4e6432f34833330"
+          "sha256": "7aca38a56375bfa8bbdd7691bed95938b51af4fb80ea117e504fc900f509cbb2",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 84.5,
+            "cheekY": 122.0,
+            "headSectionWidth": 96.5,
+            "headbandWidth": 81,
+            "headbandSpan": 81.071,
+            "apronWidth": null,
+            "apronHeight": 11,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 155,
+            "bounds": [
+              24,
+              48,
+              161,
+              203
+            ],
+            "opaqueArea": 12824
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            53,
-            343,
-            275,
-            625
+            124,
+            299,
+            351,
+            560
           ],
+          "scale": 0.620866,
           "anchor": [
             84,
             202
           ],
-          "sha256": "dc9500dfc6f8ea8641b92239ae21ddbd8619cd6fff804f23aadc128e868b4f09"
+          "sha256": "43a38042fb69d8c1999b7097cd3ca9db113e1c562c097176669abf7452daa78a",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 83.5,
+            "cheekY": 117.0,
+            "headSectionWidth": 95.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.018,
+            "apronWidth": 44,
+            "apronHeight": 23,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 160,
+            "bounds": [
+              23,
+              43,
+              162,
+              203
+            ],
+            "opaqueArea": 13371
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            992,
-            26,
-            1217,
-            310
+            1109,
+            21,
+            1336,
+            290
           ],
+          "scale": 0.620946,
           "anchor": [
             84,
             202
           ],
-          "sha256": "5e994a74378f18cdcf2e8fde3ca523391b5d078bfeb9ae371df1de6915029a59"
+          "sha256": "b46a5c3a0746756d3384cec0edc246cd2a27e6c0e60ab39e0035fae726cbb093",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 83.0,
+            "cheekY": 117.0,
+            "headSectionWidth": 94.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.0,
+            "apronWidth": 43,
+            "apronHeight": 23,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 165,
+            "bounds": [
+              23,
+              38,
+              162,
+              203
+            ],
+            "opaqueArea": 13476
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            678,
-            21,
-            903,
-            310
+            776,
+            15,
+            1001,
+            290
           ],
+          "scale": 0.615325,
           "anchor": [
             84,
             202
           ],
-          "sha256": "3fdc5b10597cdb3c82a98088ed067c89005163b6d6f723566ed4e67b44a9223c"
+          "sha256": "7232889843c8acf3b3e244b30b4f3e9c8f891eb59bf31dd7227201c87e487b4e",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 84.0,
+            "cheekY": 111.0,
+            "headSectionWidth": 94.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.279,
+            "apronWidth": 43,
+            "apronHeight": 23,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 167,
+            "bounds": [
+              25,
+              36,
+              161,
+              203
+            ],
+            "opaqueArea": 13543
+          }
         },
         {
           "sourceFrame": 2,
           "sourceBounds": [
-            364,
-            17,
-            590,
-            310
+            442,
+            9,
+            668,
+            290
           ],
+          "scale": 0.621049,
           "anchor": [
             84,
             202
           ],
-          "sha256": "f51f9eaee0d8b6d4c96fff99a6dd3086d558f254399dcfff76cb7bf9c36d64b1"
+          "sha256": "38bae726f55e92bb150a3f7def0ab76d2844c360455eef28220b48e088489395",
+          "metrics": {
+            "faceWidth": 47.0,
+            "faceCenterX": 83.0,
+            "cheekY": 98.0,
+            "headSectionWidth": 94.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.056,
+            "apronWidth": 43,
+            "apronHeight": 25,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 173,
+            "bounds": [
+              24,
+              30,
+              162,
+              203
+            ],
+            "opaqueArea": 14154
+          }
         },
         {
           "sourceFrame": 1,
           "sourceBounds": [
-            51,
-            11,
-            275,
-            310
+            123,
+            8,
+            349,
+            290
           ],
+          "scale": 0.625647,
           "anchor": [
             84,
             202
           ],
-          "sha256": "c0bbc6d458e15784224d0b39b7ff4546c4ebc632a446d22153cf1c6d8873aac6"
+          "sha256": "a365851207df270a81c98411fe66852feea1252454cf6db7770bf25e9dba3715",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 84.0,
+            "cheekY": 98.0,
+            "headSectionWidth": 94.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.025,
+            "apronWidth": 44,
+            "apronHeight": 24,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 174,
+            "bounds": [
+              24,
+              29,
+              163,
+              203
+            ],
+            "opaqueArea": 14315
+          }
         },
         {
-          "sourceFrame": 16,
+          "sourceFrame": 1,
           "sourceBounds": [
-            993,
-            942,
-            1217,
-            1239
+            123,
+            8,
+            349,
+            290
           ],
+          "scale": 0.625647,
           "anchor": [
             84,
             202
           ],
-          "sha256": "d03a87a3c1c6e73a8e4bfd010526cdce83f585176d2b460239ab260942ba650b"
+          "sha256": "a365851207df270a81c98411fe66852feea1252454cf6db7770bf25e9dba3715",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 84.0,
+            "cheekY": 98.0,
+            "headSectionWidth": 94.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.025,
+            "apronWidth": 44,
+            "apronHeight": 24,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 174,
+            "bounds": [
+              24,
+              29,
+              163,
+              203
+            ],
+            "opaqueArea": 14315
+          }
         }
-      ]
+      ],
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.036,
+          "max": 82.025,
+          "mean": 81.562,
+          "cvPercent": 0.561,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 40.0,
+          "max": 47.0,
+          "mean": 43.75,
+          "cvPercent": 5.966,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 44.0,
+          "mean": 43.455,
+          "cvPercent": 1.146,
+          "measurableFrames": 11
+        },
+        "height": {
+          "min": 146.0,
+          "max": 174.0,
+          "mean": 163.25,
+          "cvPercent": 5.477,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 12192.0,
+          "max": 14315.0,
+          "mean": 13429.438,
+          "cvPercent": 5.076,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
     },
     "waiting": {
       "frames": 16,
+      "uniqueSourceFrames": 12,
       "durationMs": 2400,
       "packed": [
         {
           "sourceFrame": 1,
           "sourceBounds": [
-            54,
+            53,
             8,
-            288,
-            312
+            290,
+            313
           ],
+          "scale": 0.609022,
           "anchor": [
             84,
             202
           ],
-          "sha256": "39d51f668be7f5bbb703209b34300e105abb68ef2430757e568374eef8f2095e"
-        },
-        {
-          "sourceFrame": 2,
-          "sourceBounds": [
-            363,
-            7,
-            601,
-            312
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "6cdb456a080d9733061fddb24cae5fd3c83d7ea7ef748bd70ef23130659170cd"
+          "sha256": "8cf8009fccdb0812dbb3bd2db4bd9b67936aeb3e9457420dda559d4e99976c8f",
+          "metrics": {
+            "faceWidth": 35.0,
+            "faceCenterX": 82.5,
+            "cheekY": 95.0,
+            "headSectionWidth": 101.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.024,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 184,
+            "bounds": [
+              23,
+              19,
+              165,
+              203
+            ],
+            "opaqueArea": 14689
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            676,
-            7,
-            914,
-            312
+            648,
+            8,
+            877,
+            313
           ],
+          "scale": 0.625876,
           "anchor": [
             84,
             202
           ],
-          "sha256": "9c15f7dd9819eb048902d66e1d77bb22781f1be482d6cf42191791d5d827b1a6"
+          "sha256": "3c5d95df356a329577228570afaaefe308aebd02c48b94cd68fdd386bb47664c",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.0,
+            "cheekY": 89.0,
+            "headSectionWidth": 99.5,
+            "headbandWidth": 80,
+            "headbandSpan": 82.251,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 189,
+            "bounds": [
+              25,
+              14,
+              166,
+              203
+            ],
+            "opaqueArea": 15163
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            989,
-            7,
-            1227,
-            312
+            944,
+            8,
+            1171,
+            313
           ],
+          "scale": 0.627092,
           "anchor": [
             84,
             202
           ],
-          "sha256": "8137b1597669d1ce482cb88aa55f1cca22bd60e20dd3a18272d17405d07002df"
+          "sha256": "ba2adc64e09d1c3460ebde29e75c443df5ddbfc17187e77f2a1bdd531e1f9d49",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 82.5,
+            "cheekY": 89.0,
+            "headSectionWidth": 98.5,
+            "headbandWidth": 79,
+            "headbandSpan": 81.518,
+            "apronWidth": 45,
+            "apronHeight": 31,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 189,
+            "bounds": [
+              25,
+              14,
+              165,
+              203
+            ],
+            "opaqueArea": 15135
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            51,
-            321,
-            290,
-            626
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "d93e6c1b27f6729020499f53e991176cee29ae59f6498d77ecf7ee94af671a29"
-        },
-        {
-          "sourceFrame": 6,
-          "sourceBounds": [
-            363,
+            57,
             322,
-            602,
-            626
+            285,
+            633
           ],
+          "scale": 0.616241,
           "anchor": [
             84,
             202
           ],
-          "sha256": "ea7d119524b588e6e36fc7ee4b629e71735188ae3b3dd5ef545ee26e7a367b01"
+          "sha256": "218dec5a3f57a7e1f5cc43c5c6ac7e5bf8807590537c7644241f60f64b068d5f",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 86.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 93.0,
+            "headbandWidth": 83,
+            "headbandSpan": 83.024,
+            "apronWidth": 43,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 190,
+            "bounds": [
+              26,
+              13,
+              165,
+              203
+            ],
+            "opaqueArea": 15005
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            677,
-            322,
-            915,
-            626
+            651,
+            323,
+            878,
+            633
           ],
+          "scale": 0.630385,
           "anchor": [
             84,
             202
           ],
-          "sha256": "359390aac69dd1f10f38e92b55fdc88d60f3936a285fa744377d5ef9a4f34452"
+          "sha256": "d9f39c100f6c4ee576021f9d8d70a64dfc4a140a2d4764fd34c97ebf3265b7c5",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 85.5,
+            "cheekY": 81.0,
+            "headSectionWidth": 93.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.099,
+            "apronWidth": 45,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              25,
+              10,
+              166,
+              203
+            ],
+            "opaqueArea": 15448
+          }
         },
         {
           "sourceFrame": 8,
           "sourceBounds": [
-            991,
+            953,
             322,
-            1229,
-            626
+            1175,
+            633
           ],
+          "scale": 0.62558,
           "anchor": [
             84,
             202
           ],
-          "sha256": "b1585686c79120dfbeecff0608927fb2f6ce47781c70f33268cdcc275eeed3a2"
+          "sha256": "a343849e2a2d8ca0c8888e77107d551009e4076091af82e9f0c9eeec1d5d89bb",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 86.5,
+            "cheekY": 82.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.055,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              27,
+              10,
+              164,
+              203
+            ],
+            "opaqueArea": 15255
+          }
         },
         {
           "sourceFrame": 9,
           "sourceBounds": [
-            54,
-            636,
-            290,
-            939
+            62,
+            643,
+            287,
+            951
           ],
+          "scale": 0.625547,
           "anchor": [
             84,
             202
           ],
-          "sha256": "aba3d7b1917f2fa70d85c469ccfc611510180ef6de4d4086cc82835a795c4556"
-        },
-        {
-          "sourceFrame": 10,
-          "sourceBounds": [
-            363,
-            636,
-            602,
-            939
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "d706ab12a5bca39afd847a8edadbae19a592e0b1088e7ccc73cfaa7c9a479e9c"
+          "sha256": "b19bfa15b608fa881c22212fdb29032c4d980e9e6c42811aa5f0065f4cd8f1e1",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 90.5,
+            "cheekY": 85.0,
+            "headSectionWidth": 101.0,
+            "headbandWidth": 79,
+            "headbandSpan": 82.311,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 191,
+            "bounds": [
+              28,
+              12,
+              167,
+              203
+            ],
+            "opaqueArea": 15521
+          }
         },
         {
           "sourceFrame": 11,
           "sourceBounds": [
-            677,
-            636,
-            915,
-            939
+            662,
+            642,
+            880,
+            951
           ],
+          "scale": 0.631702,
           "anchor": [
             84,
             202
           ],
-          "sha256": "ff17a6882a253dd4f30e6ac4546f6a33acae603b604af132c47fa85f628206c8"
+          "sha256": "d56849409e596954cd6ccb4f817a4f0350c0014bbfdbeeb1def49fe7ee55dd3f",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 94.0,
+            "cheekY": 82.0,
+            "headSectionWidth": 102.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.465,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              29,
+              10,
+              165,
+              203
+            ],
+            "opaqueArea": 15537
+          }
         },
         {
           "sourceFrame": 12,
           "sourceBounds": [
-            988,
-            636,
-            1227,
-            939
+            960,
+            642,
+            1179,
+            951
           ],
+          "scale": 0.631799,
           "anchor": [
             84,
             202
           ],
-          "sha256": "c5189a69e26413a06db5627f08e6a9f9d735fad39b74ae766d20716984c2edfe"
+          "sha256": "97819bd22c642dafe33baf6971b9c8f2500c0b765e04f7906b9c5cde6967c49b",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 94.5,
+            "cheekY": 83.0,
+            "headSectionWidth": 101.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.227,
+            "apronWidth": 45,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              31,
+              10,
+              167,
+              203
+            ],
+            "opaqueArea": 15453
+          }
         },
         {
           "sourceFrame": 13,
           "sourceBounds": [
-            50,
-            949,
-            289,
-            1253
+            53,
+            961,
+            290,
+            1266
           ],
+          "scale": 0.606552,
           "anchor": [
             84,
             202
           ],
-          "sha256": "1ef342b9d159f92bce27cd79807ecc755683960280d3fdd20b1e68dcf21a3d7c"
-        },
-        {
-          "sourceFrame": 14,
-          "sourceBounds": [
-            364,
-            949,
-            602,
-            1253
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "5d101bd53b37ffac23be3df3fed6cd9562cb2b7e1c5992473f46fcd07a025d47"
+          "sha256": "4896fd649ae69825c35d10d61f292163c9284887d09b6c2dca8dc82c4aca7f24",
+          "metrics": {
+            "faceWidth": 34.0,
+            "faceCenterX": 83.0,
+            "cheekY": 94.0,
+            "headSectionWidth": 101.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.024,
+            "apronWidth": 44,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              23,
+              20,
+              165,
+              203
+            ],
+            "opaqueArea": 14621
+          }
         },
         {
           "sourceFrame": 15,
           "sourceBounds": [
-            676,
-            949,
-            915,
-            1253
+            648,
+            961,
+            877,
+            1266
           ],
+          "scale": 0.622384,
           "anchor": [
             84,
             202
           ],
-          "sha256": "6def3536fbbd880fa6eb7b5f96c57b0c8cc34f1a91a0575bdc9afb1a73bbc7ed"
+          "sha256": "c3cdfca6c58b59e415cc6340952b79b54962c88ffc5e81155f964887b0007846",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.0,
+            "cheekY": 89.0,
+            "headSectionWidth": 100.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.252,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 188,
+            "bounds": [
+              25,
+              15,
+              166,
+              203
+            ],
+            "opaqueArea": 15077
+          }
         },
         {
           "sourceFrame": 16,
           "sourceBounds": [
-            989,
-            949,
-            1227,
-            1253
+            944,
+            961,
+            1171,
+            1266
           ],
+          "scale": 0.625967,
           "anchor": [
             84,
             202
           ],
-          "sha256": "6009009f023ae70c5c05bb5d28fcb8569aafcaa8c63f48fc115dc5816b027c99"
+          "sha256": "218368a82cf8f2271839a0c9b91440315856e9e45f9504129612902100ef0843",
+          "metrics": {
+            "faceWidth": 39.0,
+            "faceCenterX": 83.0,
+            "cheekY": 90.0,
+            "headSectionWidth": 99.5,
+            "headbandWidth": 80,
+            "headbandSpan": 82.49,
+            "apronWidth": 44,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 189,
+            "bounds": [
+              25,
+              14,
+              165,
+              203
+            ],
+            "opaqueArea": 15116
+          }
+        },
+        {
+          "sourceFrame": 15,
+          "sourceBounds": [
+            648,
+            961,
+            877,
+            1266
+          ],
+          "scale": 0.622384,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "c3cdfca6c58b59e415cc6340952b79b54962c88ffc5e81155f964887b0007846",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.0,
+            "cheekY": 89.0,
+            "headSectionWidth": 100.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.252,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 188,
+            "bounds": [
+              25,
+              15,
+              166,
+              203
+            ],
+            "opaqueArea": 15077
+          }
+        },
+        {
+          "sourceFrame": 13,
+          "sourceBounds": [
+            53,
+            961,
+            290,
+            1266
+          ],
+          "scale": 0.606552,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "4896fd649ae69825c35d10d61f292163c9284887d09b6c2dca8dc82c4aca7f24",
+          "metrics": {
+            "faceWidth": 34.0,
+            "faceCenterX": 83.0,
+            "cheekY": 94.0,
+            "headSectionWidth": 101.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.024,
+            "apronWidth": 44,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              23,
+              20,
+              165,
+              203
+            ],
+            "opaqueArea": 14621
+          }
+        },
+        {
+          "sourceFrame": 5,
+          "sourceBounds": [
+            57,
+            322,
+            285,
+            633
+          ],
+          "scale": 0.616241,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "218dec5a3f57a7e1f5cc43c5c6ac7e5bf8807590537c7644241f60f64b068d5f",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 86.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 93.0,
+            "headbandWidth": 83,
+            "headbandSpan": 83.024,
+            "apronWidth": 43,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 190,
+            "bounds": [
+              26,
+              13,
+              165,
+              203
+            ],
+            "opaqueArea": 15005
+          }
+        },
+        {
+          "sourceFrame": 1,
+          "sourceBounds": [
+            53,
+            8,
+            290,
+            313
+          ],
+          "scale": 0.609022,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "8cf8009fccdb0812dbb3bd2db4bd9b67936aeb3e9457420dda559d4e99976c8f",
+          "metrics": {
+            "faceWidth": 35.0,
+            "faceCenterX": 82.5,
+            "cheekY": 95.0,
+            "headSectionWidth": 101.0,
+            "headbandWidth": 80,
+            "headbandSpan": 82.024,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 184,
+            "bounds": [
+              23,
+              19,
+              165,
+              203
+            ],
+            "opaqueArea": 14689
+          }
         }
-      ]
+      ],
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.518,
+          "max": 83.024,
+          "mean": 82.254,
+          "cvPercent": 0.441,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 34.0,
+          "max": 45.0,
+          "mean": 40.188,
+          "cvPercent": 8.807,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 45.0,
+          "mean": 44.188,
+          "cvPercent": 1.435,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 183.0,
+          "max": 193.0,
+          "mean": 188.75,
+          "cvPercent": 1.84,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14621.0,
+          "max": 15537.0,
+          "mean": 15088.25,
+          "cvPercent": 2.0,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
     },
     "running": {
       "frames": 16,
+      "uniqueSourceFrames": 12,
       "durationMs": 2105,
       "packed": [
         {
           "sourceFrame": 1,
           "sourceBounds": [
-            54,
-            27,
-            270,
-            315
+            63,
+            10,
+            319,
+            336
           ],
+          "scale": 0.560332,
           "anchor": [
             84,
             202
           ],
-          "sha256": "287438d6a07beb618365f02d04f4110f564f881fb3ce683b0d47222f8119997c"
+          "sha256": "935f5c008e669ad2eec4124b6389daeaa89e4ff0f06078de8b71241cba1f4622",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.5,
+            "cheekY": 96.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.145,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 181,
+            "bounds": [
+              25,
+              22,
+              166,
+              203
+            ],
+            "opaqueArea": 14571
+          }
         },
         {
           "sourceFrame": 2,
           "sourceBounds": [
-            368,
-            27,
-            583,
-            315
+            359,
+            9,
+            613,
+            336
           ],
+          "scale": 0.564592,
           "anchor": [
             84,
             202
           ],
-          "sha256": "d93f5ef65454844005f208bf58912cf1c1126ebb6bf351a53737c272999156d6"
+          "sha256": "c9ffa60d8143582ee88e310e95fd7db383a466cd598afb5b6a28ec3a39b68f51",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.0,
+            "cheekY": 93.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.133,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              166,
+              203
+            ],
+            "opaqueArea": 14704
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            681,
-            27,
-            898,
-            315
+            653,
+            9,
+            907,
+            336
           ],
+          "scale": 0.564444,
           "anchor": [
             84,
             202
           ],
-          "sha256": "84b4df061b7082854eb40d9b90b06f83bba77ac939d1934ff795a031d63a5a45"
+          "sha256": "d3916dd4e8ed44e84bfdb7da53747b119dfe6c834a8f48a13d5a3fc378ffef12",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.5,
+            "cheekY": 93.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.143,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              166,
+              203
+            ],
+            "opaqueArea": 14685
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            995,
-            29,
-            1210,
-            315
+            945,
+            9,
+            1200,
+            336
           ],
+          "scale": 0.56465,
           "anchor": [
             84,
             202
           ],
-          "sha256": "ae11af34c5dd3c6e40d96203f71348ddfd1bd60b6d6d70052bfe61ac54910908"
+          "sha256": "dc2b72d0011a5d45103c245310c39a9da0667c505c8d2a06c98ac47ef8af7906",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 84.5,
+            "cheekY": 94.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.194,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              26,
+              20,
+              168,
+              203
+            ],
+            "opaqueArea": 14766
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            54,
+            63,
             338,
-            271,
-            628
+            318,
+            660
           ],
+          "scale": 0.560301,
           "anchor": [
             84,
             202
           ],
-          "sha256": "93ffc2eb5e2dfaa1cac0999df1f7c2a93ac6a55b9f6b02395bd688d69ed49644"
+          "sha256": "7d0da0aaa5e1a901fcb295a0e0500ead231bc52893baf8e7da67cc61dc909a6d",
+          "metrics": {
+            "faceWidth": 47.0,
+            "faceCenterX": 83.5,
+            "cheekY": 91.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.152,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 178,
+            "bounds": [
+              25,
+              25,
+              166,
+              203
+            ],
+            "opaqueArea": 14398
+          }
         },
         {
           "sourceFrame": 6,
           "sourceBounds": [
-            368,
-            341,
-            584,
-            628
+            358,
+            338,
+            613,
+            661
           ],
+          "scale": 0.560393,
           "anchor": [
             84,
             202
           ],
-          "sha256": "8a5a40fe4800183f53602abe0a584cadaa0cbaccab0cbb2fbe57c3dd400b1fdb"
+          "sha256": "f69aa0ff56f6247a55cb9ea47eaa50c75f55049999e29f8f669a8b37182d9e9c",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 84.0,
+            "cheekY": 91.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.186,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 179,
+            "bounds": [
+              25,
+              24,
+              166,
+              203
+            ],
+            "opaqueArea": 14409
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            681,
-            345,
-            898,
-            628
+            651,
+            338,
+            906,
+            661
           ],
+          "scale": 0.560454,
           "anchor": [
             84,
             202
           ],
-          "sha256": "9bd1c9e19d4009b715f0ac72ac43538f0ff954638e96f1d5774740a279316bc5"
+          "sha256": "9e684738404e1697b128cf0451ff37376a71355c7a16f554e89c439509717c28",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 84.0,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.099,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 179,
+            "bounds": [
+              25,
+              24,
+              166,
+              203
+            ],
+            "opaqueArea": 14393
+          }
         },
         {
           "sourceFrame": 8,
           "sourceBounds": [
-            995,
-            351,
-            1211,
-            628
+            944,
+            338,
+            1198,
+            661
           ],
+          "scale": 0.560443,
           "anchor": [
             84,
             202
           ],
-          "sha256": "e9ef4cb566a69a1b3ee607405fad9d91bbb0b3353e511f97c87209f7073ff265"
+          "sha256": "9fe6bd2fd694788aed1b5620e16b82ee2716d6802701da4f09bce3983f2ffdb6",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 84.0,
+            "cheekY": 88.0,
+            "headSectionWidth": 90.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.15,
+            "apronWidth": 44,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 179,
+            "bounds": [
+              26,
+              24,
+              166,
+              203
+            ],
+            "opaqueArea": 14365
+          }
         },
         {
           "sourceFrame": 9,
           "sourceBounds": [
-            54,
-            657,
-            271,
-            942
+            62,
+            663,
+            318,
+            982
           ],
+          "scale": 0.560462,
           "anchor": [
             84,
             202
           ],
-          "sha256": "60d07006b0e182bf249e3bdcc00385ee87c0d09140e23493801a7b1162f7ba12"
+          "sha256": "4f9c166dcb79d3ab094e58e242b457dbde4178d1aa7eeb783ad15121f635295d",
+          "metrics": {
+            "faceWidth": 47.0,
+            "faceCenterX": 84.0,
+            "cheekY": 89.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.156,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 177,
+            "bounds": [
+              25,
+              26,
+              166,
+              203
+            ],
+            "opaqueArea": 14258
+          }
         },
         {
           "sourceFrame": 10,
           "sourceBounds": [
-            368,
-            649,
-            584,
-            942
+            359,
+            663,
+            613,
+            982
           ],
+          "scale": 0.560546,
           "anchor": [
             84,
             202
           ],
-          "sha256": "4663c8f8a8ca6b4392c107ab3cc265660745481f5637a20fdec50d53e5fccccc"
+          "sha256": "fa21e8c38a3f75a79ed68e00b7112ca1f501f919cb3070ca808446688e2d1a6e",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 83.5,
+            "cheekY": 92.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.187,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 177,
+            "bounds": [
+              26,
+              26,
+              166,
+              203
+            ],
+            "opaqueArea": 14266
+          }
         },
         {
           "sourceFrame": 11,
           "sourceBounds": [
-            681,
-            649,
-            898,
-            942
+            651,
+            663,
+            906,
+            982
           ],
+          "scale": 0.560443,
           "anchor": [
             84,
             202
           ],
-          "sha256": "c19ee04c9eace9233f64558e376743bbc898db46cc0817d04a855a2d7a487b80"
+          "sha256": "7d7871022f61baeacd1b85d87330ce021a3a53324e20543b2d90a1faf9c6e410",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 83.5,
+            "cheekY": 96.0,
+            "headSectionWidth": 91.5,
+            "headbandWidth": 82,
+            "headbandSpan": 82.204,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 177,
+            "bounds": [
+              25,
+              26,
+              166,
+              203
+            ],
+            "opaqueArea": 14314
+          }
         },
         {
           "sourceFrame": 12,
           "sourceBounds": [
-            995,
-            649,
-            1211,
-            942
+            943,
+            663,
+            1198,
+            982
           ],
+          "scale": 0.56047,
           "anchor": [
             84,
             202
           ],
-          "sha256": "2157b860dfd65edd712ee6c20dee4b334ee5d930576c2d8c020d35b97b85202d"
+          "sha256": "2db595d34af4da2f6c73c0bd52aed475fdbb46a2e0a5e820cb6a211daa553357",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 86.0,
+            "cheekY": 97.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.203,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 177,
+            "bounds": [
+              27,
+              26,
+              168,
+              203
+            ],
+            "opaqueArea": 14289
+          }
         },
         {
-          "sourceFrame": 13,
+          "sourceFrame": 4,
           "sourceBounds": [
-            54,
-            949,
-            271,
-            1240
+            945,
+            9,
+            1200,
+            336
           ],
+          "scale": 0.56465,
           "anchor": [
             84,
             202
           ],
-          "sha256": "afcf48dd35da46fbff3a7ac220659876c9ae9c68ad657835b697fb2d96015d82"
+          "sha256": "dc2b72d0011a5d45103c245310c39a9da0667c505c8d2a06c98ac47ef8af7906",
+          "metrics": {
+            "faceWidth": 41.0,
+            "faceCenterX": 84.5,
+            "cheekY": 94.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.194,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              26,
+              20,
+              168,
+              203
+            ],
+            "opaqueArea": 14766
+          }
         },
         {
-          "sourceFrame": 14,
+          "sourceFrame": 3,
           "sourceBounds": [
-            368,
-            952,
-            584,
-            1240
+            653,
+            9,
+            907,
+            336
           ],
+          "scale": 0.564444,
           "anchor": [
             84,
             202
           ],
-          "sha256": "c40a4da0f01747e8d11c08d311db14f6416a6cb0cee9486ccd05f178c862784d"
+          "sha256": "d3916dd4e8ed44e84bfdb7da53747b119dfe6c834a8f48a13d5a3fc378ffef12",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.5,
+            "cheekY": 93.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.143,
+            "apronWidth": 43,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              166,
+              203
+            ],
+            "opaqueArea": 14685
+          }
         },
         {
-          "sourceFrame": 15,
+          "sourceFrame": 2,
           "sourceBounds": [
-            681,
-            951,
-            898,
-            1240
+            359,
+            9,
+            613,
+            336
           ],
+          "scale": 0.564592,
           "anchor": [
             84,
             202
           ],
-          "sha256": "37af21757cef1149e853c0005730c6a38650b470000ba6447b43e551009d02ed"
+          "sha256": "c9ffa60d8143582ee88e310e95fd7db383a466cd598afb5b6a28ec3a39b68f51",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.0,
+            "cheekY": 93.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.133,
+            "apronWidth": 44,
+            "apronHeight": 32,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              166,
+              203
+            ],
+            "opaqueArea": 14704
+          }
         },
         {
-          "sourceFrame": 16,
+          "sourceFrame": 1,
           "sourceBounds": [
-            995,
-            951,
-            1211,
-            1240
+            63,
+            10,
+            319,
+            336
           ],
+          "scale": 0.560332,
           "anchor": [
             84,
             202
           ],
-          "sha256": "2000e924abf3f7bd6f91e0f9f084c31f77e9ff1047eed70ae1511b9f9d196d47"
+          "sha256": "935f5c008e669ad2eec4124b6389daeaa89e4ff0f06078de8b71241cba1f4622",
+          "metrics": {
+            "faceWidth": 42.0,
+            "faceCenterX": 83.5,
+            "cheekY": 96.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.145,
+            "apronWidth": 43,
+            "apronHeight": 32,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 181,
+            "bounds": [
+              25,
+              22,
+              166,
+              203
+            ],
+            "opaqueArea": 14571
+          }
         }
-      ]
+      ],
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.152,
+          "max": 82.204,
+          "mean": 81.848,
+          "cvPercent": 0.554,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 41.0,
+          "max": 47.0,
+          "mean": 43.625,
+          "cvPercent": 5.053,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 44.0,
+          "mean": 43.375,
+          "cvPercent": 1.116,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 177.0,
+          "max": 183.0,
+          "mean": 180.188,
+          "cvPercent": 1.377,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14258.0,
+          "max": 14766.0,
+          "mean": 14509.0,
+          "cvPercent": 1.269,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
     },
     "review": {
       "frames": 16,
+      "uniqueSourceFrames": 7,
       "durationMs": 2720,
       "packed": [
         {
           "sourceFrame": 1,
           "sourceBounds": [
-            62,
-            6,
-            284,
-            311
+            64,
+            4,
+            307,
+            335
           ],
+          "scale": 0.583815,
           "anchor": [
             84,
             202
           ],
-          "sha256": "b5af9499ee5e9f10398534a68fc2d3a87b6f3cf42ed508189df845df1015d0d0"
+          "sha256": "634e839ae2999fcd65b277634f5b04a52b11a7794544f3891c310455b1b0aa2b",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.5,
+            "cheekY": 86.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.283,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 191,
+            "bounds": [
+              25,
+              12,
+              165,
+              203
+            ],
+            "opaqueArea": 15165
+          }
         },
         {
           "sourceFrame": 2,
           "sourceBounds": [
-            376,
-            6,
-            598,
-            311
+            364,
+            5,
+            605,
+            335
           ],
+          "scale": 0.590152,
           "anchor": [
             84,
             202
           ],
-          "sha256": "9f92a0c1a6cc385b3514ba74c26439cefc220e87d577bfa611abd5439efc3527"
+          "sha256": "f9c88f713c5a8785fb96efc9496d145c5f52b1de5614f90d1d6d20e92343acb6",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.389,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              24,
+              10,
+              164,
+              203
+            ],
+            "opaqueArea": 15404
+          }
         },
         {
           "sourceFrame": 3,
           "sourceBounds": [
-            688,
-            6,
-            911,
-            311
+            664,
+            8,
+            905,
+            335
           ],
+          "scale": 0.598633,
           "anchor": [
             84,
             202
           ],
-          "sha256": "f9a5cfc88f79206bf30515f67aec5b2d4c3a6477fc294ebfdb2179fda702afcc"
+          "sha256": "0e8d3a469f9fa504a98907d8a3618e086d8c27d12a88c74216826088d61634b7",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 80.5,
+            "cheekY": 82.0,
+            "headSectionWidth": 89.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.721,
+            "apronWidth": 46,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 194,
+            "bounds": [
+              25,
+              9,
+              167,
+              203
+            ],
+            "opaqueArea": 15525
+          }
         },
         {
           "sourceFrame": 4,
           "sourceBounds": [
-            1001,
+            966,
             6,
-            1225,
-            311
+            1207,
+            335
           ],
+          "scale": 0.589338,
           "anchor": [
             84,
             202
           ],
-          "sha256": "974317ddbf19f42f5ec0b4ee7c3c4fcc151e60472b15743f8f7c2390f726021b"
+          "sha256": "df4526631cfe5a37ba4ee596f1923b3cd371a59ee30408330ec8520c584c0732",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 81.5,
+            "cheekY": 82.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.061,
+            "apronWidth": 46,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 192,
+            "bounds": [
+              25,
+              11,
+              165,
+              203
+            ],
+            "opaqueArea": 15307
+          }
         },
         {
           "sourceFrame": 5,
           "sourceBounds": [
-            60,
-            319,
-            284,
-            625
+            63,
+            334,
+            306,
+            654
           ],
+          "scale": 0.577779,
           "anchor": [
             84,
             202
           ],
-          "sha256": "aad14c30ad8cfcffe7bf25eed54c706d21843dd357728f2192bf7c379211bb6c"
-        },
-        {
-          "sourceFrame": 6,
-          "sourceBounds": [
-            373,
-            319,
-            598,
-            625
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "eea2657f5ba0b3c3552d93506c2de84a95f971412169c28d04feda5a35a1a466"
+          "sha256": "04d6cd999b07fea5a4d907bc0bb79a4fb0b95ef965ebb9681bc7a46232a067f7",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 87.5,
+            "cheekY": 91.0,
+            "headSectionWidth": 90.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.618,
+            "apronWidth": 45,
+            "apronHeight": 29,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              163,
+              203
+            ],
+            "opaqueArea": 14685
+          }
         },
         {
           "sourceFrame": 7,
           "sourceBounds": [
-            685,
-            319,
+            668,
+            334,
             911,
-            625
+            655
           ],
+          "scale": 0.581331,
           "anchor": [
             84,
             202
           ],
-          "sha256": "887300c12f60bbe6a988cc86b831211923877a41423ae8bb0821b98d7c46d5ce"
+          "sha256": "8c985cec8690d7d52a76dcfd9ed038003361c0ff5a8f3717aea56c9e78665bd7",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 87.5,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.619,
+            "apronWidth": 46,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 185,
+            "bounds": [
+              27,
+              18,
+              166,
+              203
+            ],
+            "opaqueArea": 14963
+          }
         },
         {
           "sourceFrame": 8,
           "sourceBounds": [
-            999,
-            319,
-            1225,
-            625
+            963,
+            335,
+            1204,
+            655
           ],
+          "scale": 0.594134,
           "anchor": [
             84,
             202
           ],
-          "sha256": "d8f642fe67fda23cbb6085a5baadaf0020da83502b3b70022918032311abe95e"
+          "sha256": "61f75e7e2b557da3e06116a43d4545c4677e8f26d148253182b27ab2b35ad590",
+          "metrics": {
+            "faceWidth": 46.0,
+            "faceCenterX": 84.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 80,
+            "headbandSpan": 81.337,
+            "apronWidth": 46,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 188,
+            "bounds": [
+              25,
+              15,
+              166,
+              203
+            ],
+            "opaqueArea": 15250
+          }
         },
         {
-          "sourceFrame": 9,
+          "sourceFrame": 7,
           "sourceBounds": [
-            55,
-            631,
-            285,
-            938
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "cce9cd8fd5bcd2399ff13167e3e88d27b7c2c244c2f0573df5a658d5f743a673"
-        },
-        {
-          "sourceFrame": 10,
-          "sourceBounds": [
-            369,
-            632,
-            598,
-            938
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "fb678a96f9a10f5d66223cea2653bd9a3037bfd58058c4c3f34ac27c885218e0"
-        },
-        {
-          "sourceFrame": 11,
-          "sourceBounds": [
-            683,
-            632,
-            912,
-            938
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "b173bd88e4251fc87456062b031ec356e4504a48a22ce504633196d2d5c8d1c3"
-        },
-        {
-          "sourceFrame": 12,
-          "sourceBounds": [
-            996,
-            632,
-            1225,
-            938
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "4893d4027ee5f89f2b9e90f30369c3933cfbc3471b94a38642dfab9430144efd"
-        },
-        {
-          "sourceFrame": 13,
-          "sourceBounds": [
-            60,
-            945,
-            284,
-            1251
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "120866833842a859f71261edcaa6fe61fb497d87ad6e42a0bc6023f255fca933"
-        },
-        {
-          "sourceFrame": 14,
-          "sourceBounds": [
-            375,
-            945,
-            598,
-            1251
-          ],
-          "anchor": [
-            84,
-            202
-          ],
-          "sha256": "10515352ceaf1709b80f8aacebe54ca439baa910e7eb169b8dc32aa8a173e1e6"
-        },
-        {
-          "sourceFrame": 15,
-          "sourceBounds": [
-            688,
-            945,
+            668,
+            334,
             911,
-            1251
+            655
           ],
+          "scale": 0.581331,
           "anchor": [
             84,
             202
           ],
-          "sha256": "8b07de992cc24e3c075611d3cbe3786bfe5f57f2fc84c8ced9eec648aa9ba97d"
+          "sha256": "8c985cec8690d7d52a76dcfd9ed038003361c0ff5a8f3717aea56c9e78665bd7",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 87.5,
+            "cheekY": 88.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.619,
+            "apronWidth": 46,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 185,
+            "bounds": [
+              27,
+              18,
+              166,
+              203
+            ],
+            "opaqueArea": 14963
+          }
         },
         {
-          "sourceFrame": 16,
+          "sourceFrame": 5,
           "sourceBounds": [
-            1000,
-            945,
-            1225,
-            1251
+            63,
+            334,
+            306,
+            654
           ],
+          "scale": 0.577779,
           "anchor": [
             84,
             202
           ],
-          "sha256": "0837c23a06df2d6c9049bbb4eb6eeeff85f6b7cda3f3af7ef2721a6017487845"
+          "sha256": "04d6cd999b07fea5a4d907bc0bb79a4fb0b95ef965ebb9681bc7a46232a067f7",
+          "metrics": {
+            "faceWidth": 43.0,
+            "faceCenterX": 87.5,
+            "cheekY": 91.0,
+            "headSectionWidth": 90.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.618,
+            "apronWidth": 45,
+            "apronHeight": 29,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 183,
+            "bounds": [
+              25,
+              20,
+              163,
+              203
+            ],
+            "opaqueArea": 14685
+          }
+        },
+        {
+          "sourceFrame": 4,
+          "sourceBounds": [
+            966,
+            6,
+            1207,
+            335
+          ],
+          "scale": 0.589338,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "df4526631cfe5a37ba4ee596f1923b3cd371a59ee30408330ec8520c584c0732",
+          "metrics": {
+            "faceWidth": 45.0,
+            "faceCenterX": 81.5,
+            "cheekY": 82.0,
+            "headSectionWidth": 92.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.061,
+            "apronWidth": 46,
+            "apronHeight": 31,
+            "footCenterX": 83.5,
+            "footY": 202,
+            "height": 192,
+            "bounds": [
+              25,
+              11,
+              165,
+              203
+            ],
+            "opaqueArea": 15307
+          }
+        },
+        {
+          "sourceFrame": 3,
+          "sourceBounds": [
+            664,
+            8,
+            905,
+            335
+          ],
+          "scale": 0.598633,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "0e8d3a469f9fa504a98907d8a3618e086d8c27d12a88c74216826088d61634b7",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 80.5,
+            "cheekY": 82.0,
+            "headSectionWidth": 89.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.721,
+            "apronWidth": 46,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 194,
+            "bounds": [
+              25,
+              9,
+              167,
+              203
+            ],
+            "opaqueArea": 15525
+          }
+        },
+        {
+          "sourceFrame": 2,
+          "sourceBounds": [
+            364,
+            5,
+            605,
+            335
+          ],
+          "scale": 0.590152,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "f9c88f713c5a8785fb96efc9496d145c5f52b1de5614f90d1d6d20e92343acb6",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.389,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              24,
+              10,
+              164,
+              203
+            ],
+            "opaqueArea": 15404
+          }
+        },
+        {
+          "sourceFrame": 1,
+          "sourceBounds": [
+            64,
+            4,
+            307,
+            335
+          ],
+          "scale": 0.583815,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "634e839ae2999fcd65b277634f5b04a52b11a7794544f3891c310455b1b0aa2b",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.5,
+            "cheekY": 86.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.283,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 191,
+            "bounds": [
+              25,
+              12,
+              165,
+              203
+            ],
+            "opaqueArea": 15165
+          }
+        },
+        {
+          "sourceFrame": 2,
+          "sourceBounds": [
+            364,
+            5,
+            605,
+            335
+          ],
+          "scale": 0.590152,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "f9c88f713c5a8785fb96efc9496d145c5f52b1de5614f90d1d6d20e92343acb6",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.389,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              24,
+              10,
+              164,
+              203
+            ],
+            "opaqueArea": 15404
+          }
+        },
+        {
+          "sourceFrame": 3,
+          "sourceBounds": [
+            664,
+            8,
+            905,
+            335
+          ],
+          "scale": 0.598633,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "0e8d3a469f9fa504a98907d8a3618e086d8c27d12a88c74216826088d61634b7",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 80.5,
+            "cheekY": 82.0,
+            "headSectionWidth": 89.0,
+            "headbandWidth": 81,
+            "headbandSpan": 81.721,
+            "apronWidth": 46,
+            "apronHeight": 30,
+            "footCenterX": 84.5,
+            "footY": 202,
+            "height": 194,
+            "bounds": [
+              25,
+              9,
+              167,
+              203
+            ],
+            "opaqueArea": 15525
+          }
+        },
+        {
+          "sourceFrame": 2,
+          "sourceBounds": [
+            364,
+            5,
+            605,
+            335
+          ],
+          "scale": 0.590152,
+          "anchor": [
+            84,
+            202
+          ],
+          "sha256": "f9c88f713c5a8785fb96efc9496d145c5f52b1de5614f90d1d6d20e92343acb6",
+          "metrics": {
+            "faceWidth": 44.0,
+            "faceCenterX": 84.0,
+            "cheekY": 85.0,
+            "headSectionWidth": 91.0,
+            "headbandWidth": 82,
+            "headbandSpan": 82.389,
+            "apronWidth": 45,
+            "apronHeight": 30,
+            "footCenterX": 84.0,
+            "footY": 202,
+            "height": 193,
+            "bounds": [
+              24,
+              10,
+              164,
+              203
+            ],
+            "opaqueArea": 15404
+          }
         }
-      ]
+      ],
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.283,
+          "max": 82.389,
+          "mean": 81.826,
+          "cvPercent": 0.475,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 43.0,
+          "max": 46.0,
+          "mean": 44.25,
+          "cvPercent": 1.695,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 45.0,
+          "max": 46.0,
+          "mean": 45.5,
+          "cvPercent": 1.099,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 183.0,
+          "max": 194.0,
+          "mean": 190.25,
+          "cvPercent": 2.057,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14685.0,
+          "max": 15525.0,
+          "mean": 15230.062,
+          "cvPercent": 1.752,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
     }
   },
   "allPaletteRunPixelsUnchanged": true,
-  "atlasBytes": 4531034
+  "atlasBytes": 3912514
 }

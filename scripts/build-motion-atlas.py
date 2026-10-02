@@ -1,10 +1,8 @@
-"""Pack reviewed image_gen drawings; no synthesized or blended animation frames.
+"""Pack anatomically reviewed image_gen frames using a rigid head-size baseline.
 
-The user approved programmatic edge cleanup and precise palette derivation.
-Raw generated artwork and prompts live under artwork/motion-v1.0.4. Connected
-components locate whole drawings because the generator's grid is not exact.
-All work is offline: the runtime only changes a CSS background position.
-Requires Pillow, NumPy and SciPy.
+Only uniform resizing, registration, edge cleanup and precise recoloring happen
+offline. No body-part warping, invented in-between frames or runtime pixel work.
+Requires Pillow, NumPy and SciPy. Prompts/artwork: artwork/motion-v1.0.5.
 """
 from pathlib import Path
 import hashlib
@@ -13,137 +11,116 @@ import subprocess
 import sys
 
 import numpy as np
-from PIL import Image
-from scipy import ndimage
+from PIL import Image, ImageDraw
+from motion_geometry import extract_drawings, landmarks
 
 ROOT = Path(__file__).resolve().parents[1]
-ART = ROOT / 'artwork/motion-v1.0.4'
+ART = ROOT / 'artwork/motion-v1.0.5'
+ORIGINAL = ROOT / 'artwork/motion-v1.0.4'
 DEST = ROOT / 'assets/whale-refined'
 CELL = (192, 208)
 ORDER = ['idle', 'running-right', 'running-left', 'waving', 'jumping',
          'failed', 'waiting', 'running', 'review']
-# Reject two generated poses that change the waving hand. Reverse the bow's
-# descent for a gradual recovery; its generated recovery jumped upright.
-# The hop's last two poses stood up abruptly, so use its existing intermediate
-# crouch poses for the landing recovery. These are selections, not new drawings.
+# Reject the shortened body in clasp frames 13-16, the shortened later chin-rest
+# poses and unrequested extra closed-eye waiting/chin-rest poses. Revisit the
+# approved drawings on recovery; never fabricate frames with pixel blending.
 SELECT = {
-    'waving': [i for i in range(16) if i not in (7, 10)],
-    'failed': [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 15],
-    'jumping': [0, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 11, 10, 3, 2],
+    'waving': [0,1,2,3,4,5,6,7,8,9,10,12,14,15],
+    'running': [0,1,2,3,4,5,6,7,8,9,10,11,3,2,1,0],
+    'review': [0,1,2,3,4,6,7,6,4,3,2,1,0,1,2,1],
+    'waiting': [0,2,3,4,6,7,8,10,11,12,14,15,14,12,4,0],
+    # Follow the gradual descent in reverse; the generated recovery jumped
+    # upright and changed torso proportions after its final bowed pose.
+    'failed': [0,1,2,3,4,5,6,7,6,5,4,3,2,1,0,0],
+    'jumping': [0,1,3,4,5,6,7,8,9,10,4,3,2,1,0,0],
 }
 DURATIONS = {
-    # Sleep on the open-eye holds. The blink itself remains brief.
-    'idle': [520, 180, 180, 180, 180, 180, 65, 65, 65, 65, 180, 180, 180, 180, 180, 520],
-    'waving': [150] + [115] * 12 + [180],
-    'jumping': [120, 100, 90, 90, 90, 110, 100, 90, 90, 90, 100, 110, 90, 100, 110, 150],
-    'failed': [200] + [130] * 6 + [240] + [130] * 6 + [180, 180],
-    'waiting': [150] * 16,
-    'running': [230, 160, 150, 150, 80, 80, 65, 65, 65, 80, 150, 150, 150, 150, 150, 230],
-    'review': [170] * 16,
+    'idle': [520,180,180,180,180,180,65,65,65,65,180,180,180,180,180,520],
+    'waving': [150]+[115]*12+[180],
+    'jumping': [120,100,90,90,90,110,100,90,90,90,100,110,90,100,110,150],
+    'failed': [200]+[130]*6+[240]+[130]*6+[180,180],
+    'waiting': [150]*16,
+    'running': [230,160,150,150,80,80,65,65,65,80,150,150,150,150,150,230],
+    'review': [170]*16,
 }
+# A shallow hop translated as a whole. It does not grow/shrink with its height.
+JUMP_LIFT = [0,0,0,0,0,3,8,5,1,0,0,0,0,0,0,0]
 
 
-def drawings(action):
-    rgba = np.array(Image.open(ART / (action + '.png')).convert('RGBA'))
-    rgb = rgba[..., :3].astype(np.int16)
-    # Saturated pure-blue specks are segmentation spill, not the painted navy
-    # and cyan hair. Keep the latter's substantially higher red/green channels.
-    spill = ((rgb[..., 2] > 175) & (rgb[..., 0] < 35) & (rgb[..., 1] < 70))
-    rgba[..., 3][spill] = 0
-    labels, _ = ndimage.label(rgba[..., 3] > 180)
-    sizes = np.bincount(labels.ravel())
-    components = np.argsort(sizes[1:])[-16:] + 1
-    regions = []
-    for component in components:
-        yy, xx = np.where(labels == component)
-        assert len(xx) > 20000, (action, component, len(xx))
-        regions.append((component, int(xx.min()), int(yy.min()), int(xx.max()), int(yy.max())))
-    regions.sort(key=lambda r: (round(r[2] / (rgba.shape[0] / 4)), r[1]))
-    result = []
-    for component, left, top, right, bottom in regions:
-        core = labels == component
-        # Preserve antialiased edge pixels touching the main silhouette; remove
-        # disconnected flecks without eroding the character or blurring detail.
-        retained = ndimage.binary_dilation(core, iterations=2)
-        cleaned = rgba.copy()
-        cleaned[..., 3][~retained] = 0
-        cleaned[..., :3][cleaned[..., 3] == 0] = 0
-        fy, fx = np.where(core & (np.indices(core.shape)[0] > bottom - 20))
-        anchor_x = (int(fx.min()) + int(fx.max())) / 2
-        bounds = (max(0, left - 2), max(0, top - 2), min(rgba.shape[1], right + 3), min(rgba.shape[0], bottom + 3))
-        image = Image.fromarray(cleaned).crop(bounds)
-        result.append({'image': image, 'anchor': (anchor_x - bounds[0], bottom - bounds[1]),
-                       'height': bottom - top + 1, 'bottom': bottom,
-                       'sourceBounds': list(bounds)})
+def summary(frames):
+    result={}
+    for key in ['headbandSpan','faceWidth','apronWidth','height','opaqueArea','footY']:
+        values=np.array([f[key] for f in frames if f[key] is not None],dtype=float)
+        result[key]={'min':round(float(values.min()),3),'max':round(float(values.max()),3),
+                     'mean':round(float(values.mean()),3),
+                     'cvPercent':round(float(values.std()/values.mean()*100),3),
+                     'measurableFrames':len(values)}
     return result
 
 
+def contact_sheet(frames, action):
+    sheet=Image.new('RGB',(192*4,232*4),'#202329')
+    draw=ImageDraw.Draw(sheet)
+    for i,frame in enumerate(frames):
+        x,y=i%4*192,i//4*232
+        draw.text((x+8,y+5),f'{action} {i+1:02}',fill='white')
+        sheet.paste(frame,(x,y+24),frame)
+    sheet.save(ART / (action+'-audit-after.png'))
+
+
 def build():
-    original = Image.open(ART / 'reference.webp').convert('RGBA')
-    atlas = Image.new('RGBA', (CELL[0] * 16, CELL[1] * 9))
-    manifest = json.loads((DEST / 'pet.json').read_text(encoding='utf8'))
-    sprite = manifest['sprite2d']
-    sprite['columns'] = 16
-    sprite['cell'] = {'width': CELL[0], 'height': CELL[1]}
-    counts = []
-    report = {'generator': 'built-in image_gen', 'cell': CELL, 'columns': 16,
-              'originalRunFrames': True, 'actions': {}}
-    for row, action in enumerate(ORDER):
+    original=Image.open(ORIGINAL/'reference.webp').convert('RGBA')
+    baseline=landmarks(Image.open(ART/'standing-reference.png').convert('RGBA'))
+    atlas=Image.new('RGBA',(CELL[0]*16,CELL[1]*9))
+    manifest=json.loads((DEST/'pet.json').read_text(encoding='utf8'))
+    sprite=manifest['sprite2d']; sprite['columns']=16
+    sprite['cell']={'width':CELL[0],'height':CELL[1]}
+    report={'generator':'built-in image_gen','artwork':'artwork/motion-v1.0.5',
+            'cell':CELL,'columns':16,'originalRunFrames':True,'baseline':baseline,
+            'calibration':'uniform scale by headband PCA span; foot registration; no body warping',
+            'measurementLimits':'2D projection, not true volume. Bow/hop/arm overlap naturally change height and area. Anatomy is visually reviewed separately.',
+            'actions':{}}
+    counts=[]
+    for row,action in enumerate(ORDER):
         if action.startswith('running-'):
-            strip = original.crop((0, row * CELL[1], original.width, (row + 1) * CELL[1]))
-            atlas.paste(strip, (0, row * CELL[1]))
-            counts.append(8)
-            continue
-        frames = drawings(action)
-        selected = SELECT.get(action, list(range(16)))
-        # Match the original visual size. The small hop gets enough transparent
-        # headroom; feet remain anchored except for its generated lift.
-        target_height = 184 if action == 'jumping' else 190
-        neutral_height = max(frames[i]['height'] for i in [0, 1, 14, 15])
-        scale = target_height / neutral_height
-        packed = []
-        for column, index in enumerate(selected):
-            source = frames[index]
-            drawing = source['image']
-            size = (round(drawing.width * scale), round(drawing.height * scale))
-            drawing = drawing.resize(size, Image.Resampling.LANCZOS)
-            anchor_x, anchor_y = source['anchor']
-            # Correct the generator's grid drift using its foot baseline. For
-            # the hop, preserve the drawn airborne lift, within the cell margin;
-            # the last row is the landed recovery and shares the ground baseline.
-            lift = 0
-            if action == 'jumping' and 3 < index < 12:
-                ground = frames[0]['bottom']
-                local_bottom = source['bottom'] - round((index // 4) * 1254 / 4)
-                lift = round(max(0, ground - local_bottom) * scale * .6)
-            x = round(84 - anchor_x * scale)
-            y = round(202 - lift - anchor_y * scale)
-            frame = Image.new('RGBA', CELL)
-            # No clipping is silently accepted during packing.
-            assert x >= 0 and y >= 0 and x + size[0] <= CELL[0] and y + size[1] <= CELL[1], (action, index, x, y, size)
-            frame.paste(drawing, (x, y))
-            atlas.paste(frame, (column * CELL[0], row * CELL[1]))
-            packed.append({'sourceFrame': index + 1, 'sourceBounds': source['sourceBounds'],
-                           'anchor': [84, 202 - lift], 'sha256': hashlib.sha256(frame.tobytes()).hexdigest()})
-        counts.append(len(selected))
-        assert len(DURATIONS[action]) == len(selected)
-        sprite['tracks'][action]['durations'] = DURATIONS[action]
-        report['actions'][action] = {'frames': len(selected), 'durationMs': sum(DURATIONS[action]), 'packed': packed}
-    sprite['frames'] = counts
-    atlas.save(DEST / 'spritesheet.webp', lossless=True, quality=100, method=6)
-    (DEST / 'pet.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
-    subprocess.run([sys.executable, str(ROOT / 'scripts/build-palettes.py')], check=True, stdout=subprocess.DEVNULL)
-    # Existing runs must remain exact RGBA copies in all five color families.
-    for palette in ['ds', 'gpt', 'claude', 'kimi', 'glm']:
-        before = np.array(Image.open(ART / 'reference-palettes' / (palette + '.png')))
-        after = np.array(Image.open(DEST / 'palettes' / (palette + '.png')))
-        assert np.array_equal(before[208:624], after[208:624, :1536]), palette
-    report['allPaletteRunPixelsUnchanged'] = True
-    report['atlasBytes'] = (DEST / 'spritesheet.webp').stat().st_size
-    (DEST / 'motion-build-report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf8')
-    print(json.dumps({'frames': counts, 'durationMs': {k: v['durationMs'] for k, v in report['actions'].items()},
-                      'atlasBytes': report['atlasBytes'], 'allPaletteRunPixelsUnchanged': True}))
+            atlas.paste(original.crop((0,row*208,original.width,(row+1)*208)),(0,row*208))
+            counts.append(8); continue
+        sources=extract_drawings(ART/(action+'.png'))
+        selected=SELECT.get(action,list(range(16)))
+        packed=[]; images=[]
+        for column,index in enumerate(selected):
+            source=sources[index]; metrics=source['metrics']
+            scale=baseline['headbandSpan']/metrics['headbandSpan']
+            drawing=source['image'].resize((round(source['image'].width*scale),round(source['image'].height*scale)),Image.Resampling.LANCZOS)
+            scaled=landmarks(drawing)
+            lift=JUMP_LIFT[column] if action=='jumping' else 0
+            x=round(84-scaled['footCenterX']); y=202-lift-scaled['footY']
+            assert x>=0 and y>=0 and x+drawing.width<=192 and y+drawing.height<=208,(action,index,x,y,drawing.size)
+            frame=Image.new('RGBA',CELL); frame.paste(drawing,(x,y))
+            atlas.paste(frame,(column*192,row*208)); images.append(frame)
+            measured=landmarks(frame)
+            packed.append({'sourceFrame':index+1,'sourceBounds':source['bounds'],
+                           'scale':round(scale,6),'anchor':[84,202-lift],
+                           'sha256':hashlib.sha256(frame.tobytes()).hexdigest(),'metrics':measured})
+        counts.append(len(selected)); assert len(DURATIONS[action])==len(selected)
+        sprite['tracks'][action]['durations']=DURATIONS[action]
+        report['actions'][action]={'frames':len(selected),'uniqueSourceFrames':len(set(selected)),
+                                   'durationMs':sum(DURATIONS[action]),'packed':packed,
+                                   'measurements':summary([p['metrics'] for p in packed])}
+        contact_sheet(images,action)
+    sprite['frames']=counts
+    atlas.save(DEST/'spritesheet.webp',lossless=True,quality=100,method=6)
+    (DEST/'pet.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
+    subprocess.run([sys.executable,str(ROOT/'scripts/build-palettes.py')],check=True,stdout=subprocess.DEVNULL)
+    for palette in ['ds','gpt','claude','kimi','glm']:
+        before=np.array(Image.open(ORIGINAL/'reference-palettes'/(palette+'.png')))
+        after=np.array(Image.open(DEST/'palettes'/(palette+'.png')))
+        assert np.array_equal(before[208:624],after[208:624,:1536]),palette
+    report['allPaletteRunPixelsUnchanged']=True
+    report['atlasBytes']=(DEST/'spritesheet.webp').stat().st_size
+    (DEST/'motion-build-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf8')
+    print(json.dumps({a:r['measurements'] for a,r in report['actions'].items()},indent=2))
 
 
-if __name__ == '__main__':
+if __name__=='__main__':
     build()

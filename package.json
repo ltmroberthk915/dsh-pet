@@ -1,7 +1,7 @@
 {
   "name": "@ltmroberthk915/dsh-pet",
   "description": "鲸鱼娘多会话伴侣：每个活跃对话独立宠物、模型配色、tok/s 线性调速、完成待查看与共享亲密度。",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publishConfig": {
     "access": "public"
   },

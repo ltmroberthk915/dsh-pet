@@ -1,0 +1,348 @@
+{
+  "status": "passed",
+  "decodedAnimationSlots": 110,
+  "paletteAnimationSlots": 550,
+  "paletteGeometryIdentical": true,
+  "runPixelsUnchangedInAllPalettes": true,
+  "stationaryFootBaseline": 202,
+  "headbandTargetPx": 81.981,
+  "actions": [
+    {
+      "action": "idle",
+      "frames": 16,
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.1,
+          "max": 83.012,
+          "mean": 82.158,
+          "cvPercent": 0.691,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 41.0,
+          "max": 48.0,
+          "mean": 44.938,
+          "cvPercent": 4.552,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 42.0,
+          "max": 44.0,
+          "mean": 42.562,
+          "cvPercent": 1.431,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 183.0,
+          "max": 189.0,
+          "mean": 185.562,
+          "cvPercent": 1.043,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14764.0,
+          "max": 15173.0,
+          "mean": 15013.938,
+          "cvPercent": 0.871,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
+    },
+    {
+      "action": "waving",
+      "frames": 14,
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.381,
+          "max": 82.462,
+          "mean": 81.955,
+          "cvPercent": 0.53,
+          "measurableFrames": 14
+        },
+        "faceWidth": {
+          "min": 40.0,
+          "max": 45.0,
+          "mean": 42.643,
+          "cvPercent": 3.27,
+          "measurableFrames": 14
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 45.0,
+          "mean": 43.857,
+          "cvPercent": 1.174,
+          "measurableFrames": 14
+        },
+        "height": {
+          "min": 187.0,
+          "max": 194.0,
+          "mean": 190.5,
+          "cvPercent": 0.967,
+          "measurableFrames": 14
+        },
+        "opaqueArea": {
+          "min": 15087.0,
+          "max": 15561.0,
+          "mean": 15342.643,
+          "cvPercent": 0.938,
+          "measurableFrames": 14
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 14
+        }
+      }
+    },
+    {
+      "action": "jumping",
+      "frames": 16,
+      "measurements": {
+        "headbandSpan": {
+          "min": 82.002,
+          "max": 82.989,
+          "mean": 82.149,
+          "cvPercent": 0.387,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 40.0,
+          "max": 45.0,
+          "mean": 43.0,
+          "cvPercent": 3.943,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 42.0,
+          "max": 46.0,
+          "mean": 43.438,
+          "cvPercent": 2.298,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 161.0,
+          "max": 172.0,
+          "mean": 167.0,
+          "cvPercent": 2.357,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 13533.0,
+          "max": 14341.0,
+          "mean": 13842.188,
+          "cvPercent": 1.506,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 194.0,
+          "max": 202.0,
+          "mean": 200.938,
+          "cvPercent": 1.119,
+          "measurableFrames": 16
+        }
+      }
+    },
+    {
+      "action": "failed",
+      "frames": 16,
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.036,
+          "max": 82.025,
+          "mean": 81.562,
+          "cvPercent": 0.561,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 40.0,
+          "max": 47.0,
+          "mean": 43.75,
+          "cvPercent": 5.966,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 44.0,
+          "mean": 43.455,
+          "cvPercent": 1.146,
+          "measurableFrames": 11
+        },
+        "height": {
+          "min": 146.0,
+          "max": 174.0,
+          "mean": 163.25,
+          "cvPercent": 5.477,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 12192.0,
+          "max": 14304.0,
+          "mean": 13425.75,
+          "cvPercent": 5.052,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
+    },
+    {
+      "action": "waiting",
+      "frames": 16,
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.518,
+          "max": 83.024,
+          "mean": 82.254,
+          "cvPercent": 0.441,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 34.0,
+          "max": 45.0,
+          "mean": 40.188,
+          "cvPercent": 8.807,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 45.0,
+          "mean": 44.188,
+          "cvPercent": 1.435,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 183.0,
+          "max": 193.0,
+          "mean": 188.75,
+          "cvPercent": 1.84,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14620.0,
+          "max": 15537.0,
+          "mean": 15087.0,
+          "cvPercent": 2.0,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
+    },
+    {
+      "action": "running",
+      "frames": 16,
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.152,
+          "max": 82.204,
+          "mean": 81.848,
+          "cvPercent": 0.554,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 41.0,
+          "max": 47.0,
+          "mean": 43.625,
+          "cvPercent": 5.053,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 43.0,
+          "max": 44.0,
+          "mean": 43.375,
+          "cvPercent": 1.116,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 177.0,
+          "max": 183.0,
+          "mean": 180.188,
+          "cvPercent": 1.377,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14258.0,
+          "max": 14766.0,
+          "mean": 14508.125,
+          "cvPercent": 1.272,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
+    },
+    {
+      "action": "review",
+      "frames": 16,
+      "measurements": {
+        "headbandSpan": {
+          "min": 81.283,
+          "max": 82.389,
+          "mean": 81.826,
+          "cvPercent": 0.475,
+          "measurableFrames": 16
+        },
+        "faceWidth": {
+          "min": 43.0,
+          "max": 46.0,
+          "mean": 44.25,
+          "cvPercent": 1.695,
+          "measurableFrames": 16
+        },
+        "apronWidth": {
+          "min": 45.0,
+          "max": 46.0,
+          "mean": 45.5,
+          "cvPercent": 1.099,
+          "measurableFrames": 16
+        },
+        "height": {
+          "min": 183.0,
+          "max": 194.0,
+          "mean": 190.25,
+          "cvPercent": 2.057,
+          "measurableFrames": 16
+        },
+        "opaqueArea": {
+          "min": 14684.0,
+          "max": 15524.0,
+          "mean": 15228.312,
+          "cvPercent": 1.752,
+          "measurableFrames": 16
+        },
+        "footY": {
+          "min": 202.0,
+          "max": 202.0,
+          "mean": 202.0,
+          "cvPercent": 0.0,
+          "measurableFrames": 16
+        }
+      }
+    }
+  ],
+  "limits": "Metrics describe projected 2D shapes. Bow/hop may change projected area and height. Skin-color face width is expression-sensitive; it is diagnostic only. No automated anatomical correctness claim."
+}
