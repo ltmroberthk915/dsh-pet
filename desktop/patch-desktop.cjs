@@ -1,14 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const [source, output] = process.argv.slice(2);
-if (!source || !output) throw new Error('source and output archive required');
-const original = fs.readFileSync(source);
-if (path.resolve(source).toLowerCase() === path.resolve(output).toLowerCase()) throw new Error('Use a separate output archive');
-const acceptedArchives = ['addb3d95122f91c2c311d94cf92ff17d76f86fbd369946e3a74de3fb321d7323', 'c5d83065cf924848b635f3489bdb23c66daa97919d02091da80ac5b9bc6c5bfd', '983ca71114e6dfd353fc79af5a1f9481a250ee64c2a3c757673029b811b23bc2', 'c2ab0a463d6575d6c7b0e367258eeee285440e8902c9daa6502564281651a647', 'd35821882c7d804b2fbdd340960df6c92ae1fa7c777bb0c605ede09f21b10c6f', '8648ad8545dd9e7360d7f7200638cbbe92e055724ee897cc797deff0cb996f0d', '717e7f72cf40e65dd29d66412d9e06854074b48e576578579944f58002f22523', '19e4b007274c8297792484c5e84b95222856837aceea7308a11bfff881ae1825'];
-// Previously verified v1.0.3 desktop build; v1.0.4 updates only its pet renderer.
-acceptedArchives.push('ddddf21819f9e89a3529e59ad5b58caf2dfbb879567de862618f9969f6a0c571');
-if (!acceptedArchives.includes(crypto.createHash('sha256').update(original).digest('hex'))) throw new Error('Unsupported or modified desktop archive');
+const { inspectArchive, loadPayload, verifyChange, sha256 } = require('./archive-support.cjs');
+
+function buildArchive(original, runtimeDir) {
 const header = JSON.parse(original.subarray(16, 16+original.readUInt32LE(12)).toString());
 const originalOffset = 8 + original.readUInt32LE(4);
 const replacements = new Map();
@@ -52,7 +47,7 @@ let boot = readEntry(bootPath);
 if (!boot.includes("const rootInclude = ctx.loader?.resolve('include');")) boot = replace(boot, 'const entry = bootstrapIncludes.get(ctx);', `const rootInclude = ctx.loader?.resolve('include');
 \tconst entry = bootstrapIncludes.get(ctx) ?? (rootInclude?.parent === ctx.loader?.root && rootInclude?.options.name === 'cordis:include' ? rootInclude : void 0);`);
 replacements.set(bootPath, Buffer.from(boot));
-for (const file of ['pet-main.js','pet-layout.js','pet-preload.cjs','pet-window.html','overlay.js','overlay.css']) replacements.set('lib/dsh-pet/'+file,fs.readFileSync(path.join(__dirname,file)));
+for (const file of ['pet-main.js','pet-layout.js','pet-preload.cjs','pet-window.html','overlay.js','overlay.css']) replacements.set('lib/dsh-pet/'+file,fs.readFileSync(path.join(runtimeDir,file)));
 for (const name of replacements.keys()) { let parent=header;const parts=name.split('/');for (const part of parts.slice(0,-1)) { parent.files[part]??={files:{}};parent=parent.files[part]; } parent.files[parts.at(-1)]??={}; }
 const blocks=[]; let offset=0;
 function walk(files,prefix='') {
@@ -74,5 +69,22 @@ walk(header.files);
 const json=Buffer.from(JSON.stringify(header));const payloadSize=4+json.length;const aligned=Math.ceil(payloadSize/4)*4;
 const jsonPickle=Buffer.alloc(4+aligned);jsonPickle.writeUInt32LE(aligned,0);jsonPickle.writeUInt32LE(json.length,4);json.copy(jsonPickle,8);
 const sizePickle=Buffer.alloc(8);sizePickle.writeUInt32LE(4,0);sizePickle.writeUInt32LE(jsonPickle.length,4);
-fs.writeFileSync(output,Buffer.concat([sizePickle,jsonPickle,...blocks]));
-console.log(JSON.stringify({originalSha256:crypto.createHash('sha256').update(original).digest('hex'),patchedSha256:crypto.createHash('sha256').update(fs.readFileSync(output)).digest('hex'),changed:[...replacements.keys()]}));
+return Buffer.concat([sizePickle,jsonPickle,...blocks]);
+}
+function patchArchive(original,payload) {
+  const info=inspectArchive(original,payload.manifest);
+  if(info.status==='current') return {bytes:original,changed:[],unchangedPackedFiles:info.archive.entries.size};
+  const bytes=buildArchive(original,payload.dir);
+  return {bytes,...verifyChange(original,bytes,payload)};
+}
+module.exports={patchArchive};
+if(require.main===module) {
+  try {
+    const [source,output]=process.argv.slice(2);
+    if(!source||!output||path.resolve(source).toLowerCase()===path.resolve(output).toLowerCase()) throw Error('A source and separate new output archive are required');
+    const payload=loadPayload(path.join(__dirname,'..'));
+    const original=fs.readFileSync(source),result=patchArchive(original,payload);
+    fs.writeFileSync(output,result.bytes,{flag:'wx'});
+    console.log(JSON.stringify({originalSha256:sha256(original),patchedSha256:sha256(result.bytes),changed:result.changed}));
+  } catch(error) { console.error(error.message); process.exitCode=1; }
+}

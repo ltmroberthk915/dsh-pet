@@ -35,3 +35,6 @@ scripts/* text eol=lf
 # Windows 批处理脚本（如未来新增）保持 CRLF
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# Keep fingerprinted desktop payload bytes identical to the release archive.
+desktop/** -text

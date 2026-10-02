@@ -1,0 +1,71 @@
+{
+  "version": "1.1.0",
+  "runtimeFrameSize": [
+    512,
+    512
+  ],
+  "tracks": [
+    "idle",
+    "drag",
+    "standup",
+    "sleep-intro",
+    "sleep",
+    "work",
+    "success",
+    "fail",
+    "happy",
+    "shy",
+    "flirty",
+    "angry",
+    "scratch",
+    "blink1",
+    "blink2",
+    "eat",
+    "shop",
+    "running-right",
+    "running-left",
+    "waving",
+    "jumping",
+    "waiting",
+    "review",
+    "running",
+    "failed"
+  ],
+  "newFrames": 32,
+  "runtimeFrames": 128,
+  "palettes": [
+    "ds",
+    "gpt",
+    "claude",
+    "kimi",
+    "glm"
+  ],
+  "source": "artwork/miku-v0.4.4/source-report.json",
+  "originalGameplayRetained": true,
+  "runSources": [
+    "run-a-clean-source.png",
+    "run-b-source.png"
+  ],
+  "runPoseSelection": [
+    "a2",
+    "a1",
+    "b0",
+    "b1",
+    "b2",
+    "b3",
+    "a5",
+    "a6"
+  ],
+  "armsExchangeForeground": true,
+  "straightPunchPoseExcluded": true,
+  "registration": {
+    "landmark": "red headset strip PCA span",
+    "targetSpanPx": 90,
+    "anchor": [
+      256,
+      86
+    ],
+    "wholeDrawingOnly": true
+  },
+  "extraction": "complete sprite components; transparent gutters; no neighbouring-cell pixels"
+}

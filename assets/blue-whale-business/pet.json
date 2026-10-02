@@ -1,0 +1,114 @@
+{
+  "petManifestVersion": 2,
+  "id": "blue-whale-business",
+  "displayName": "小蓝鲸（商务版）",
+  "version": "1.1.0",
+  "author": "ltmroberthk915 · AI-assisted artwork",
+  "license": "MIT",
+  "renderer": "sprite2d",
+  "description": "现代商务小蓝鲸：陶瓷蓝与银白工业设计，轻微科幻质感，九种克制动作与简洁状态提示。",
+  "sprite2d": {
+    "spritesheetPath": "spritesheet.webp",
+    "cell": {
+      "width": 192,
+      "height": 128
+    },
+    "columns": 4,
+    "frames": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "tracks": {
+      "idle": {
+        "durations": [
+          900,
+          300,
+          350,
+          350
+        ],
+        "loop": true
+      },
+      "running-right": {
+        "durations": [
+          300,
+          300,
+          300,
+          300
+        ],
+        "loop": true
+      },
+      "running-left": {
+        "durations": [
+          300,
+          300,
+          300,
+          300
+        ],
+        "loop": true
+      },
+      "waving": {
+        "durations": [
+          300,
+          350,
+          350,
+          400
+        ],
+        "loop": true
+      },
+      "jumping": {
+        "durations": [
+          250,
+          300,
+          350,
+          400
+        ],
+        "loop": false,
+        "fallback": "idle"
+      },
+      "failed": {
+        "durations": [
+          250,
+          300,
+          350,
+          400
+        ],
+        "loop": false,
+        "fallback": "idle"
+      },
+      "waiting": {
+        "durations": [
+          300,
+          300,
+          300,
+          300
+        ],
+        "loop": true
+      },
+      "running": {
+        "durations": [
+          300,
+          300,
+          300,
+          300
+        ],
+        "loop": true
+      },
+      "review": {
+        "durations": [
+          300,
+          300,
+          300,
+          300
+        ],
+        "loop": true
+      }
+    }
+  }
+}

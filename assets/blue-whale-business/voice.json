@@ -1,0 +1,155 @@
+{
+  "voicePackVersion": 1,
+  "status": {
+    "prepare": [
+      "准备就绪"
+    ],
+    "waiting": [
+      "等待响应"
+    ],
+    "thinking": [
+      "分析中"
+    ],
+    "review": [
+      "整理结果"
+    ],
+    "toolResult": [
+      "核对结果"
+    ],
+    "done": [
+      "处理完成"
+    ],
+    "failed": [
+      "处理异常，请查看会话"
+    ],
+    "toolFailed": [
+      "工具执行异常"
+    ],
+    "maxTokens": [
+      "达到本轮输出上限"
+    ],
+    "interrupted": [
+      "处理已中断"
+    ],
+    "blocked": [
+      "等待确认"
+    ]
+  },
+  "tools": {
+    "read": [
+      "读取 {hint}"
+    ],
+    "write": [
+      "写入 {hint}"
+    ],
+    "edit": [
+      "修改 {hint}"
+    ],
+    "shell": [
+      "执行 {tool}"
+    ],
+    "grep": [
+      "搜索 {hint}"
+    ],
+    "find": [
+      "定位 {hint}"
+    ],
+    "ls": [
+      "查看目录"
+    ],
+    "webSearch": [
+      "搜索网页"
+    ],
+    "webFetch": [
+      "读取网页"
+    ],
+    "mcp": [
+      "调用 {tool}"
+    ],
+    "memory": [
+      "检索记忆"
+    ],
+    "subagent": [
+      "安排协作任务"
+    ],
+    "todo": [
+      "更新任务安排"
+    ],
+    "browser": [
+      "操作浏览器"
+    ],
+    "git": [
+      "处理 Git 操作"
+    ],
+    "ask": [
+      "需要你的回答"
+    ],
+    "generic": [
+      "正在使用 {tool}"
+    ]
+  },
+  "toolRemaining": [
+    "等待 {n} 项任务返回"
+  ],
+  "whispers": {
+    "categories": {
+      "thinking": [],
+      "writing": [],
+      "reading": [],
+      "editing": [],
+      "running": [],
+      "searching": [],
+      "git": [],
+      "delegating": [],
+      "browsing": [],
+      "generic": []
+    },
+    "results": {
+      "pass": [],
+      "fail": [],
+      "done": []
+    }
+  },
+  "remarks": {
+    "pet": [
+      "已收到互动",
+      "继续协作"
+    ],
+    "petCooldown": [
+      "保持待命"
+    ],
+    "feed": [
+      "能量已补充"
+    ],
+    "feedCooldown": [
+      "能量充足"
+    ],
+    "noTreats": [
+      "暂无可用能量"
+    ]
+  },
+  "panel": {
+    "labels": {
+      "feed": "补充能量",
+      "rename": "命名",
+      "hide": "隐藏",
+      "confirm": "保存"
+    },
+    "stats": {
+      "rank": "协作等级 {rank}",
+      "treats": "能量 ×{n}",
+      "points": "协作积分 {points}"
+    }
+  },
+  "ranks": {
+    "幼鲸": "初识",
+    "伙伴": "伙伴",
+    "挚友": "协作",
+    "深海羁绊": "默契",
+    "心有灵犀": "可靠",
+    "传说羁绊": "资深",
+    "神话羁绊": "专家",
+    "永恒之契": "长期协作",
+    "鲸生共渡": "卓越伙伴"
+  }
+}

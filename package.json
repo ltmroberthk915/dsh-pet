@@ -1,7 +1,7 @@
 {
   "name": "@ltmroberthk915/dsh-pet",
-  "description": "鲸鱼娘多会话伴侣：每个活跃对话独立宠物、模型配色、tok/s 线性调速、完成待查看与共享亲密度。",
-  "version": "1.0.5",
+  "description": "DSH 多会话桌宠：鲸鱼娘、MIKU 与商务小蓝鲸，模型配色、tok/s 调速及共享亲密度。",
+  "version": "1.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -47,12 +47,16 @@
     "scripts/build-local.mjs",
     "cordis.patch.yml",
     "assets/whale-refined",
+    "assets/miku",
+    "assets/blue-whale-business",
     "assets/decorations",
     "contracts",
     "icon.svg",
     "scripts/build-palettes.py",
     "LICENSE",
     "NOTICE",
+    "THIRD_PARTY_NOTICES.md",
+    "docs/miku-business-pets.md",
     "docs/desktop-refined-pet.md"
   ],
   "license": "Apache-2.0",

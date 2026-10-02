@@ -26,6 +26,7 @@
 
 import { PET_RENDERER_API_VERSION, type PetRenderer, type PetRendererContext, type PetRendererHandle } from '../../contracts/renderer.ts'
 import type { ActivityPhase } from '../../state.ts'
+import { animationFps } from '../../animation.ts'
 
 /** One track as served inside the pet definition (browser URLs). */
 export interface Frames2dTrackConfig {
@@ -71,6 +72,10 @@ export interface Frames2dRendererHandle extends PetRendererHandle {
    * restores the manifest idle track.
    */
   setIdleTrack(track: string | undefined): void
+  /** Session motion is the base track; explicit gameplay overrides keep priority. */
+  setActivityTrack(track: string | undefined): void
+  /** Retime both run directions without remounting, redecoding, or resetting the stride. */
+  setPlaybackFps(fps: number | undefined): void
   /** The track currently playing (diagnostics and tests). */
   currentTrack(): string
 }
@@ -312,6 +317,8 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
     let frameIndex = 0
     let lastAdvance = Date.now()
     let override: string | undefined
+    let activityTrack: string | undefined
+    let playbackFps: number | undefined
     // Skin base idle: every "back to idle" target resolves through this
     // (idle phase, unmapped phases and fallbacks), so a selected skin swaps
     // the pet's resting look without touching gameplay tracks.
@@ -325,6 +332,13 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       const target = mapped === config.phases.idle ? baseIdle : mapped
       return config.tracks[target] !== undefined ? target : baseIdle
     }
+
+    const activityTarget = (): string => activityTrack === undefined
+      ? trackForPhase(ctx.phase.get())
+      : activityTrack === config.phases.idle ? baseIdle : activityTrack
+
+    const frameDuration = (): number => playbackFps !== undefined && (track === 'running-right' || track === 'running-left')
+      ? 1000 / playbackFps : config.tracks[track]?.durations[frameIndex] ?? 200
 
     /** Canvas path: paints the newest requested frame; stale draws drop out. */
     const paintCanvas = (url: string): void => {
@@ -349,6 +363,8 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       const def = config.tracks[trackId]
       const url = def?.frames[index]
       if (url === undefined) return
+      const element = canvas ?? img
+      if (element !== null && element.dataset.dshPetTrack !== trackId) element.dataset.dshPetTrack = trackId
       prefetchAhead(trackId, index)
       if (img !== null) {
         if (img.getAttribute('src') !== url) img.src = url
@@ -371,13 +387,13 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       if (next < def.frames.length) {
         frameIndex = next
         show(track, frameIndex)
-        schedule(def.durations[frameIndex] ?? 200)
+        schedule(frameDuration())
         return
       }
       if (def.loop) {
         frameIndex = 0
         show(track, frameIndex)
-        schedule(def.durations[frameIndex] ?? 200)
+        schedule(frameDuration())
         return
       }
       // Non-loop completion: settle into the fallback — an explicit fallback to
@@ -388,7 +404,12 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       const target = def.fallback !== undefined && config.tracks[def.fallback] !== undefined
         ? (def.fallback === config.phases.idle ? baseIdle : def.fallback)
         : baseIdle
-      if (target === trackForPhase(ctx.phase.get())) override = undefined
+      if (activityTrack !== undefined && override !== undefined && target === baseIdle) {
+        override = undefined
+        play(activityTarget())
+        return
+      }
+      if (target === activityTarget()) override = undefined
       play(target)
     }
 
@@ -402,12 +423,12 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       show(track, frameIndex)
       if (reducedMotion) return
       const def = config.tracks[track]!
-      schedule(def.durations[0] ?? 200)
+      schedule(frameDuration())
     }
 
     const unsubscribe = ctx.phase.subscribe((phase) => {
       if (override !== undefined) return
-      const target = trackForPhase(phase)
+      const target = activityTrack === undefined ? trackForPhase(phase) : activityTarget()
       if (target !== track) play(target)
     })
 
@@ -418,7 +439,7 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
         if (disposed) return
         const def = config.tracks[track]
         if (def === undefined || !def.loop) return
-        const expected = (def.durations[frameIndex] ?? 200) + WATCHDOG_MS
+        const expected = frameDuration() + WATCHDOG_MS
         if (Date.now() - lastAdvance > expected) tick()
       }, WATCHDOG_MS)
     }
@@ -459,7 +480,7 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
         if (disposed) return
         if (next === undefined) {
           override = undefined
-          const target = trackForPhase(ctx.phase.get())
+          const target = activityTarget()
           if (target !== track) play(target)
           return
         }
@@ -475,9 +496,31 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
         // A skin only owns the resting look: re-resolve only when no
         // gameplay override is active (active overrides end into baseIdle).
         if (override === undefined) {
-          const target = trackForPhase(ctx.phase.get())
+          const target = activityTarget()
           if (target !== track) play(target)
         }
+      },
+      setActivityTrack(next: string | undefined): void {
+        if (disposed || (next !== undefined && config.tracks[next] === undefined)) return
+        if (activityTrack === next) return
+        activityTrack = next
+        if (override === undefined) {
+          const target = activityTarget()
+          if (target !== track) play(target)
+        }
+      },
+      setPlaybackFps(next: number | undefined): void {
+        if (disposed) return
+        const value = next === undefined ? undefined : animationFps(next)
+        if (playbackFps === value) return
+        const previous = frameDuration()
+        const progress = Math.min(1, Math.max(0, (Date.now() - lastAdvance) / previous))
+        playbackFps = value
+        if (reducedMotion || (track !== 'running-right' && track !== 'running-left')) return
+        if (timer !== undefined) clearTimeout(timer)
+        const duration = frameDuration()
+        lastAdvance = Date.now() - progress * duration
+        schedule(Math.max(1, (1 - progress) * duration))
       },
       currentTrack(): string {
         return track

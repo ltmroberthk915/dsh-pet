@@ -96,7 +96,10 @@ export function PlaybackSettings() {
     <label><input type="checkbox" checked={desktop} onChange={e => setDesktop(e.target.checked)} /> 独立桌面宠物</label>
     <div style={{ opacity: .8 }}>主窗口隐藏或最小化后继续显示；退出 DSH 后关闭。</div>
     {window.dshPetDesktop && <div><button type="button" onClick={() => void resetPosition()} disabled={busy}>宠物窗口归位</button></div>}
-    {!window.dshPetDesktop && <div>当前宿主没有桌面窗口接口，宠物仍显示在应用内。</div>}
+    {!window.dshPetDesktop && <div>
+      当前宿主没有桌面窗口接口，宠物仍显示在应用内。
+      {' '}<a href="https://github.com/ltmroberthk915/dsh-pet/blob/desktop-refined-pet/docs/install-desktop-windows.md" target="_blank" rel="noopener noreferrer">Windows 桌面补丁安装与回滚说明</a>
+    </div>}
     <div><button type="button" onClick={() => void save()} disabled={busy || !valid || snapshot === null}>{busy ? '保存中…' : '保存动画设置'}</button> <span role="status">{message}</span></div>
   </section>
 }

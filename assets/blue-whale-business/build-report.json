@@ -1,0 +1,418 @@
+{
+  "version": "1.1.0",
+  "sourceSha256": "823069e4d62482bdfa64688e7726d90db9655fc8091f4a3728b9d695f8441ff6",
+  "sourceSize": [
+    1024,
+    1536
+  ],
+  "atlasSize": [
+    768,
+    1152
+  ],
+  "frames": [
+    {
+      "track": "idle",
+      "frame": 0,
+      "bounds": [
+        10,
+        13,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "idle",
+      "frame": 1,
+      "bounds": [
+        13,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "idle",
+      "frame": 2,
+      "bounds": [
+        11,
+        13,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "idle",
+      "frame": 3,
+      "bounds": [
+        10,
+        21,
+        174,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": 0,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": 1,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": 2,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": 3,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": 0,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": 1,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": 2,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": 3,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": 0,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": 1,
+      "bounds": [
+        12,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": 2,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": 3,
+      "bounds": [
+        10,
+        7,
+        177,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "jumping",
+      "frame": 0,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "jumping",
+      "frame": 1,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "jumping",
+      "frame": 2,
+      "bounds": [
+        13,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "jumping",
+      "frame": 3,
+      "bounds": [
+        11,
+        7,
+        178,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "failed",
+      "frame": 0,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "failed",
+      "frame": 1,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "failed",
+      "frame": 2,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "failed",
+      "frame": 3,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": 0,
+      "bounds": [
+        18,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": 1,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": 2,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": 3,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running",
+      "frame": 0,
+      "bounds": [
+        18,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running",
+      "frame": 1,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running",
+      "frame": 2,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "running",
+      "frame": 3,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": 0,
+      "bounds": [
+        10,
+        7,
+        182,
+        121
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": 1,
+      "bounds": [
+        10,
+        7,
+        182,
+        97
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": 2,
+      "bounds": [
+        10,
+        7,
+        182,
+        99
+      ],
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": 3,
+      "bounds": [
+        10,
+        7,
+        182,
+        105
+      ],
+      "edgePixels": 0
+    }
+  ],
+  "palettes": [
+    "ds",
+    "gpt",
+    "claude",
+    "kimi",
+    "glm"
+  ],
+  "quietWhispers": true
+}

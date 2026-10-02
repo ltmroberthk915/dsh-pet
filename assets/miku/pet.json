@@ -1,8 +1,8 @@
 {
   "petManifestVersion": 2,
   "id": "miku",
-  "displayName": "Miku",
-  "description": "初音未来桌宠:帧序列渲染 + 完整玩法(打工 / 睡觉 / 触摸 / 商店 / 抽奖)。",
+  "displayName": "MIKU（会话版）",
+  "description": "原作者 v0.4.4 Miku 素材与玩法，补齐九种会话动作、左右跑、多会话配色与 tok/s 调速。",
   "author": "stushansusu (涂山苏苏)",
   "license": "MIT",
   "renderer": "frames2d",
@@ -10,7 +10,20 @@
     "dir": "thumb",
     "defaultFrameMs": 200,
     "tracks": {
-      "idle": {},
+      "idle": {
+        "frames": [
+          "miku-pet-stop1.webp",
+          "miku-pet-stop2.webp",
+          "miku-pet-stop3.webp",
+          "miku-pet-stop4.webp"
+        ],
+        "frameMs": [
+          1500,
+          280,
+          120,
+          480
+        ]
+      },
       "drag": {},
       "standup": {
         "loop": false,
@@ -65,12 +78,167 @@
       "shop": {
         "loop": false,
         "fallback": "idle"
+      },
+      "running-right": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp",
+          "frame-5.webp",
+          "frame-6.webp",
+          "frame-7.webp",
+          "frame-8.webp"
+        ],
+        "frameMs": [
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125
+        ],
+        "loop": true
+      },
+      "running-left": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp",
+          "frame-5.webp",
+          "frame-6.webp",
+          "frame-7.webp",
+          "frame-8.webp"
+        ],
+        "frameMs": [
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125
+        ],
+        "loop": true
+      },
+      "waving": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp"
+        ],
+        "frameMs": [
+          350,
+          350,
+          350,
+          350
+        ],
+        "loop": false,
+        "fallback": "idle"
+      },
+      "jumping": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp"
+        ],
+        "frameMs": [
+          220,
+          220,
+          220,
+          220
+        ],
+        "loop": false,
+        "fallback": "idle"
+      },
+      "waiting": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp"
+        ],
+        "frameMs": [
+          350,
+          350,
+          350,
+          350
+        ],
+        "loop": true
+      },
+      "review": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp"
+        ],
+        "frameMs": [
+          350,
+          350,
+          350,
+          350
+        ],
+        "loop": true
+      },
+      "running": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp",
+          "frame-5.webp",
+          "frame-6.webp"
+        ],
+        "frameMs": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "loop": true
+      },
+      "failed": {
+        "frames": [
+          "frame-1.webp",
+          "frame-2.webp",
+          "frame-3.webp",
+          "frame-4.webp",
+          "frame-5.webp",
+          "frame-6.webp",
+          "frame-7.webp",
+          "frame-8.webp"
+        ],
+        "frameMs": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "loop": false,
+        "fallback": "idle"
       }
     },
     "phases": {
       "idle": "idle",
-      "done": "success",
-      "failed": "fail"
+      "waiting": "waiting",
+      "thinking": "running-right",
+      "tool": "running",
+      "review": "review",
+      "done": "jumping",
+      "failed": "failed"
     }
   },
   "gameplay": {
@@ -142,10 +310,10 @@
       }
     },
     "hitBox": {
-      "x0": 0.328,
-      "y0": 0.0625,
-      "x1": 0.672,
-      "y1": 0.898
+      "x0": 0.05,
+      "y0": 0.07,
+      "x1": 0.95,
+      "y1": 0.95
     },
     "touch": {
       "zones": [
@@ -347,5 +515,6 @@
     },
     "dragState": "drag",
     "dragEndState": "standup"
-  }
+  },
+  "version": "1.1.0"
 }

@@ -9,3 +9,7 @@ Licensed under Apache-2.0; the original LICENSE and asset notices are retained.
 Fork changes include session-specific companions, optional reviewed desktop bridge,
 model palettes, configurable tok/s playback, shared affinity, reduced idle work,
 placement avoidance, and completion review lifecycle.
+
+Version 1.1.0 adds Miku artwork/gameplay from upstream v0.4.4, attributed to
+stushansusu (涂山苏苏), plus AI-assisted session poses and an original business
+blue whale. See THIRD_PARTY_NOTICES.md for artwork and character notices.

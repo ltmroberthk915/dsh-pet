@@ -55,6 +55,17 @@ describe('model generation motion and stream boundaries', () => {
     expect(f.chunk({ type: 'reasoning-delta', index: 0, text: '继续思考' }, 'b')).toMatchObject({ animation: 'running-right', generation: 'reasoning' })
   })
 
+  it.each(['job_output', 'functions.job_output', 'task_output', 'read_job', 'read_task_output'])('keeps %s in review while waiting for pwsh output without tokens', name => {
+    const f = fixture(); f.start()
+    f.chunk({ type: 'tool-call-delta', index: 0, id: 'write', name: 'write_file', argumentsDelta: '{' })
+    f.chunk({ type: 'finish', reason: { kind: 'tool-calls' } })
+    f.end()
+    const state = f.event('tool/call', { callId: 'poll', name, arguments: '{"job_id":"pwsh-8","wait":true,"timeout_ms":240000}' })
+    expect(state).toMatchObject({ animation: 'review', toolCategory: 'read', generation: undefined, waveKey: undefined })
+    for (const pet of ['miku', 'blue-whale-business']) expect(boundAnimation(pet, state)).toBe('review')
+    expect(f.event('tool/result', { message: { toolCallId: 'poll', content: [{ type: 'text', text: '100000 output tokens in a log' }] } })).toMatchObject({ animation: 'review', generation: undefined })
+  })
+
   it('does not let a parallel tool result or stale stream end interrupt new generation', () => {
     const f = fixture()
     f.event('tool/call', { callId: 'read', name: 'read_file', arguments: '{}' })

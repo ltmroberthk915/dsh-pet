@@ -1,0 +1,511 @@
+{
+  "repository": "https://github.com/zhu1090093659/dsh-pet",
+  "ref": "v0.4.4",
+  "tree": "0985aa2d5b0b556232cbdfd2e45979c7b7e93c92",
+  "files": [
+    {
+      "source": "assets/miku/pet.json",
+      "target": "artwork/miku-v0.4.4/original-pet.json",
+      "sha": "65ee2bed2e679b5b20851b9e81c067ae66fde98a",
+      "bytes": 7651
+    },
+    {
+      "source": "assets/miku/previews/idle.webp",
+      "target": "artwork/miku-v0.4.4/original/previews/idle.webp",
+      "sha": "802d7ff77b8bf00e4eb7ad49b9c8e1878c77846e",
+      "bytes": 157612
+    },
+    {
+      "source": "assets/miku/thumb/angry/miku-pet-angry1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/angry/miku-pet-angry1.webp",
+      "sha": "281ea300a83c294807c70dacc59b32333ab92b5b",
+      "bytes": 167462
+    },
+    {
+      "source": "assets/miku/thumb/angry/miku-pet-angry2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/angry/miku-pet-angry2.webp",
+      "sha": "20c27ac61e4b56dd36e3a0bd3a528044d044cf48",
+      "bytes": 165784
+    },
+    {
+      "source": "assets/miku/thumb/angry/miku-pet-angry3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/angry/miku-pet-angry3.webp",
+      "sha": "0c1a8128ad20a7b47ec80abd2fb22a3c132ab79c",
+      "bytes": 167448
+    },
+    {
+      "source": "assets/miku/thumb/blink1/miku-pet-closeeyes1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/blink1/miku-pet-closeeyes1.webp",
+      "sha": "db8ef28200c325007705859788bbb32bbd322904",
+      "bytes": 154170
+    },
+    {
+      "source": "assets/miku/thumb/blink1/miku-pet-closeeyes2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/blink1/miku-pet-closeeyes2.webp",
+      "sha": "7801c20a4d2b80997d2e4228dc0e3cbed1b1d66d",
+      "bytes": 154950
+    },
+    {
+      "source": "assets/miku/thumb/blink2/miku-pet-closeeye1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/blink2/miku-pet-closeeye1.webp",
+      "sha": "db8ef28200c325007705859788bbb32bbd322904",
+      "bytes": 154170
+    },
+    {
+      "source": "assets/miku/thumb/blink2/miku-pet-closeeye2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/blink2/miku-pet-closeeye2.webp",
+      "sha": "5870d3ea7e4dffff1f0daf03df7df0d290fd44ef",
+      "bytes": 151674
+    },
+    {
+      "source": "assets/miku/thumb/drag/miku-pet-move1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/drag/miku-pet-move1.webp",
+      "sha": "7d41203694b70c9739783e0d851bc5bf13ba90b4",
+      "bytes": 155110
+    },
+    {
+      "source": "assets/miku/thumb/drag/miku-pet-move2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/drag/miku-pet-move2.webp",
+      "sha": "c532613c64c1b60fbc62490f1875bce71101808b",
+      "bytes": 162848
+    },
+    {
+      "source": "assets/miku/thumb/drag/miku-pet-move3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/drag/miku-pet-move3.webp",
+      "sha": "b211fe3cd6b7021b492dcdb1f68b577667533fa2",
+      "bytes": 149264
+    },
+    {
+      "source": "assets/miku/thumb/drag/miku-pet-move4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/drag/miku-pet-move4.webp",
+      "sha": "aa90f11d829dbd55ac4bc0149f3049bb695cef9a",
+      "bytes": 152152
+    },
+    {
+      "source": "assets/miku/thumb/drag/miku-pet-move5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/drag/miku-pet-move5.webp",
+      "sha": "3f85b68f11f91852a441d5b636a8a3493b0f798a",
+      "bytes": 149998
+    },
+    {
+      "source": "assets/miku/thumb/drag/miku-pet-move6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/drag/miku-pet-move6.webp",
+      "sha": "9c0e78f507f1104ac445022b75a2224bf76b334b",
+      "bytes": 156852
+    },
+    {
+      "source": "assets/miku/thumb/drag/miku-pet-move7.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/drag/miku-pet-move7.webp",
+      "sha": "b237acc8ba04690c58f3241f0c3f221aa783138a",
+      "bytes": 142054
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat1.webp",
+      "sha": "4b2a1b523bf932dc27f7d3751c0a9f129bd48464",
+      "bytes": 158272
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat10.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat10.webp",
+      "sha": "bebd0f3b7d96edae02727020457c8a66b349cabf",
+      "bytes": 149896
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat2.webp",
+      "sha": "db5fc392a717ce07c497279f6d9d4d50d5c3d4c3",
+      "bytes": 153426
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat3.webp",
+      "sha": "b9862bd38f29626ae4dcc63bcf41e1ce2906bae0",
+      "bytes": 153976
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat4.webp",
+      "sha": "22fbcc20e70d11917cb0da2612a6f2cf6712c5fb",
+      "bytes": 159880
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat5.webp",
+      "sha": "0388edb3b2bfa114db18bf4a90940c5f129b545b",
+      "bytes": 157972
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat6.webp",
+      "sha": "6c081ba0b16a2dca68d4dfeac1eee786f5405403",
+      "bytes": 161288
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat7.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat7.webp",
+      "sha": "0bcc8f9fd39b53ecc356a0bf587a336184f6280b",
+      "bytes": 159520
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat8.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat8.webp",
+      "sha": "0b9b5ac38e14447c1bf28ce73eff5ec120d0f9b0",
+      "bytes": 157428
+    },
+    {
+      "source": "assets/miku/thumb/eat/miku-pet-eat9.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/eat/miku-pet-eat9.webp",
+      "sha": "9cfc994418d21179ed9667f3f2eef7d19b9e0f38",
+      "bytes": 159706
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr1.webp",
+      "sha": "033c0b3df86f73262f39c889dfce4935b683498e",
+      "bytes": 206600
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr2.webp",
+      "sha": "cfba3cbeeed9ce06b0fb5bb4c9cf6bd558101270",
+      "bytes": 203320
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr3.webp",
+      "sha": "e2725b20c1358c28264b28edfab63204d8c2881c",
+      "bytes": 214370
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr4.webp",
+      "sha": "9a1311ac96937ba4b9102da0a0bc7371deaa8b94",
+      "bytes": 218452
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr5.webp",
+      "sha": "15bac634889b0db1a63997ae0e4cdf455d5bbc99",
+      "bytes": 207860
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr6.webp",
+      "sha": "1ee68362387701dd5b7b6a743be41d3c7978dbee",
+      "bytes": 216916
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr7.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr7.webp",
+      "sha": "5cceb607484cd48849e5100fabd186168739c65c",
+      "bytes": 218306
+    },
+    {
+      "source": "assets/miku/thumb/fail/miku-pet-workerr8.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/fail/miku-pet-workerr8.webp",
+      "sha": "803fe329a5feffe1bf1a0c6bd481b7affb25c4c3",
+      "bytes": 213138
+    },
+    {
+      "source": "assets/miku/thumb/flirty/miku-pet-flirty1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/flirty/miku-pet-flirty1.webp",
+      "sha": "29c4e34996df99a366aea831f25328fa18671a7b",
+      "bytes": 165508
+    },
+    {
+      "source": "assets/miku/thumb/flirty/miku-pet-flirty2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/flirty/miku-pet-flirty2.webp",
+      "sha": "f417f67d575c9fbee7fc55bf278cf33092454e48",
+      "bytes": 156528
+    },
+    {
+      "source": "assets/miku/thumb/flirty/miku-pet-flirty3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/flirty/miku-pet-flirty3.webp",
+      "sha": "45a4878f9685498e41f824867848c875a29753b2",
+      "bytes": 161896
+    },
+    {
+      "source": "assets/miku/thumb/happy/miku-pet-happy1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/happy/miku-pet-happy1.webp",
+      "sha": "1189df7581055b57c1aad151ea3d224328494d87",
+      "bytes": 159512
+    },
+    {
+      "source": "assets/miku/thumb/happy/miku-pet-happy2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/happy/miku-pet-happy2.webp",
+      "sha": "72fb6019a274827b8a8ca57c4f4f614440203032",
+      "bytes": 159734
+    },
+    {
+      "source": "assets/miku/thumb/happy/miku-pet-happy3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/happy/miku-pet-happy3.webp",
+      "sha": "0c2720503613420dbd09d3894ad41aa23ebc36be",
+      "bytes": 161246
+    },
+    {
+      "source": "assets/miku/thumb/idle/miku-pet-stop1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/idle/miku-pet-stop1.webp",
+      "sha": "802d7ff77b8bf00e4eb7ad49b9c8e1878c77846e",
+      "bytes": 157612
+    },
+    {
+      "source": "assets/miku/thumb/idle/miku-pet-stop2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/idle/miku-pet-stop2.webp",
+      "sha": "55a0ccd29f04e09494c45bf143c364ee62afabda",
+      "bytes": 159872
+    },
+    {
+      "source": "assets/miku/thumb/idle/miku-pet-stop3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/idle/miku-pet-stop3.webp",
+      "sha": "87b38e968cd57c4447ceee13670e2cba0d060127",
+      "bytes": 148154
+    },
+    {
+      "source": "assets/miku/thumb/idle/miku-pet-stop4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/idle/miku-pet-stop4.webp",
+      "sha": "c4d0c75f04d9e6d4854f21c33d7e1d5a95323a94",
+      "bytes": 161206
+    },
+    {
+      "source": "assets/miku/thumb/scratch/miku-pet-stand1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/scratch/miku-pet-stand1.webp",
+      "sha": "802d7ff77b8bf00e4eb7ad49b9c8e1878c77846e",
+      "bytes": 157612
+    },
+    {
+      "source": "assets/miku/thumb/scratch/miku-pet-stand2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/scratch/miku-pet-stand2.webp",
+      "sha": "d96cc9eba673bfa82d5fd54d1e021238a28ba624",
+      "bytes": 158832
+    },
+    {
+      "source": "assets/miku/thumb/scratch/miku-pet-stand3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/scratch/miku-pet-stand3.webp",
+      "sha": "6877430925c43030601f21e3b0474daec43e0161",
+      "bytes": 157804
+    },
+    {
+      "source": "assets/miku/thumb/scratch/miku-pet-stand4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/scratch/miku-pet-stand4.webp",
+      "sha": "2fb73c199ee7e14d37bb38a3e0573ad43210c829",
+      "bytes": 161344
+    },
+    {
+      "source": "assets/miku/thumb/scratch/miku-pet-stand5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/scratch/miku-pet-stand5.webp",
+      "sha": "6877430925c43030601f21e3b0474daec43e0161",
+      "bytes": 157804
+    },
+    {
+      "source": "assets/miku/thumb/scratch/miku-pet-stand6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/scratch/miku-pet-stand6.webp",
+      "sha": "2fb73c199ee7e14d37bb38a3e0573ad43210c829",
+      "bytes": 161344
+    },
+    {
+      "source": "assets/miku/thumb/shop/miku-pet-shop1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/shop/miku-pet-shop1.webp",
+      "sha": "c5f17c1628bd391cd5f87d896e2bc5adc681e4fa",
+      "bytes": 45886
+    },
+    {
+      "source": "assets/miku/thumb/shop/miku-pet-shop2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/shop/miku-pet-shop2.webp",
+      "sha": "d84973d3d1f1b9e3a9f89bfd3181cfff7597684d",
+      "bytes": 43644
+    },
+    {
+      "source": "assets/miku/thumb/shop/miku-pet-shop4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/shop/miku-pet-shop4.webp",
+      "sha": "74dbb5e36732deff50ce9ec17925a688f2219e78",
+      "bytes": 70682
+    },
+    {
+      "source": "assets/miku/thumb/shop/miku-pet-shop6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/shop/miku-pet-shop6.webp",
+      "sha": "879786e22818cef11336cd557c4e6d5ed228b884",
+      "bytes": 33882
+    },
+    {
+      "source": "assets/miku/thumb/shy/miku-pet-shy1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/shy/miku-pet-shy1.webp",
+      "sha": "6be40244afb4a78b85f7e2b0e5edcc5f786fb27f",
+      "bytes": 165738
+    },
+    {
+      "source": "assets/miku/thumb/shy/miku-pet-shy2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/shy/miku-pet-shy2.webp",
+      "sha": "d5ea959832e332f634c3433108e1198deccf8b37",
+      "bytes": 158800
+    },
+    {
+      "source": "assets/miku/thumb/shy/miku-pet-shy3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/shy/miku-pet-shy3.webp",
+      "sha": "c11cff39df16847b8d70c3739fe75301ab582ae5",
+      "bytes": 163458
+    },
+    {
+      "source": "assets/miku/thumb/sleep-intro/miku-pet-sleep1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/sleep-intro/miku-pet-sleep1.webp",
+      "sha": "709bfbc4f1be39118ddffe6c1732bd240a519eaa",
+      "bytes": 145048
+    },
+    {
+      "source": "assets/miku/thumb/sleep-intro/miku-pet-sleep2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/sleep-intro/miku-pet-sleep2.webp",
+      "sha": "000b6c12faed7d0eb2a4772aaddf955def5fe4c8",
+      "bytes": 164510
+    },
+    {
+      "source": "assets/miku/thumb/sleep-intro/miku-pet-sleep3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/sleep-intro/miku-pet-sleep3.webp",
+      "sha": "def9c17b1e13a384abb912b4d884a7fe0c780a4a",
+      "bytes": 147394
+    },
+    {
+      "source": "assets/miku/thumb/sleep/miku-pet-sleep4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/sleep/miku-pet-sleep4.webp",
+      "sha": "376bf159f11a1780b9a1aee41797a94da865787b",
+      "bytes": 147900
+    },
+    {
+      "source": "assets/miku/thumb/sleep/miku-pet-sleep5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/sleep/miku-pet-sleep5.webp",
+      "sha": "7771d36a33f24fd6c67cb22c397553f8d8a2dae7",
+      "bytes": 169912
+    },
+    {
+      "source": "assets/miku/thumb/sleep/miku-pet-sleep6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/sleep/miku-pet-sleep6.webp",
+      "sha": "3e525756b5c62bb4a28eb10e0bb01079d6f10f38",
+      "bytes": 163970
+    },
+    {
+      "source": "assets/miku/thumb/sleep/miku-pet-sleep7.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/sleep/miku-pet-sleep7.webp",
+      "sha": "9fe2ea5ebde793f0c6a53d963a145f8e38659f92",
+      "bytes": 151440
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun1.webp",
+      "sha": "40555469faabbb36c86f5bf31662057a39e22ae0",
+      "bytes": 140610
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun2.webp",
+      "sha": "74389923b253e6f3505071f90164a89c82e6867f",
+      "bytes": 163034
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun3.webp",
+      "sha": "f2031ee5c7008e048ab76efb220a056d5ba3f4bd",
+      "bytes": 134358
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun4.webp",
+      "sha": "1635a89a5e1dcea8278fc856e764418a51f7048a",
+      "bytes": 134098
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun5.webp",
+      "sha": "55767389e976bad5bfaf9711ebe6bb6c28acdb3d",
+      "bytes": 135864
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun6.webp",
+      "sha": "77864ac70578535113250beef04b4f8b86741cd7",
+      "bytes": 126618
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun7.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun7.webp",
+      "sha": "d6f7b9e23b4719bd67a4b2e3be3953921ad31dae",
+      "bytes": 128066
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun8.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun8.webp",
+      "sha": "7511a9cf39d56217ffe21fba9cb9f6bdd9e7705d",
+      "bytes": 130216
+    },
+    {
+      "source": "assets/miku/thumb/standup/miku-pet-yun9.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/standup/miku-pet-yun9.webp",
+      "sha": "32c7d72ec507a12989882ab33bb2537c9f2bd424",
+      "bytes": 164802
+    },
+    {
+      "source": "assets/miku/thumb/success/miku-pet-workingyes1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/success/miku-pet-workingyes1.webp",
+      "sha": "033c0b3df86f73262f39c889dfce4935b683498e",
+      "bytes": 206600
+    },
+    {
+      "source": "assets/miku/thumb/success/miku-pet-workingyes2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/success/miku-pet-workingyes2.webp",
+      "sha": "ecc13cb337788b0dab725ea2469ad2129081fcb1",
+      "bytes": 211544
+    },
+    {
+      "source": "assets/miku/thumb/success/miku-pet-workingyes3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/success/miku-pet-workingyes3.webp",
+      "sha": "083fceeed9cf76180d947bbc56785a15d698be5f",
+      "bytes": 204850
+    },
+    {
+      "source": "assets/miku/thumb/success/miku-pet-workingyes4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/success/miku-pet-workingyes4.webp",
+      "sha": "ffd481254863c992b8d7761cfc382e5d1c25ffe7",
+      "bytes": 215876
+    },
+    {
+      "source": "assets/miku/thumb/success/miku-pet-workingyes5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/success/miku-pet-workingyes5.webp",
+      "sha": "b749dda87cb273e20de065421aae4d35cf889a1b",
+      "bytes": 215630
+    },
+    {
+      "source": "assets/miku/thumb/work/miku-pet-working1.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/work/miku-pet-working1.webp",
+      "sha": "033c0b3df86f73262f39c889dfce4935b683498e",
+      "bytes": 206600
+    },
+    {
+      "source": "assets/miku/thumb/work/miku-pet-working2.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/work/miku-pet-working2.webp",
+      "sha": "a0e4bc6674149b7048098f9ea15fb4eff12d34ff",
+      "bytes": 217926
+    },
+    {
+      "source": "assets/miku/thumb/work/miku-pet-working3.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/work/miku-pet-working3.webp",
+      "sha": "ff4cd7895516adf6e49650940548c149bf48548b",
+      "bytes": 214696
+    },
+    {
+      "source": "assets/miku/thumb/work/miku-pet-working4.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/work/miku-pet-working4.webp",
+      "sha": "15cc25104a9f89e1bb45c9519763b97e67986bb5",
+      "bytes": 219494
+    },
+    {
+      "source": "assets/miku/thumb/work/miku-pet-working5.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/work/miku-pet-working5.webp",
+      "sha": "2c43ee428548ee3ae0d456416a320fe1725f4895",
+      "bytes": 223094
+    },
+    {
+      "source": "assets/miku/thumb/work/miku-pet-working6.webp",
+      "target": "artwork/miku-v0.4.4/original/thumb/work/miku-pet-working6.webp",
+      "sha": "b104e8a00c226f7470065c2feed83e7706a19302",
+      "bytes": 224948
+    }
+  ]
+}

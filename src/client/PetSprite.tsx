@@ -1,6 +1,8 @@
 import { effectiveFps, retimeTracks } from '../animation.ts'
+import { sessionMotionPet } from '../animation-bindings.ts'
 import { createBlinkFilter } from './blink-frequency.ts'
 import { paletteAtlas, paletteFilter } from './palette.ts'
+import { whaleFramePose } from './whale-stability.ts'
 /**
  * Pet sprite companion component — the browser half's centerpiece. Renders a
  * fixed-position floating sprite (React portal onto document.body), plays
@@ -254,6 +256,9 @@ function UsageAnnouncementBubble(props: { announcement: PetAnnouncement }): Reac
 export function PetSprite(props: PetSpriteProps): ReactPortal {
   const { snapshot, definition, display, feedback } = props
   const spriteRef = useRef<HTMLDivElement | null>(null)
+  const whaleUpperRef = useRef<HTMLDivElement | null>(null)
+  const whaleFrameRef = useRef<HTMLDivElement | null>(null)
+  const whaleLegsRef = useRef<HTMLDivElement | null>(null)
   const floatRef = useRef<HTMLDivElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
   // Whichever bubble surface is currently rendered (feedback, the session
@@ -291,9 +296,11 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const atlasUrl = paletteAtlas(definition.atlasUrl, definition.id, snapshot?.color)
   const columns = definition.columns
   const rows = definition.rows
+  const stabilizeWhale = props.visual === undefined && definition.id === 'whale-girl-refined'
+    && columns === 16 && cell.width === 192 && cell.height === 208
   const phase = snapshot?.phase ?? 'idle'
   const baseAnimation = snapshot?.animation ?? 'idle'
-  const waveKey = definition.id !== 'whale-girl-refined' ? undefined
+  const waveKey = !sessionMotionPet(definition.id) ? undefined
     : feedback?.kind === 'pet' ? 'pet:' + feedback.at : snapshot?.waveKey
   const [wave, setWave] = useState<string | undefined>()
   const seenWaves = useRef(new Set<string>())
@@ -318,7 +325,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
   const selectedSequence = animation === animationForPhase(phase) ? sequences?.[phase] : undefined
   const usesRightRun = animation === 'running-right' || selectedSequence?.includes('running-right') === true
   const runningTrack = animation === 'running-left' ? 'running-left' : 'running-right'
-  const canRetime = definition.id === 'whale-girl-refined'
+  const canRetime = sessionMotionPet(definition.id)
     ? animation === 'running-right' || animation === 'running-left'
     : usesRightRun
   const fps = canRetime ? effectiveFps(display, snapshot?.performance?.tokensPerSecond) : undefined
@@ -432,9 +439,23 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
     const leadCol = blinkFrame(leadAnimation, track.frames[frameRef.current.index]!)
     const lead = framePosition(cell, row, leadCol, scaleRef.current)
     let lastPosStr = lead.x + 'px ' + lead.y + 'px'
-    if (spriteRef.current !== null) {
-      spriteRef.current.style.backgroundPosition = lastPosStr
+    const paint = (pos: string, action: PetAnimation, column: number): void => {
+      if (spriteRef.current !== null) spriteRef.current.style.backgroundPosition = pos
+      const upper = whaleUpperRef.current, frame = whaleFrameRef.current, legs = whaleLegsRef.current
+      if (!stabilizeWhale || !upper || !frame || !legs) return
+      const pose = whaleFramePose(action, column)
+      frame.style.backgroundPosition = pos
+      frame.style.transformOrigin = `${84 / 192 * 100}% ${pose.pivotY / 208 * 100}%`
+      frame.style.transform = `translateY(${pose.offsetY * scaleRef.current}px) scale(${pose.scale})`
+      // Cut out only the legs; the tail keeps moving outside this rectangle.
+      upper.style.clipPath = pose.planted
+        ? `polygon(0 0,100% 0,100% 100%,${109 / 192 * 100}% 100%,${109 / 192 * 100}% ${170 / 208 * 100}%,${59 / 192 * 100}% ${170 / 208 * 100}%,${59 / 192 * 100}% 100%,0 100%)`
+        : 'none'
+      legs.style.display = pose.planted ? 'block' : 'none'
+      frame.dataset.track = action
+      frame.dataset.column = String(column)
     }
+    paint(lastPosStr, leadAnimation, leadCol)
     if (reduceMotion) return
     let raf = 0
     let frameTimer: ReturnType<typeof setTimeout> | undefined
@@ -459,9 +480,7 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
         const posStr = pos.x + 'px ' + pos.y + 'px'
         if (posStr !== lastPosStr) {
           lastPosStr = posStr
-          if (spriteRef.current !== null) {
-            spriteRef.current.style.backgroundPosition = posStr
-          }
+          paint(posStr, current.animation, col)
         }
         schedule(timeline.nextFrameIn(sequenceElapsed))
         return
@@ -488,15 +507,13 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
       const posStr = pos.x + 'px ' + pos.y + 'px'
       if (posStr !== lastPosStr) {
         lastPosStr = posStr
-        if (spriteRef.current !== null) {
-          spriteRef.current.style.backgroundPosition = posStr
-        }
+        paint(posStr, animation, col)
       }
       if (track.loop || st.index < maxIndex) schedule(Math.max(1, track.durations[st.index]! - st.elapsed))
     }
     raf = requestAnimationFrame(tick)
     return () => { cancelAnimationFrame(raf); if (frameTimer !== undefined) clearTimeout(frameTimer) }
-  }, [animation, phase, cell, columns, rows, tracks, sequences, props.visual, blinkFrame])
+  }, [animation, phase, cell, columns, rows, tracks, sequences, props.visual, blinkFrame, stabilizeWhale, spriteScale])
 
   // Auto-clear the feedback bubble after its CSS animation. The callback
   // rides a ref so re-renders never reset the timer: the 2s poll rebuilds
@@ -763,12 +780,14 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
         <div
           ref={spriteRef}
           className={styles.sprite}
+          data-dsh-pet-animation={animation}
           style={{
             width: spriteWidth,
             height: spriteHeight,
+            position: 'relative',
             ...(props.visual === undefined
               ? {
-                  backgroundImage: imageReady ? 'url(' + atlasUrl + ')' : undefined,
+                  backgroundImage: imageReady && !stabilizeWhale ? 'url(' + atlasUrl + ')' : undefined,
                   backgroundSize: (cell.width * columns * spriteScale) + 'px ' + (cell.height * (definition.atlasRows ?? rows.length) * spriteScale) + 'px',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: '0 0',
@@ -799,6 +818,23 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
           role="button"
           aria-label={definition.displayName}
         >
+          {stabilizeWhale && <>
+            <div ref={whaleUpperRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+              <div ref={whaleFrameRef} data-dsh-pet-registered-frame="true" style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: imageReady ? 'url(' + atlasUrl + ')' : undefined,
+                backgroundSize: `${cell.width * columns * spriteScale}px ${cell.height * (definition.atlasRows ?? rows.length) * spriteScale}px`,
+                backgroundRepeat: 'no-repeat',
+              }} />
+            </div>
+            <div ref={whaleLegsRef} data-dsh-pet-planted="true" aria-hidden="true" style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              clipPath: `inset(${170 / 208 * 100}% ${83 / 192 * 100}% 0 ${59 / 192 * 100}%)`,
+              backgroundImage: imageReady ? 'url(' + atlasUrl + ')' : undefined,
+              backgroundSize: `${cell.width * columns * spriteScale}px ${cell.height * (definition.atlasRows ?? rows.length) * spriteScale}px`,
+              backgroundRepeat: 'no-repeat', backgroundPosition: '0 0',
+            }} />
+          </>}
           {props.visual}
         </div>
       </div>

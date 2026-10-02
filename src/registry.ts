@@ -513,7 +513,7 @@ export function resolvePetManifest(
     manifestUrl: assetUrl(assetPrefix, id, 'pet.json'),
     dir,
     spritesheetPath: sheet,
-    servable: [sheet, ...(id === 'whale-girl-refined'
+    servable: [sheet, ...(['whale-girl-refined', 'blue-whale-business'].includes(id)
       ? ['ds', 'gpt', 'claude', 'kimi', 'glm'].map(palette => 'palettes/' + palette + '.png').filter(file => existsSync(join(dir, file))) : [])],
     ...(remarks === undefined ? {} : { remarks }),
   }
@@ -819,6 +819,14 @@ function resolveFrames2dEntry(
   const firstAbs = join(dir, firstFrameRel[idleTrack]!)
   const dims = existsSync(firstAbs) ? readImageDimensions(firstAbs) : undefined
   const cell = dims !== undefined && dims.width >= 1 && dims.height >= 1 ? dims : { ...DEFAULT_PET_CELL }
+  if (manifest.id === 'miku') {
+    for (const file of [...new Set(servable)]) {
+      for (const palette of ['gpt', 'claude', 'kimi', 'glm']) {
+        const sibling = 'palettes/' + palette + '/' + file
+        if (existsSync(join(dir, sibling))) servable.push(sibling)
+      }
+    }
+  }
   return {
     id: manifest.id,
     displayName: manifest.displayName,
@@ -1100,7 +1108,7 @@ export function loadPetRegistry(options: PetRegistryOptions): PetRegistry {
   const byId = new Map<string, PetEntry>()
   const builtinIds = new Set<string>()
 
-  for (const entry of scanPetDir(join(packageRoot, 'assets'), { assetPrefix, warnings, diagnostics, ...(options.singlePet ? { names: ['whale-refined'] } : {}) })) {
+  for (const entry of scanPetDir(join(packageRoot, 'assets'), { assetPrefix, warnings, diagnostics, ...(options.singlePet ? { names: ['whale-refined', 'miku', 'blue-whale-business'] } : {}) })) {
     if (byId.has(entry.id)) {
       warnings.push('duplicate built-in pet id ' + entry.id + '; the first one wins')
       continue
@@ -1169,7 +1177,7 @@ export function loadPetRegistry(options: PetRegistryOptions): PetRegistry {
     warnings,
     diagnostics,
     byId: (id: string) => byId.get(id),
-    defaultEntry: () => entries.find(entry => (
+    defaultEntry: () => (options.singlePet ? entries.find(entry => entry.id === 'whale-girl-refined') : undefined) ?? entries.find(entry => (
       entry.id === DEFAULT_PET_ID && builtinIds.has(entry.id)
     )) ?? entries.find(entry => builtinIds.has(entry.id)) ?? entries[0]!,
     ...(globalVoice === undefined ? {} : { globalVoice }),

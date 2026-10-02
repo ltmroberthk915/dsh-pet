@@ -14,6 +14,7 @@ import type { GameplayBus } from '../gameplay-hud.tsx'
 import { t } from '../locales.ts'
 import { Frames2dVisualMount } from './Frames2dVisualMount.tsx'
 import { defaultPetRendererRegistry } from './registry.ts'
+import type { PetStateView } from '../../service.ts'
 
 function definition(): PetDefinition {
   return {
@@ -69,5 +70,22 @@ describe('Frames2dVisualMount', () => {
   it('leaves the default look alone when no base idle is latched', () => {
     const handle = mountWith({})
     expect(handle.setIdleTrack).not.toHaveBeenCalled()
+  })
+
+  it('keeps one renderer and decoded cache when per-session footer FPS changes', () => {
+    const def = definition()
+    def.frames2d!.tracks['running-right'] = def.frames2d!.tracks.idle!
+    def.frames2d!.tracks['running-left'] = def.frames2d!.tracks.idle!
+    const handle = { dispose:vi.fn(), setState:vi.fn(), setIdleTrack:vi.fn(), setActivityTrack:vi.fn(), setPlaybackFps:vi.fn(), currentTrack:()=> 'running-right' }
+    const mount = vi.spyOn(defaultPetRendererRegistry,'mount').mockReturnValue(handle)
+    const drag = createDragStream()
+    const snapshot = { animation:'running-right', phase:'thinking' } as PetStateView
+    const props = { definition:def, phase:'thinking' as const, snapshot, onPet:()=>undefined, drag, t }
+    const view = render(<Frames2dVisualMount {...props} fps={12} />)
+    view.rerender(<Frames2dVisualMount {...props} fps={25} />)
+    expect(mount).toHaveBeenCalledTimes(1)
+    expect(handle.dispose).not.toHaveBeenCalled()
+    expect(handle.setPlaybackFps).toHaveBeenLastCalledWith(25)
+    expect(handle.setActivityTrack).toHaveBeenCalledWith('running-right')
   })
 })

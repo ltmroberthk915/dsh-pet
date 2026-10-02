@@ -6,7 +6,10 @@ import { t } from './locales.ts'
 import { installDesktopHitTesting } from './desktop-hit-test.ts'
 import type { PetStateView } from '../service.ts'
 import type { PetDefinition } from '../registry.ts'
+import { defaultPetRendererRegistry } from './renderers/registry.ts'
+import { frames2dRenderer } from './renderers/frames2d.ts'
 
+defaultPetRendererRegistry.register(frames2dRenderer)
 const bridge = window.dshPetOverlay!
 const store = createPetStore().create()
 let loading = false

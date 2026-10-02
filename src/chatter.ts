@@ -215,6 +215,10 @@ export const TOOL_CATEGORIES: readonly ToolCategory[] = [
 /** Map a raw tool name onto its copy family (working-activity style regexes). */
 export function toolCategory(toolName: string): ToolCategory {
   const name = toolName.toLowerCase()
+  // DSH labels job_output as “读取任务输出”. Its job id (e.g. pwsh-8)
+  // identifies existing work; waiting for logs is not new model generation.
+  // Match before the broad task/subagent family, including namespaced calls.
+  if (/(?:^|[_.:/-])(?:job_output|task_output|read_job|read_task_output)(?:$|[_.:/-])/.test(name)) return 'read'
   if (/mem0|recall|memory/.test(name)) return 'memory'
   if (/subagent|workflow|ralph|agent|task/.test(name)) return 'subagent'
   if (/web_search|websearch|search_web|exa|brave|tavily/.test(name)) return 'webSearch'

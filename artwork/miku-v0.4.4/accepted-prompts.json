@@ -1,0 +1,21 @@
+{
+  "tool": "built-in image_gen",
+  "sources": {
+    "actions": "mikuActionPrompt",
+    "wave": "mikuCorrectedRunPrompt",
+    "runA": "edge-cleanup-prompt.json",
+    "runB": "mikuOppositeRunPrompt"
+  },
+  "runPoseSelection": [
+    "a2",
+    "a1",
+    "b0",
+    "b1",
+    "b2",
+    "b3",
+    "a5",
+    "a6"
+  ],
+  "fullPrompts": "prompts.json",
+  "reason": "Exclude the straight punching arm in a0; retain opposing bent-arm poses, register whole drawings to a 90 px headset landmark, and extract full sprite components without neighbouring-cell fragments."
+}

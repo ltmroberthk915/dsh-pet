@@ -50,6 +50,8 @@ export function PetRendererSwitch(props: {
         definition={props.definition}
         fps={effectiveFps(props.children.props.display, props.children.props.snapshot?.performance?.tokensPerSecond)}
         phase={props.phase}
+        snapshot={props.children.props.snapshot}
+        feedback={props.children.props.feedback}
         onPet={props.onPet}
         drag={drag}
         {...(props.bus === undefined ? {} : { bus: props.bus })}

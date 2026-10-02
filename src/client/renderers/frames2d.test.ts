@@ -113,6 +113,52 @@ describe('frames2dRenderer', () => {
     handle.dispose()
   })
 
+  it('resumes the live session motion after a one-shot interaction, including drag release', () => {
+    const { ctx } = setup()
+    const config = { ...CONFIG, tracks: { ...CONFIG.tracks, 'running-left': CONFIG.tracks.work! } }
+    const handle = frames2dRenderer.mount(ctx, frames2dRenderer.validateConfig(config)) as Frames2dRendererHandle
+    handle.setActivityTrack('running-left')
+    handle.setState('standup')
+    expect(handle.currentTrack()).toBe('standup')
+    vi.advanceTimersByTime(100)
+    expect(handle.currentTrack()).toBe('running-left')
+    handle.setState('happy')
+    handle.setActivityTrack('work')
+    vi.advanceTimersByTime(100)
+    expect(handle.currentTrack()).toBe('work')
+    handle.dispose()
+  })
+
+  it('changes FPS in place for both run directions and keeps every other action at native timing', () => {
+    const { ctx, img } = setup()
+    const run = { frames: ['/run/1.webp','/run/2.webp','/run/3.webp'], durations: [300,300,300], loop: true }
+    const config = { ...CONFIG, tracks: { ...CONFIG.tracks, 'running-right': run, 'running-left': run } }
+    const handle = frames2dRenderer.mount(ctx, frames2dRenderer.validateConfig(config)) as Frames2dRendererHandle
+    handle.setActivityTrack('running-right')
+    handle.setPlaybackFps(10)
+    vi.advanceTimersByTime(100)
+    expect(img().getAttribute('src')).toBe('/run/2.webp')
+    handle.setPlaybackFps(20)
+    expect(img().getAttribute('src')).toBe('/run/2.webp')
+    vi.advanceTimersByTime(50)
+    expect(img().getAttribute('src')).toBe('/run/3.webp')
+    handle.setActivityTrack('running-left')
+    vi.advanceTimersByTime(50)
+    expect(img().getAttribute('src')).toBe('/run/2.webp')
+    handle.setPlaybackFps(undefined)
+    vi.advanceTimersByTime(299)
+    expect(img().getAttribute('src')).toBe('/run/2.webp')
+    vi.advanceTimersByTime(1)
+    expect(img().getAttribute('src')).toBe('/run/3.webp')
+    handle.setActivityTrack('work')
+    handle.setPlaybackFps(60)
+    vi.advanceTimersByTime(99)
+    expect(img().getAttribute('src')).toBe('/pet/miku/work/1.webp')
+    vi.advanceTimersByTime(1)
+    expect(img().getAttribute('src')).toBe('/pet/miku/work/2.webp')
+    handle.dispose()
+  })
+
   it('swaps the base idle target via setIdleTrack (skin semantics)', () => {
     const skinConfig: PetFrames2dConfig = {
       tracks: {

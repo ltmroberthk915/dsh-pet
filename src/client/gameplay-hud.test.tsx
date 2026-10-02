@@ -552,6 +552,21 @@ describe('GameplayHud', () => {
     expect(h.setTrack).toHaveBeenCalledWith('eat')
   })
 
+  it('lets session Miku relinquish idle gestures while agent motion is active', async () => {
+    const definition = petDefinition()
+    definition.frames2d!.tracks['running-right'] = definition.frames2d!.tracks.idle!
+    definition.frames2d!.tracks['running-left'] = definition.frames2d!.tracks.idle!
+    const h = harness(gameplayView(),definition)
+    await act(async () => { vi.advanceTimersByTime(5000) })
+    expect(h.setTrack).toHaveBeenCalledWith('eat')
+    h.setTrack.mockClear()
+    await act(async () => { h.store.actions.setSnapshot(snapshot(gameplayView(),undefined,'thinking')) })
+    expect(h.setTrack).toHaveBeenCalledWith(undefined)
+    h.setTrack.mockClear()
+    await act(async () => { vi.advanceTimersByTime(10000) })
+    expect(h.setTrack).not.toHaveBeenCalled()
+  })
+
   it('drives the work loop: work track, adjudicated ticks, result hold', async () => {
     const h = harness(gameplayView({ mode: 'work' }))
     expect(h.setTrack).toHaveBeenCalledWith('work')

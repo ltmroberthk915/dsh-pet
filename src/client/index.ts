@@ -42,6 +42,8 @@ import { registerPetUiTeardown, takeoverPetUiTeardown } from './ui-teardown.ts'
 import { PetSettingsSection, PetSettingsCardController, type PetSettings } from './PetSettingsCard.tsx'
 import { NS, en, zh, t } from './locales.ts'
 import { mainViewSessionId } from './main-session.ts'
+import { defaultPetRendererRegistry } from './renderers/registry.ts'
+import { frames2dRenderer } from './renderers/frames2d.ts'
 
 /** The host pet API as the browser sees it (same-origin JSON endpoints). */
 interface PetHttpApi {
@@ -193,6 +195,7 @@ export function apply(ctx: ClientContext): void {
 
   // Built-in renderers dispatch through the plugin-wide registry (pet-center
   // M3). Registration is idempotent (id wins), so re-applies stay clean.
+  defaultPetRendererRegistry.register(frames2dRenderer)
 
   const settingsForm = petSettingsForm(ctx)
   const enabled = (): boolean => {

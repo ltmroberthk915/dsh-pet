@@ -27,9 +27,9 @@ describe('installed desktop plugin integration', () => {
     expect(registry.entries.map(p=>p.id)).toEqual(expect.arrayContaining(['blue-throated-bee-eater','ouo-neko','whale-girl','whale-girl-refined']))
     expect(registry.defaultEntry().id).toBe('whale-girl')
   })
-  it('single-character deployment keeps only the refined whale and still serves decorations', () => {
+  it('curated deployment exposes three companions, retains the whale default, and serves decorations', () => {
     const single = loadPetRegistry({ packageRoot: petPackageRoot(import.meta.url), singlePet: true, petsDir: '', dshPetsDir: '' })
-    expect(single.entries.map(p=>p.id)).toEqual(['whale-girl-refined'])
+    expect(single.entries.map(p=>p.id)).toEqual(['blue-whale-business','miku','whale-girl-refined'])
     expect(single.defaultEntry().id).toBe('whale-girl-refined')
     expect(single.decorations?.length).toBeGreaterThan(0)
   })

@@ -1,0 +1,284 @@
+{
+  "status": "passed",
+  "originalGitBlobsVerified": 84,
+  "runtimeFrames": 128,
+  "palettesCompared": [
+    "gpt",
+    "claude",
+    "kimi",
+    "glm"
+  ],
+  "newFrames": [
+    {
+      "track": "jumping",
+      "frame": "frame-1.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "jumping",
+      "frame": "frame-2.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "jumping",
+      "frame": "frame-3.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "jumping",
+      "frame": "frame-4.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": "frame-1.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": "frame-2.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": "frame-3.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "review",
+      "frame": "frame-4.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-1.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-2.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-3.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-4.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-5.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-6.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-7.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-left",
+      "frame": "frame-8.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-1.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-2.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-3.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-4.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-5.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-6.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-7.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "running-right",
+      "frame": "frame-8.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": "frame-1.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": "frame-2.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": "frame-3.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waiting",
+      "frame": "frame-4.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": "frame-1.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": "frame-2.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": "frame-3.webp",
+      "edgePixels": 0
+    },
+    {
+      "track": "waving",
+      "frame": "frame-4.webp",
+      "edgePixels": 0
+    }
+  ],
+  "edgeFailures": [],
+  "leftRunIsMirror": true,
+  "runHeadsetSpan": {
+    "target": 90,
+    "min": 89.76907465427918,
+    "max": 90.53309583971804,
+    "cvPercent": 0.24138725163333008
+  },
+  "runHeadsetCenter": {
+    "xRange": 0.6861555359104443,
+    "yRange": 3.6326193520886676
+  },
+  "runMeasurements": [
+    {
+      "span": 90.19558910157104,
+      "x": 255.95220588235293,
+      "y": 86.27573529411765,
+      "opaqueArea": 93623,
+      "bounds": [
+        41,
+        40,
+        445,
+        471
+      ]
+    },
+    {
+      "span": 90.18168181808825,
+      "x": 255.95454545454547,
+      "y": 84.45454545454545,
+      "opaqueArea": 92323,
+      "bounds": [
+        44,
+        36,
+        446,
+        469
+      ]
+    },
+    {
+      "span": 90.53309583971804,
+      "x": 256.2536231884058,
+      "y": 82.64311594202898,
+      "opaqueArea": 98637,
+      "bounds": [
+        30,
+        37,
+        444,
+        491
+      ]
+    },
+    {
+      "span": 89.76907465427918,
+      "x": 256.1106941838649,
+      "y": 83.6923076923077,
+      "opaqueArea": 94052,
+      "bounds": [
+        31,
+        37,
+        441,
+        493
+      ]
+    },
+    {
+      "span": 90.15428163806416,
+      "x": 255.56746765249537,
+      "y": 85.77264325323475,
+      "opaqueArea": 94111,
+      "bounds": [
+        28,
+        39,
+        440,
+        480
+      ]
+    },
+    {
+      "span": 90.1569677026468,
+      "x": 255.89908256880733,
+      "y": 83.68256880733945,
+      "opaqueArea": 91924,
+      "bounds": [
+        24,
+        36,
+        443,
+        479
+      ]
+    },
+    {
+      "span": 89.90787228262406,
+      "x": 255.96131528046422,
+      "y": 83.43326885880077,
+      "opaqueArea": 88334,
+      "bounds": [
+        43,
+        35,
+        444,
+        452
+      ]
+    },
+    {
+      "span": 89.94916213105893,
+      "x": 255.78464419475657,
+      "y": 83.84082397003745,
+      "opaqueArea": 90681,
+      "bounds": [
+        46,
+        37,
+        446,
+        455
+      ]
+    }
+  ],
+  "limits": "2D registration metrics; anatomy and smooth playback are inspected visually."
+}

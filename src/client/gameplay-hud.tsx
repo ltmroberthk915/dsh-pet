@@ -13,6 +13,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, typ
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PetDefinition, PetSkinDefinition } from '../registry.ts'
 import type { PetGameplayVerbResult } from '../service.ts'
+import { sessionMotionPet } from '../animation-bindings.ts'
 import { declaredModes, modeStateOf, PET_ROAM_DIRECTIONS, touchZoneAt, type PetRoamDirection } from '../gameplay.ts'
 import type { PetStoreInstance } from './pet-store.ts'
 import type { DragStream } from './drag-stream.ts'
@@ -88,6 +89,8 @@ export function GameplayHud(props: {
   const { definition, store, api, bus } = props
   const ui = useSyncExternalStore(store.subscribe, store.getSnapshot)
   const def = definition.gameplay
+  const hasSessionMotion = sessionMotionPet(definition.id)
+    && definition.frames2d?.tracks['running-right'] !== undefined && definition.frames2d.tracks['running-left'] !== undefined
   const view = ui.snapshot?.gameplay
   // Host-persisted skin selection for this pet (undefined = default look).
   const persistedSkin = ui.snapshot?.skin
@@ -107,6 +110,8 @@ export function GameplayHud(props: {
   /** Live gameplay view for the interval loops (def identity is stable, view is not). */
   const viewRef = useRef(view)
   viewRef.current = view
+  const activityRef = useRef(ui.snapshot?.phase ?? 'idle')
+  activityRef.current = ui.snapshot?.phase ?? 'idle'
   const draggingRef = useRef(false)
   const touchLockUntilRef = useRef(0)
   const missRef = useRef(0)
@@ -296,6 +301,7 @@ export function GameplayHud(props: {
     if (total <= 0) return undefined
     let actTimer = 0
     const timer = window.setInterval(() => {
+      if (hasSessionMotion && activityRef.current !== 'idle') return
       if (modeRef.current !== null || draggingRef.current) return
       if (Date.now() < touchLockUntilRef.current) return
       if (roamHeldRef.current) return // a roam walk owns the visual
@@ -340,7 +346,16 @@ export function GameplayHud(props: {
       actHeldRef.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one director per pet definition
-  }, [definition.id, def])
+  }, [definition.id, def, hasSessionMotion])
+
+  // When agent work starts, relinquish an ambient idle act immediately.
+  // Explicit work/sleep modes and direct touch reactions keep their own rules.
+  useEffect(() => {
+    if (hasSessionMotion && ui.snapshot?.phase !== 'idle' && actHeldRef.current) {
+      actHeldRef.current = false
+      bus.setTrack?.(undefined)
+    }
+  }, [ui.snapshot?.phase, hasSessionMotion, bus])
 
   // Work loop: hold the work track, adjudicate one round per tick, play the
   // result track for its hold window, then resume. Leaving the mode

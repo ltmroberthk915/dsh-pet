@@ -1,8 +1,13 @@
 import type { PetAnimation, PetStateSnapshot } from './state.ts'
 
-/** This artwork-specific mapping must not change other characters' poses. */
+/** The bundled companions share the same session and tool motion vocabulary. */
+export function sessionMotionPet(petId: string): boolean {
+  return ['whale-girl-refined', 'miku', 'blue-whale-business'].includes(petId)
+}
+
+/** Keep other installed characters' phase mappings intact. */
 export function boundAnimation(petId: string, snapshot: PetStateSnapshot): PetAnimation {
-  if (petId !== 'whale-girl-refined') return snapshot.animation
+  if (!sessionMotionPet(petId)) return snapshot.animation
   if (snapshot.generation !== undefined) {
     return snapshot.generation === 'tool-arguments' && (snapshot.toolCategory === 'write' || snapshot.toolCategory === 'edit')
       ? 'running-left' : 'running-right'

@@ -113,6 +113,32 @@ function petProps(overrides: Partial<PetSpriteProps> = {}): PetSpriteProps {
 }
 
 describe('refined whale token playback', () => {
+  it('holds a shared leg frame across stationary actions and releases it for running and jumping', () => {
+    const definition = { ...petDefinition(), id: 'whale-girl-refined', columns: 16 }
+    const props = petProps({ definition, display: { ...snapshot.display, size: 208 } })
+    const view = render(<PetSprite {...props} />)
+    const legs = document.querySelector<HTMLElement>('[data-dsh-pet-planted]')!
+    const frame = document.querySelector<HTMLElement>('[data-dsh-pet-registered-frame]')!
+    for (const animation of ['idle', 'waving', 'waiting', 'running', 'review', 'failed'] as const) {
+      view.rerender(<PetSprite {...props} snapshot={{ ...snapshot, animation }} />)
+      expect(legs.style.display).toBe('block')
+      expect(legs.style.backgroundPosition).toBe('0px 0px')
+      expect(frame.dataset.track).toBe(animation)
+      expect(frame.style.transform).not.toBe('')
+    }
+    for (const animation of ['running-right', 'running-left', 'jumping'] as const) {
+      view.rerender(<PetSprite {...props} snapshot={{ ...snapshot, animation }} />)
+      expect(legs.style.display).toBe('none')
+      expect(frame.dataset.track).toBe(animation)
+    }
+    view.rerender(<PetSprite {...props} snapshot={{ ...snapshot, animation: 'review' }} display={{ ...props.display, size: 416 }} />)
+    expect(legs.style.display).toBe('block')
+    expect(legs.style.backgroundPosition).toBe('0px 0px')
+    expect(legs.style.backgroundSize).toBe('6144px 3744px')
+    fireEvent.click(screen.getByRole('button', { name: '鲸鱼娘' }))
+    expect(props.onPet).toHaveBeenCalledOnce()
+  })
+
   it.each(['running-right', 'running-left'] as const)('retimes %s through generation and tool execution, preserving the frame when tok/s changes', animation => {
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
     let now = 0
