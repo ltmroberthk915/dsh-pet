@@ -51,6 +51,8 @@ For updates, publish to next, preserve the existing stable latest, wait at least
 
 Identical-version reinstalls have a separate lockfile check. With real pnpm 11.7.0 and an isolated registry, upgrading 1.3.2 to 1.3.3 succeeds, but immediately adding 1.3.3 again fails with `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` despite both version exclusions. The installed version and bundle selection survive. Do not delete user lockfiles or disable global policies to mask the failure; verify fresh installs, upgrades and reinstalls separately.
 
+The bundled pnpm 11.7.0 evaluator uses the first matching package rule. Two separate exclusions for the same package can therefore ignore the later version. If both exact versions have already been approved, consolidate those existing entries into one exact-version union, for example `dsh-pet-copilot@1.3.2 || 1.3.3`, preserving unrelated rules. The equivalent CU reproduction passed after this change without adding an allowed version. Pet 1.3.3 fresh installation and immediate reinstallation with a single exclusion both pass; this does not establish a pass for every earlier upgrade history.
+
 Maintainers run `node scripts/release-channel.mjs check 1.3.3`. Checks accept DSH_PET_REGISTRY, such as https://registry.npmmirror.com, and report registry and authoritative. Network errors identify the queried source instead of claiming the package is unpublished. Promotion ignores mirrors and rechecks identity, time and tags against official npm.
 
 ## Development
