@@ -25,7 +25,7 @@ $dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/ds
 
 DSH 0.2.0-rc.2 / pnpm 11.7.0 默认非严格配置可能安装刚发布的版本并自动加入单版本 minimumReleaseAgeExclude。显式 minimumReleaseAge: 1440 且未关闭严格行为时，未成熟版本会被拒绝。minimumReleaseAgeStrict: true 下，裸包名、精确版本及 npm tgz URL 都不是通用绕过方法。用户设置 48 小时等更长等待期也继续有效。
 
-发布者先发 next，确认原 latest 未变；至少满 24 小时且通过无例外的严格 registry 安装验证后才推广 latest。首次新包名在推广前可能没有 latest。项目不改动用户全局策略。
+已有正式版本时，发布者先发 next，保留原 latest；至少满 24 小时且通过无例外的严格 registry 安装验证后才推广 latest。首次新包名例外：npm 自动创建 latest，暂存流程指向空的 0.0.0-stage，而且 npm 拒绝删除该标签。官方源全新安装与同版本重复安装都通过后，才将默认标签初始化为第一个真实版本；有任何更早真实版本就不能使用此入口。项目不改动用户全局策略。
 
 首次安装、升级和再次添加同一版本需要分别验证。在真实 pnpm 11.7.0、宿主管理器与隔离 registry 中，1.3.2 → 1.3.3 升级成功后，立即重复添加 1.3.3 会在锁文件检查阶段报 `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`；两个版本已自动加入例外也仍被拒绝。已安装版本与 bundle 选择保留。遇到此错误先核对已装版本，不要反复重装、删除用户锁文件或关闭全局冷却。单次安装成功不保证重复安装成功；隔离 registry 的结果不代表公共 npm 验收。
 
@@ -56,9 +56,11 @@ node scripts/release-channel.mjs check 1.3.3
 $env:DSH_PET_REGISTRY = 'https://registry.npmmirror.com'
 node scripts/release-channel.mjs check 1.3.3
 node scripts/release-channel.mjs promote 1.3.3 path/to/strict-install-receipt.json
+# 仅用于包名的首次正式发布，修正 npm 自动生成的默认标签：
+node scripts/release-channel.mjs initialize-latest 1.3.3 path/to/official-install-receipt.json
 ```
 
-镜像仅影响 check，输出注明 registry 与 authoritative；网络故障不被当作未发布。promote 始终重新访问 npm 官方源，核对身份、发布时间、完整性及当前 latest，拒绝倒退或未成熟版本，并要求官方严格安装回执。镜像同步与用户更长冷却仍有独立边界。
+镜像仅影响 check，输出注明 registry 与 authoritative；网络故障不被当作未发布。promote 始终重新访问 npm 官方源，核对身份、发布时间、完整性及当前 latest，拒绝倒退或未成熟版本，并要求官方严格安装回执。initialize-latest 也只访问官方源，要求全新安装与重复安装回执，并在改标签前重新检查全部已发布版本，不能用来升级已有正式版本。镜像同步与用户更长冷却仍有独立边界。
 
 ## 验证与体积
 

@@ -9,7 +9,7 @@ export const MIN_AGE_MS = 24 * 60 * 60 * 1000
 export const OFFICIAL_REGISTRY = 'https://registry.npmjs.org'
 const REPOSITORY = 'https://github.com/ltmroberthk915/dsh-pet'
 export function queryRegistry(operation, environment = process.env) {
-  const raw = operation === 'promote' ? OFFICIAL_REGISTRY : environment.DSH_PET_REGISTRY || OFFICIAL_REGISTRY
+  const raw = operation === 'check' ? environment.DSH_PET_REGISTRY || OFFICIAL_REGISTRY : OFFICIAL_REGISTRY
   const url = new URL(raw)
   if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw Error('Invalid registry URL')
   const registry = url.href.replace(/\/$/, '')
@@ -48,10 +48,29 @@ export function validatePromotion(receipt, verdict) {
   }
 }
 
+// npm creates latest for a new package and refuses to remove it. A staged
+// first publication must replace the generated empty 0.0.0-stage default.
+// Existing stable releases still go through the strict 24-hour promotion gate.
+export function validateInitialLatest(receipt, verdict, publishedVersions) {
+  if (!Array.isArray(publishedVersions) || !publishedVersions.includes(verdict.version) ||
+      publishedVersions.some(version => version !== verdict.version && version !== '0.0.0-stage') ||
+      ![null, '0.0.0-stage', verdict.version].includes(verdict.latest)) {
+    throw Error('Initial latest can only initialize the first real published version')
+  }
+  if (receipt?.status !== 'passed' || receipt.registry !== OFFICIAL_REGISTRY || receipt.name !== PACKAGE ||
+      receipt.version !== verdict.version || receipt.installedVersion !== verdict.version ||
+      receipt.integrity !== verdict.integrity || receipt.source !== 'registry' ||
+      !Number.isFinite(Date.parse(receipt.checkedAt)) || Date.parse(receipt.checkedAt) < Date.parse(verdict.publishedAt) ||
+      receipt.repeat?.status !== 'passed' || receipt.repeat.installedVersionPreserved !== true ||
+      receipt.repeat.bundleSelectionPreserved !== true || receipt.repeat.dependencyPreserved !== true) {
+    throw Error('A successful official fresh-install and reinstall receipt is required for initial latest')
+  }
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const [operation, version, receiptFile] = process.argv.slice(2)
-    if (!['check', 'promote'].includes(operation)) throw Error('Usage: release-channel.mjs check <version> | promote <version> <strict-install-receipt.json>')
+    if (!['check', 'promote', 'initialize-latest'].includes(operation)) throw Error('Usage: release-channel.mjs check <version> | promote <version> <strict-install-receipt.json> | initialize-latest <first-version> <official-install-receipt.json>')
     const npm = process.env.DSH_PET_NPM_CLI || path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js')
     if (!fs.existsSync(npm)) throw Error('Run this publisher tool with Node.js and npm')
     const source = queryRegistry(operation)
@@ -67,15 +86,21 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const manifest = view()
     const verdict = releaseReadiness({ ...manifest, versions: { [version]: manifest } }, version)
     console.log(JSON.stringify({ ...verdict, ...source }, null, 2))
-    if (!verdict.ready) process.exitCode = 2
-    else if (operation === 'promote') {
-      if (!receiptFile) throw Error('Pass the strict registry-install receipt')
-      validatePromotion(JSON.parse(fs.readFileSync(receiptFile, 'utf8')), verdict)
+    if (operation === 'check') {
+      if (!verdict.ready) process.exitCode = 2
+    } else {
+      if (!receiptFile) throw Error('Pass the official registry-install receipt')
+      const receipt = JSON.parse(fs.readFileSync(receiptFile, 'utf8'))
+      const validate = (data, result) => operation === 'promote'
+        ? validatePromotion(receipt, result)
+        : validateInitialLatest(receipt, result, data.versions)
+      validate(manifest, verdict)
       // Re-read immediately before mutating the tag: another publisher may have
       // advanced latest while the validation receipt was being produced.
       const current = view()
-      releaseReadiness({ ...current, versions: { [version]: current } }, version)
-      execFileSync(process.execPath, [npm, 'dist-tag', 'add', PACKAGE + '@' + version, 'latest', ...flags], { stdio: 'inherit', windowsHide: true })
+      const currentVerdict = releaseReadiness({ ...current, versions: { [version]: current } }, version)
+      validate(current, currentVerdict)
+      if (currentVerdict.latest !== version) execFileSync(process.execPath, [npm, 'dist-tag', 'add', PACKAGE + '@' + version, 'latest', ...flags], { stdio: 'inherit', windowsHide: true })
       const tags = JSON.parse(execFileSync(process.execPath, [npm, 'view', PACKAGE, 'dist-tags', '--json', ...flags], { encoding: 'utf8', windowsHide: true }))
       if (tags.latest !== version) throw Error('Registry latest did not match after promotion')
       console.log('Verified latest: ' + PACKAGE + '@' + version)

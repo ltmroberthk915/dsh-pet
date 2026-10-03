@@ -41,9 +41,10 @@ for (let attempt = 0; attempt < 40; attempt++) {
 }
 if (!published || published.dist?.integrity !== integrity) throw Error('Official npm has not confirmed the exact uploaded archive')
 const after = read(PACKAGE, 'dist-tags') ?? {}
-if ((after.latest ?? null) !== (before.latest ?? null)) throw Error('latest changed during publication; inspect before taking any further action')
+const initialDefault = before.latest == null && after.latest === manifest.version
+if (!initialDefault && (after.latest ?? null) !== (before.latest ?? null)) throw Error('latest changed during publication; inspect before taking any further action')
 if (!existing && after.next !== manifest.version) throw Error('The next tag does not match the uploaded version')
-const receipt = { status: 'published', name: PACKAGE, version: manifest.version, registry: OFFICIAL_REGISTRY, integrity, tags: after, latestBefore: before.latest ?? null, publishedAt: published.time?.[manifest.version], checkedAt: new Date().toISOString() }
+const receipt = { status: 'published', name: PACKAGE, version: manifest.version, registry: OFFICIAL_REGISTRY, integrity, tags: after, latestBefore: before.latest ?? null, initialDefault, publishedAt: published.time?.[manifest.version], checkedAt: new Date().toISOString() }
 fs.mkdirSync('output', { recursive: true })
 fs.writeFileSync('output/npm-publication.json', JSON.stringify(receipt, null, 2) + '\n')
 console.log(JSON.stringify(receipt, null, 2))

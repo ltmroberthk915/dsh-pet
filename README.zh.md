@@ -48,7 +48,7 @@ $dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/ds
 
 DSH 0.2.0-rc.2 / pnpm 11.7.0 的**默认非严格配置**可能安装刚发布的版本并自动写入单版本 minimumReleaseAgeExclude。显式设置 minimumReleaseAge: 1440、未同时关闭严格行为时，未成熟版本会被拒绝。minimumReleaseAgeStrict: true 下，精确版本和 npm tgz URL 也不能绕过门槛；用户设置更长的冷却继续有效。默认安装成功不能证明严格配置通过，也不是所有用户都必须等 24 小时。
 
-本项目发布者先发 npm next，确认原 latest 未变；至少满 24 小时并通过无例外的严格 registry 安装后才推广 latest。首次新包名可能暂时没有 latest。项目不会修改用户全局安装策略。
+已有正式版本时，先发 npm next，保留原 latest；至少满 24 小时并通过无例外的严格 registry 安装后才推广 latest。首次发布单独初始化：npm 会自动创建 latest，且不接受删除；暂存发布最初指向空的 0.0.0-stage。官方源首次安装和同版本重复安装均通过后，把 latest 初始化为第一个真实版本，同时保留 next。初始化命令拒绝已有任何更早真实版本的包。项目不会修改用户全局安装策略。
 
 重复添加同一版本另有锁文件检查：隔离实测 1.3.2 → 1.3.3 升级成功后，立即再添加 1.3.3 会报 `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`，已有单版本例外也不保证通过。已装版本和 bundle 选择保留；不要因此删除用户锁文件或关闭全局冷却。首次安装、升级、重复安装分别验收。
 
