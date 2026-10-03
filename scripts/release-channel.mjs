@@ -67,6 +67,15 @@ export function validateInitialLatest(receipt, verdict, publishedVersions) {
   }
 }
 
+export async function verifyLatestTag(readTags, version, { attempts = 6, delayMs = 1000 } = {}) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const tags = await readTags()
+    if (tags.latest === version) return tags
+    if (attempt + 1 < attempts) await new Promise(resolve => setTimeout(resolve, delayMs))
+  }
+  throw Error('Registry latest did not match after promotion')
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const [operation, version, receiptFile] = process.argv.slice(2)
@@ -74,7 +83,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const npm = process.env.DSH_PET_NPM_CLI || path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js')
     if (!fs.existsSync(npm)) throw Error('Run this publisher tool with Node.js and npm')
     const source = queryRegistry(operation)
-    const flags = ['--registry=' + source.registry, '--fetch-retries=0', '--fetch-timeout=30000']
+    const flags = ['--registry=' + source.registry, '--fetch-retries=0', '--fetch-timeout=30000', '--prefer-online']
     const view = () => {
       try { return JSON.parse(execFileSync(process.execPath, [npm, 'view', PACKAGE + '@' + version, '--json', ...flags], { encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })) }
       catch (error) {
@@ -101,8 +110,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       const currentVerdict = releaseReadiness({ ...current, versions: { [version]: current } }, version)
       validate(current, currentVerdict)
       if (currentVerdict.latest !== version) execFileSync(process.execPath, [npm, 'dist-tag', 'add', PACKAGE + '@' + version, 'latest', ...flags], { stdio: 'inherit', windowsHide: true })
-      const tags = JSON.parse(execFileSync(process.execPath, [npm, 'view', PACKAGE, 'dist-tags', '--json', ...flags], { encoding: 'utf8', windowsHide: true }))
-      if (tags.latest !== version) throw Error('Registry latest did not match after promotion')
+      await verifyLatestTag(() => JSON.parse(execFileSync(process.execPath, [npm, 'view', PACKAGE, 'dist-tags', '--json', ...flags], { encoding: 'utf8', windowsHide: true })), version)
       console.log('Verified latest: ' + PACKAGE + '@' + version)
     }
   } catch (error) { console.error(error.message); process.exitCode = 1 }

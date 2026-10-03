@@ -11,7 +11,7 @@ const archive = path.resolve(archiveArg)
 const manifest = JSON.parse(execFileSync('tar', ['-xOf', archive, 'package/package.json'], { encoding: 'utf8', windowsHide: true }))
 if (manifest.name !== PACKAGE || !/^\d+\.\d+\.\d+$/.test(manifest.version) || manifest.scripts || manifest.devDependencies || manifest.packageManager) throw Error('Expected a precompiled release archive without lifecycle hooks')
 const npm = process.env.DSH_PET_NPM_CLI || fs.realpathSync(path.join(process.execPath, process.platform === 'win32' ? '../node_modules/npm/bin/npm-cli.js' : '../npm'))
-const flags = ['--registry=' + OFFICIAL_REGISTRY, '--fetch-retries=0']
+const flags = ['--registry=' + OFFICIAL_REGISTRY, '--fetch-retries=0', '--prefer-online']
 const run = args => execFileSync(process.execPath, [npm, ...args, ...flags], { encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 4 * 1024 * 1024 })
 const read = (spec, ...fields) => {
   try { return JSON.parse(run(['view', spec, ...fields, '--json', '--fetch-timeout=30000'])) }

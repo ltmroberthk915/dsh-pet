@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { releaseReadiness, validatePromotion, validateInitialLatest, queryRegistry, PACKAGE, MIN_AGE_MS } from './release-channel.mjs'
+import { releaseReadiness, validatePromotion, validateInitialLatest, verifyLatestTag, queryRegistry, PACKAGE, MIN_AGE_MS } from './release-channel.mjs'
 const at = Date.parse('2026-10-03T08:00:00.000Z')
 const metadata = () => ({ versions: { '1.3.3': { name: PACKAGE, version: '1.3.3', repository: { url: 'git+https://github.com/ltmroberthk915/dsh-pet.git' }, dist: { integrity: 'sha512-test' } } }, time: { '1.3.3': new Date(at).toISOString() }, 'dist-tags': { next: '1.3.3', latest: '1.3.2' } })
 test('promotion waits for the complete 24 hours, including first-name releases', () => {
@@ -68,4 +68,14 @@ test('initial latest rejects fixture, stale, mismatched and failed reinstall evi
     { repeat: { ...receipt.repeat, status: 'blocked' } }, { repeat: { ...receipt.repeat, dependencyPreserved: false } }]) {
     assert.throws(() => validateInitialLatest({ ...receipt, ...changed }, verdict, versions), /fresh-install and reinstall receipt/)
   }
+})
+test('tag verification tolerates a stale registry read without another publication', async () => {
+  let reads = 0
+  const tags = await verifyLatestTag(() => ({ latest: ++reads === 1 ? '0.0.0-stage' : '1.3.3' }), '1.3.3', { attempts: 2, delayMs: 0 })
+  assert.equal(tags.latest, '1.3.3')
+  assert.equal(reads, 2)
+})
+test('tag verification remains bounded and does not convert network failure into success', async () => {
+  await assert.rejects(verifyLatestTag(() => ({ latest: '0.0.0-stage' }), '1.3.3', { attempts: 2, delayMs: 0 }), /did not match/)
+  await assert.rejects(verifyLatestTag(() => { throw Error('network failure') }, '1.3.3'), /network failure/)
 })
