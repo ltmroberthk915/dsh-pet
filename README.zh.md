@@ -1,76 +1,58 @@
-# 多形象会话桌宠 · DSH Session Pet
+# 多形象会话桌宠 · dsh-pet-copilot
 
-独立维护的 DSH 插件：`dsh-pet-copilot`。本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，沿用 Apache-2.0 许可证及原素材署名；改动由 ltmroberthk915 维护。
+**npm 包名是 `dsh-pet-copilot`，GitHub 仓库是 `ltmroberthk915/dsh-pet`。** 从本仓库 [Release](https://github.com/ltmroberthk915/dsh-pet/releases) 下载同名预编译包。`dsh-session-pet.tgz` 仅作为同一包的兼容文件名保留。
 
-v1.3.2：悬停看板默认关闭；商务小鲸鱼含底板统一为 75%。左右跑动 FPS 默认无上限，可自行限制；其他动作可单独设定 FPS，所有形象规则一致。旧包迁移和安装说明见 [新机安装说明](docs/fresh-install-v1.3.2.md)。
+本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，由 ltmroberthk915 独立维护，沿用 Apache-2.0 与原素材署名。
 
 ![五套模型配色](docs/palettes.png)
 
 ## 功能
 
-- 内置鲸鱼娘精致版、MIKU 会话版与现代商务小蓝鲸；在「设置 → 宠物」切换。新增形象的动作、配色与玩法见[说明](docs/miku-business-pets.md)。
-- 每个活跃顶层会话一个宠物；当前对话使用主大小，其他为 52.7%，不弹气泡。
-- 按底层模型首次分配豆沙绿 GPT、橙色 Claude、黑色 Kimi、暗紫 GLM、蓝色 DeepSeek；中途换模型不换色。
-- 所有左右跑步（含工具执行）可用固定 FPS、素材原速或 `FPS = clamp(k × tok/s + b, 1, 60)`；每只跟随自己对话底栏统计。
-- 后台完成的小宠物保留等待查看；打开对话就变为主宠物，不需要输入。前台查看后，切走时回收。
-- 所有宠物共享累计喂食、亲密度及小鱼干；大小、字号、拖动、命名和设置保存继续可用。
-- Windows 原生 DSH 安装插件后自动启动独立透明窗口；主窗口最小化后继续显示，支持跨屏拖动和避让。
+- 鲸鱼娘、MIKU 与商务小蓝鲸；每个活跃顶层会话一个宠物，当前对话使用主大小，其他为 52.7%。商务鲸鱼的图像、底板和点击区域再统一乘以 0.75。
+- 模型配色在会话首次分配后保持稳定；后台会话完成后等待查看，查看后切走时收回。
+- 左右跑动采用固定 FPS、素材原速或 `FPS = max(1, k × 底栏 tok/s + b)`，默认没有上限，可由用户自行限制。非左右跑动动作可独立设置 FPS；关闭时保留素材原始时长。所有形象规则相同。
+- 共享喂食与亲密度，支持拖动、大小和命名。悬停展开看板默认关闭，可在设置中开启；右键仍可打开看板。
+- 官方 Windows DSH 自动启动独立桌宠，无需修改 app.asar 或另装 Node、Electron、PowerShell 7。
 
 ## 安装与更新
 
-安装已经下载的预编译包；使用 DSH 官方桌面版携带的 dsh 入口，路径替换为实际下载位置：
+在插件管理页面填 `dsh-pet-copilot`；只有 npm 已有可解析的版本且满足本机安装策略时，该路径才可用。GitHub tag、Release 或本地打包成功均不能证明 npm 已发布；市场目录另有审核和同步过程。
+
+终端诊断应使用**桌面安装目录中的 CLI**，不要依赖 PATH 上的旧全局 dsh：
 
 ```powershell
-dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.2.tgz'
+$dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd"
+& $dsh plugin --profile desktop why dsh-pet-copilot
 ```
 
-**安装或更新后，保存工作并完整退出 DSH，再重新打开。** DSH 0.2.0-rc.2 首次进程内安装会尝试热加载，覆盖已安装版本则要求重启；只关主窗口不一定退出程序。独立窗口在宿主加载插件后自动启用，新机器无需 Agent、补丁脚本或额外安装。首次启用在 $DSH_HOME/cache/pet-desktop 准备 DSH 自带的 Electron 运行库，不下载运行库、不修改宿主 app.asar。
+自定义安装位置时，把 $dsh 改为那个安装目录下 resources/runtime/cli/bin/dsh.cmd 的完整路径。不要把 resources/runtime/bin 加入全局 PATH。
 
-市场的标准分发身份为 dsh-pet-copilot。**只有 npm 已发布并可查询后**，才能使用下列 registry 目标；本地打包完成不等于已经发布：
+离线包从对应 Release 下载 `dsh-pet-copilot-1.3.3.tgz`，按 `SHA256SUMS.txt` 核对后，用带包名的本地目标安装：
 
 ```powershell
-dsh plugin --profile desktop add dsh-pet-copilot@1.3.2
+& $dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.3.tgz'
 ```
 
-升级也使用 add 包名@明确版本。旧 Git 依赖需迁移到 registry 目标，市场桌面桥接不支持浮动 Git 的 update 路径。离线安装使用上面的带包名 file: 目标，避免裸 URL 重复安装时 DSH 无法辨认包身份。包内包含完整预编译文件，无须安装构建工具或修改全局构建策略。详见 [v1.3.2 新机修复](docs/fresh-install-v1.3.2.md)。
+替换示例路径为实际下载位置。无需自行 pack 或安装 pnpm。Web 宿主使用 web profile。
 
-安装前备份 DSH 数据，停用旧 @linxin666/dsh-pet 的加载声明；两版共用宠物服务。升级保留 pet 行、命名、养成数据及原设置。纯 Web 宿主使用其 web profile。独立窗口的「重试」和「归位」位于设置页，详见 [Windows 安装说明](docs/install-desktop-windows.md)。
+**首次新增 bundle 可以热加载。** 替换已加载版本、收到 `restart-required` 或界面仍在使用旧客户端时，保存工作后完整退出并重开 DSH；热加载成功时无需为安装本身重启。
 
-### 安装故障排查
+## 旧包名迁移
 
-| 状态 | 处理 |
-| --- | --- |
-| Git prepare / 缺 pnpm / strictDepBuilds 错误 | 使用完整预编译包，不放宽全局构建保护。 |
-| exit=127（浮动 Git 更新） | 官方市场桥接不支持此路径；发布成功后改用包名@registry 版本。 |
-| ambiguous-install | 使用包名@版本或包名@file:实际路径，避免重复提交裸 URL。 |
-| minimumReleaseAge | 遵守当前发布等待期；本地文件安装不依赖 registry 自动选版。 |
-| npm 返回 404 | 确认版本是否已实际发布；未发布时使用收到的完整离线包。 |
-| 宠物宿主暂不可达 | 刚安装或更新后完整退出 DSH 再打开，页面自动重连，无需编辑 settings.yaml。 |
-| HTTP 401/403 | 连接未获授权，不能直接判断插件未加载；重开 DSH，网页端从 DSH 提供的入口进入。 |
-| 独立窗口准备失败 | 设置页保留具体原因与重试入口；应用内宠物仍可使用。 |
+先备份 DSH，在目标 profile 移除 `@ltmroberthk915/dsh-pet` 或 `@linxin666/dsh-pet` 并安装新包，再运行 Release 的 `dsh-pet-profile-migration-1.3.3.zip` 内迁移启动器，也可使用已安装包的 scripts 目录。**只保留 pet 行 ID 不足以迁移配置，DSH 还匹配 name。**
 
-## 开发
+迁移器用真实宿主合成配置，备份后只修改该 profile 中 pet 覆盖项的旧名称。配置、禁用状态、注释、其他插件及共享 home 补丁保持不变。旧项与后来保存的新设置冲突，或存在别名、并发编辑时会停止说明原因。名字和养成数据仍保存在原 pet.json 中。详见 [新机与迁移说明](docs/fresh-install-v1.3.3.md)。
 
-```sh
-pnpm install --frozen-lockfile --ignore-scripts
-pnpm typecheck
-pnpm build:local
-```
+## 冷却策略与发布查询
 
-自动窗口检查使用真实 Electron 和独立测试数据，覆盖三个形象、启停、沙箱、私有接口、失败重试与退出清理；实际新电脑尚未现场验证。历史 v1.1.1 有 155 项相关回归、120 项隔离 Electron 检查和 17 项安装器检查。待查看状态随宿主会话生命周期存在，退出程序后不恢复旧活动。
+DSH 0.2.0-rc.2 / pnpm 11.7.0 的**默认非严格配置**可能安装刚发布的版本并自动写入单版本 minimumReleaseAgeExclude。显式设置 minimumReleaseAge: 1440、未同时关闭严格行为时，未成熟版本会被拒绝。minimumReleaseAgeStrict: true 下，精确版本和 npm tgz URL 也不能绕过门槛；用户设置更长的冷却继续有效。默认安装成功不能证明严格配置通过，也不是所有用户都必须等 24 小时。
 
-## 来源
+本项目发布者先发 npm next，确认原 latest 未变；至少满 24 小时并通过无例外的严格 registry 安装后才推广 latest。首次新包名可能暂时没有 latest。项目不会修改用户全局安装策略。
 
-[原项目](https://github.com/zhu1090093659/dsh-pet)提供基础框架、素材和交互。此 fork 增加会话级桌面伴侣、配色、调速、回收规则、安全修复与调度优化。见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+维护者运行 `node scripts/release-channel.mjs check 1.3.3`。仅检查时可设置 `DSH_PET_REGISTRY=https://registry.npmmirror.com`，输出会标明 registry 与 authoritative。网络失败会注明查询源，不会误判成未发布。promote 始终忽略镜像设置，重新查询 npm 官方源，并要求成熟后的严格安装回执。
 
-v1.2.0：插件自动启动独立窗口，取消日常安装对宿主补丁的依赖；预编译产物随 Git 和 Release 一起交付，移除 Git 安装的 `prepare`。仓库保留开发及 CI 使用的 pnpm 版本声明，消费者不触发嵌套安装；Release 包也不携带该声明。
+## 构建与验证
 
-v1.1.1：读取命令任务输出时使用托腮动作；五色鲸鱼娘固定站立腿部、统一直立高度。提供了旧版宿主补丁安装器；新版自动窗口无需运行该工具。
+使用 pnpm 11.7.0：依次运行 `pnpm install --frozen-lockfile --ignore-scripts`、`pnpm typecheck`、`pnpm test`、`pnpm build`，随后执行 `node scripts/build-desktop-manifest.mjs` 与 `node scripts/package-companions.mjs`。
 
-v1.1.0：引入原作者 v0.4.4 MIKU，保留养成玩法并补齐九种会话动作；修复跑动不摆臂、伸臂像挥拳及相邻帧边缘残片，统一跑步人物比例。新增现代商务小蓝鲸，简洁状态文案、关闭随机碎碎念。两者兼容现有多会话、模型配色、tok/s 调速与共享互动记录。
-
-v1.0.5：逐帧重审七组非跑步动作，修复多余手臂、袖口残影、肩膀断连和托腮缺失长袖。以原版头饰宽度统一比例、固定脚底；剔除身体变短和额外闭眼的生成帧。110 个播放帧位、五色共 550 个帧位通过尺寸与透明轮廓检查；测量报告随素材发布。左右跑步仍共用所属会话底栏 tok/s 的 k、b，保留减半眨眼和省电调度。
-
-v1.0.3：明确宠物在任务栏之上的层级，外部激活导致取消置顶时按事件恢复；电脑控制连续拉起已置顶的 DSH 主窗口时，宠物仍优先显示。不抢键盘焦点，也不持续抬高空闲窗口。宠物标记为工具窗口，避免被电脑控制误认作 DSH 主窗口。鼠标离开、失焦与拖动中断统一处理，避免点击穿透与拖动后误触。
-
-v1.0.1：思考、正文与其他工具参数生成向右跑；写文件、编辑、替换和补丁参数生成向左跑。两种生成动作共用可调 k、b；v1.0.4 将该调速范围扩展到所有左右跑步。鲸鱼娘独立语音包保留全部场景，每类精选 3 句。
+发布包不含开发源码、测试或安装脚本，剔除未使用的 MIKU 插值帧，并重新解包验证全部素材及 JavaScript 入口。配置迁移使用实际 loadProfileDirectory 与 composeEntries；冷却验证使用隔离 profile、缓存、store、官方管理器和市场桥接。测试 registry、公共 npm 和市场目录结果分别记录，不代替另一台新机器的验收。详见 [Windows 说明](docs/install-desktop-windows.md)。

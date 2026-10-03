@@ -1,0 +1,3 @@
+# Retired interpolated frames; the current pet manifest references none of them.
+# package-companions.mjs reopens the tarball and checks every served asset.
+**/mid-*.webp

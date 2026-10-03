@@ -1,34 +1,35 @@
 name: CI
-
 on:
   push:
-    branches: [main]
+    branches: [main, desktop-refined-pet]
   pull_request:
-
 permissions:
   contents: read
-
 jobs:
   check:
-    name: migrate script, typecheck, test and build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v5
         with:
-          node-version: 22
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
-      - name: Script tests
-        run: node --test scripts/dsh-pet-migrate-v2.test.mjs scripts/dsh-pet.test.mjs
-      - name: Typecheck
-        run: pnpm typecheck
-      - name: Tests
-        run: pnpm test
-      - name: Build
-        run: pnpm build
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: node --test scripts/test-release-channel.mjs
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: node scripts/build-desktop-manifest.mjs
+      - name: Compose migration with real DSH app-boot
+        run: |
+          npm install --prefix output/host-fixture --ignore-scripts @deepseek-ai/dsh-app-boot@0.2.0-rc.2 @deepseek-ai/dsh-atomic-write@0.2.0-rc.2 yaml@2.9.1
+          node scripts/test-profile-migration.mjs output/host-fixture
+      - run: node scripts/package-companions.mjs
+      - run: node scripts/package-release.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-release
+          path: output/release-v*/

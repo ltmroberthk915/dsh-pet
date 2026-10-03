@@ -1,3 +1,5 @@
+# Legacy host-patching maintenance only. DSH Pet 1.2+ needs no ASAR patch.
+# Current installation instructions: docs/install-desktop-windows.md.
 #requires -Version 5.1
 [CmdletBinding()]
 param(

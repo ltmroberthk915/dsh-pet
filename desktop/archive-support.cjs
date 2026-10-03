@@ -1,3 +1,5 @@
+// Legacy ASAR inspection lives here alongside shared payload checksums.
+// DSH Pet 1.2+ starts its own native process and never applies an ASAR patch.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');

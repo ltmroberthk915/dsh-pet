@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// LEGACY host-patching tool. Normal installations use the plugin manager.
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');

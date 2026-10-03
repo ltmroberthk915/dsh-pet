@@ -1,167 +1,57 @@
-name: Release
-
-# Release pipeline. Pushing a vX.Y.Z tag is the single release switch, and the
-# tag is the version source of truth - the job refuses to publish when
-# package.json disagrees with it. Publishing needs the repository secret
-# NPM_TOKEN (an npm automation token for the @linxin666 scope).
-#
-# The workflow can also be dispatched with an existing tag. That lane exists
-# because npm publish itself succeeds before the registry finishes serving the
-# new version (npm answers "your package is being processed"), and a release
-# that failed only its propagation check must be completable without moving or
-# re-pushing the tag: the publish step is idempotent, so a dispatched run skips
-# it and finishes with the registry assertion and the GitHub Release.
-#
-# A tag push does not run ci.yml (that fires on branch pushes and pull
-# requests), so the same gates run again here: the tag is validated on its own
-# before anything reaches npm.
-
+name: Stage npm release
+# Deliberately manual: a Git tag is not proof of a successful npm publication.
+# Publish next first. Use release-channel.mjs promote only after the cooldown
+# and a strict official-registry install receipt from the real DSH runtime.
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing release tag to (re)process (vX.Y.Z)'
+        description: 'Reviewed existing vX.Y.Z tag'
         required: true
         type: string
-
 permissions:
-  contents: write
-
+  contents: read
 concurrency:
-  group: release-${{ github.event.inputs.tag || github.ref }}
+  group: npm-release
   cancel-in-progress: false
-
 jobs:
-  release:
-    name: Gate, publish and release
+  stage:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
+          ref: ${{ inputs.tag }}
+      - uses: pnpm/action-setup@v5
         with:
-          node-version: 22
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
           cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
-
-      - name: Script tests
-        run: node --test scripts/dsh-pet-migrate-v2.test.mjs scripts/dsh-pet.test.mjs
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Tests
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
-
-      - name: Resolve the release tag
-        id: release
-        run: |
-          set -eu
-          if [ "${{ github.event_name }}" = "push" ]; then
-            tag="${{ github.ref_name }}"
-          else
-            tag="${{ github.event.inputs.tag }}"
-          fi
-          case "$tag" in
-            v*) ;;
-            *) echo "tag must look like vX.Y.Z, got: $tag" >&2; exit 1 ;;
-          esac
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
-          echo "releasing $tag"
-
-      - name: Verify the package version matches the tag
+          registry-url: https://registry.npmjs.org
+      - name: Validate tag and publish credentials
         env:
-          VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          set -eu
-          actual=$(node -p "require('./package.json').version")
-          if [ "$actual" != "$VERSION" ]; then
-            echo "package.json says $actual but the tag says $VERSION" >&2
-            exit 1
-          fi
-          echo "package version $actual matches the tag"
-
-      - name: Stage the release notes
+          node -e 'if (process.env.RELEASE_TAG !== "v" + require("./package.json").version) process.exit(1); if (!process.env.NODE_AUTH_TOKEN) throw Error("NPM_TOKEN is required for dsh-pet-copilot")'
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: node --test scripts/test-release-channel.mjs
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: node scripts/build-desktop-manifest.mjs
+      - name: Compose migration with real DSH app-boot
+        run: |
+          npm install --prefix output/host-fixture --ignore-scripts @deepseek-ai/dsh-app-boot@0.2.0-rc.2 @deepseek-ai/dsh-atomic-write@0.2.0-rc.2 yaml@2.9.1
+          node scripts/test-profile-migration.mjs output/host-fixture
+      - run: node scripts/package-companions.mjs
+      - name: Publish verified archive to next and verify official npm
         env:
-          TAG: ${{ steps.release.outputs.tag }}
-        run: |
-          set -eu
-          notes="docs/release-notes/$TAG.md"
-          if [ ! -f "$notes" ]; then
-            echo "missing $notes" >&2
-            exit 1
-          fi
-          cp "$notes" "$RUNNER_TEMP/release-notes.md"
-
-      # Idempotent on purpose: a dispatched run for a tag that already
-      # published must not die here, because npm rejects a version that
-      # already exists.
-      - name: Publish to npm
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          VERSION: ${{ steps.release.outputs.version }}
-        run: |
-          set -eu
-          name=$(node -p "require('./package.json').name")
-          if npm view "$name@$VERSION" version >/dev/null 2>&1; then
-            echo "$name@$VERSION is already on the registry; skipping the publish step"
-            exit 0
-          fi
-          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-          npm publish --access public --tag latest --registry=https://registry.npmjs.org/
-
-      # A publish success line is not a trust boundary. npm accepts the upload
-      # and then serves it only once its own processing finishes; that lag was
-      # measured in minutes here (pet 0.3.25 took about eight), so the budget
-      # is deliberately longer than any observed delay before the Release is
-      # cut. A tag that fails only this step is completable from the dispatch
-      # lane without re-publishing.
-      - name: Verify the published version resolves
-        env:
-          VERSION: ${{ steps.release.outputs.version }}
-        run: |
-          set -eu
-          name=$(node -p "require('./package.json').name")
-          for i in $(seq 1 40); do
-            if [ "$(npm view "$name@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
-              echo "$name@$VERSION resolves from the registry"
-              exit 0
-            fi
-            echo "waiting for registry propagation ($i/40)"
-            sleep 15
-          done
-          echo "$name@$VERSION did not appear on the registry" >&2
-          exit 1
-
-      - name: Create or update the GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.release.outputs.tag }}
-        run: |
-          set -eu
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
-            echo "updated the existing Release $TAG"
-          else
-            gh release create "$TAG" \
-              --title "$TAG" \
-              --notes-file "$RUNNER_TEMP/release-notes.md"
-            echo "created Release $TAG"
-          fi
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node scripts/stage-release.mjs "output/dsh-pet-copilot-$(node -p 'require("./package.json").version').tgz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-publication-receipt
+          path: output/npm-publication.json

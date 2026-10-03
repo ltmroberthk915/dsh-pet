@@ -1,35 +1,50 @@
-# DSH Session Pet
+# DSH Session Pet · dsh-pet-copilot
 
-An independently maintained fork published as `dsh-pet-copilot`. [中文说明](README.zh.md).
+**The npm package is `dsh-pet-copilot`; the repository is `ltmroberthk915/dsh-pet`.** Get the matching precompiled archive from [Releases](https://github.com/ltmroberthk915/dsh-pet/releases). `dsh-session-pet.tgz` remains an identical compatibility filename.
 
-v1.3.2 adds quiet hover panels, 75% business-whale sizing, uncapped running FPS with an optional user limit, and a separate FPS setting for other actions. The same timing rules apply to every character. See [installation and package-name migration](docs/fresh-install-v1.3.2.md).
-
-Based on [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet), licensed under Apache-2.0 with upstream attribution preserved in LICENSE and NOTICE.
+This independent fork of [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet) is maintained by ltmroberthk915 under Apache-2.0, with artwork attribution preserved. [中文说明](README.zh.md)
 
 ![Model palettes](docs/palettes.png)
 
-Choose a refined whale-girl, upstream v0.4.4 MIKU with additional session animations, or an original modern business blue whale in Settings → Pet. All three support one companion per active top-level conversation, a full-size main companion and 52.7% background companions, model-based palettes, per-session footer tok/s playback with editable slope and intercept, shared affinity and feeding, and finished companions that wait until their results are viewed. Selecting a conversation promotes its pet without requiring a message. A viewed, completed companion retires when the user leaves that conversation. See the [new companions guide](docs/miku-business-pets.md).
+Choose the whale-girl, MIKU or business blue whale. Each active top-level conversation has a companion, with 52.7% background companions. The business whale's artwork, base and hit area receive an additional 0.75 scale. Palettes remain stable within a session. Completed companions wait until viewed. Feeding, affinity, naming, dragging and size controls are shared.
 
-Install the downloaded precompiled package using the official Desktop installation's dsh command (replace the local path):
+Left/right running uses fixed FPS, original timings, or `FPS = max(1, k × footer tok/s + b)`, without an automatic upper cap. Users may enable a running cap and separately set other-action FPS. Disabling that second control retains original action timings. Hover expansion is off by default; a settings switch and manual right-click panel are available.
+
+## Installation
+
+Enter `dsh-pet-copilot` in DSH's plugin manager when npm has a resolvable version accepted by the local policy. A tag, Release or archive does not prove npm publication. Market discovery also depends on catalog review and synchronization.
+
+Use the Desktop installation's exact CLI, rather than an older global dsh:
 
 ```powershell
-dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.2.tgz'
+$dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd"
+& $dsh plugin --profile desktop why dsh-pet-copilot
 ```
 
-**Save your work, fully quit DSH and reopen it after installation or upgrade.** DSH 0.2.0-rc.2 attempts to hot-load first-time installs; replacing an installed version requires a restart. The pet's independent windows start automatically once its host loads. No Agent, host patch or additional runtime download is required. The private runtime lives under $DSH_HOME/cache/pet-desktop; the host archive and care data are preserved.
+For a custom installation, point $dsh to its resources/runtime/cli/bin/dsh.cmd. Do not add resources/runtime/bin to the global PATH. Download `dsh-pet-copilot-1.3.3.tgz`, verify SHA256SUMS.txt, then install a named local target, replacing the example path:
 
-The market distribution identity is dsh-pet-copilot. Use add dsh-pet-copilot@1.3.2 only after that version resolves from npm. Preparing a tarball does not publish it. The market's official desktop bridge cannot update floating Git dependencies. Named registry and local-file targets let DSH recognize repeated installations. All JavaScript chunks are precompiled and included, without consumer build hooks or a packageManager field. Preserve the user's release-age and build policies. See the [fresh-install notes](docs/fresh-install-v1.3.2.md).
+```powershell
+& $dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.3.tgz'
+```
 
-Use the web profile for a web host. Back up DSH and disable the upstream @linxin666/dsh-pet loading declaration before enabling this fork; both own the same pet service. Existing settings, names and shared care data remain compatible. Settings includes automatic connection recovery, a native-window Retry button and Reset Position. See the [Windows guide](docs/install-desktop-windows.md).
+Users need not pack the repository or install pnpm. Use web for a web host. First-time bundle additions can hot-load. Fully quit and reopen DSH for a loaded-version replacement, restart-required receipt or stale client UI; successful hot-loading does not itself need a restart. Native companions use the existing Desktop runtime without patching app.asar or installing another Node/Electron/PowerShell runtime.
 
-Build with pnpm install --frozen-lockfile --ignore-scripts, pnpm typecheck and pnpm build:local. Integration checks use an isolated DSH home and the real desktop market bridge; they do not replace verification on the user's separate new computer or the public npm registry.
+## Rename migration
 
-Version 1.1.1 fixes `job_output` waiting so reading command output uses the review pose. The five whale palettes share planted legs and registered upright height; bows, hops and running retain their intentional movement. Historical validation: 155 relevant regression tests, TypeScript checks and 120 isolated Electron checks. Version 1.2.0 removes the need to update a separate host renderer.
+Back up DSH, remove the old `@ltmroberthk915/dsh-pet` or `@linxin666/dsh-pet` bundle from the selected profile, and install the new name. Run the launcher from the Release's `dsh-pet-profile-migration-1.3.3.zip` or the installed scripts directory. DSH matches overrides by both row ID and package name.
 
-Version 1.1.0 retains MIKU's original gameplay and adds nine session animation states, swinging arms, consistent run registration and clean sprite boundaries. The original business blue whale uses restrained ceramic-blue and silver artwork, concise status text and no random chatter. Both use the existing conversation, palette, FPS and shared-care policies.
+The tool validates real Host composition, backs up the patch, and changes only matching name scalars in one profile. Config, disabled state, comments and other plugins survive. The shared home patch is never rewritten. Conflicts with newer settings, aliases or concurrent edits stop the operation. Care data remains in the original pet.json. See the [migration guide](docs/fresh-install-v1.3.3.md).
 
-Version 1.0.5 repairs all seven non-running action sets: duplicate arms/cuffs, disconnected shoulders and missing long sleeves. Uniform head-size calibration and fixed foot anchors replace bounding-box height matching; shortened-body and extra closed-eye frames are excluded. All 110 animation slots (550 across five palettes) pass geometry checks, with measurement reports included. The per-session footer tok/s policy, half-frequency blinks and sleeping frame scheduler are preserved; all run pixels remain unchanged.
+## Release age and registry source
 
-Version 1.0.3 keeps pets above the Windows taskbar and restores their topmost state after external activation, including repeated attention requests on an already-topmost DSH main window. It does not steal keyboard focus or continuously raise idle windows. Native tool-window identity prevents computer-use helpers from confusing pets with the DSH main window. Pointer hit regions survive synthetic leave/blur events, and interrupted drags release cleanly.
+Default non-strict pnpm 11.7.0 can install a fresh release and automatically add a version-specific exclusion. Explicit minimumReleaseAge: 1440 without disabling strict behavior rejects immature releases. With minimumReleaseAgeStrict: true, exact pins and npm tarball URLs cannot bypass the threshold. Longer custom waiting periods remain effective. Default-policy success does not prove strict-policy success; not every user must wait 24 hours.
 
-Version 1.0.1 distinguishes model generation from tool execution: reasoning, answers and other tool arguments run right; file writing/editing/patch arguments run left. Version 1.0.4 extends the shared editable k and b to every left/right run. The whale voice pack keeps every upstream scene with three concise lines per category.
+Publisher policy is stricter: publish to next, verify the previous latest is unchanged, wait at least 24 hours, then require a strict registry-install receipt without exclusions before promoting latest. A first release under a new name may have no latest yet. Consumer global policies are never modified.
+
+Maintainers run `node scripts/release-channel.mjs check 1.3.3`. Checks accept DSH_PET_REGISTRY, such as https://registry.npmmirror.com, and report registry and authoritative. Network errors identify the queried source instead of claiming the package is unpublished. Promotion ignores mirrors and rechecks identity, time and tags against official npm.
+
+## Development
+
+Use pnpm 11.7.0: `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm typecheck`, `pnpm test`, `pnpm build`, then `node scripts/build-desktop-manifest.mjs` and `node scripts/package-companions.mjs`.
+
+Archives omit development source, tests and consumer lifecycle scripts, exclude retired MIKU interpolation frames, and are reopened to validate all served assets and JavaScript entries. Migration tests use actual loadProfileDirectory and composeEntries; release-age tests isolate profiles, caches and stores and use the official manager and market bridge. Fixture-registry, public-registry and catalog results are distinct. See the [Windows guide](docs/install-desktop-windows.md).

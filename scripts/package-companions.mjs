@@ -23,8 +23,12 @@ let omittedInactiveFrames = 0
 delete manifest.scripts
 delete manifest.devDependencies
 delete manifest.packageManager
-const includes = ['src','desktop','assets/whale-refined','assets/miku','assets/blue-whale-business','assets/decorations',
-  'contracts','docs','icon.svg','cordis.patch.yml','LICENSE','NOTICE','THIRD_PARTY_NOTICES.md','README.md','README.zh.md']
+delete manifest.exports['./src/*']
+const includes = ['desktop','assets/whale-refined','assets/miku','assets/blue-whale-business','assets/decorations',
+  'contracts','docs/install-desktop-windows.md','docs/fresh-install-v1.3.3.md','docs/miku-business-pets.md','docs/palettes.png',
+  'docs/release-notes/v' + manifest.version + '.md',
+  'scripts/migrate-profile.mjs','scripts/migrate-profile.ps1','scripts/migrate-profile.cmd',
+  'icon.svg','cordis.patch.yml','LICENSE','NOTICE','THIRD_PARTY_NOTICES.md','README.md','README.zh.md']
 manifest.files = ['lib',...includes]
 const copy = (relative,filter) => {
   const source = join(root,relative)
@@ -80,6 +84,7 @@ try {
   const result = {status:'passed',name:manifest.name,version:manifest.version,archive:basename(archive),
     bytes:statSync(archive).size,sha256,packageFiles:metadata.files.length,petIds:ids,defaultPet:registry.defaultEntry().id,
     servedFiles,omittedInactiveFrames,installScripts:false,files:metadata.files.map(file=>file.path)}
+  mkdirSync(join(output, 'companion-verification'), { recursive: true })
   writeFileSync(join(output,'companion-verification/package-results.json'),JSON.stringify(result,null,2)+'\n')
   writeFileSync(archive+'.sha256',sha256+'  '+basename(archive)+'\n')
   console.log(JSON.stringify({...result,files:undefined},null,2))

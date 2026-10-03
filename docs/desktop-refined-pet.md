@@ -118,25 +118,18 @@ v1.0.2 使用明确的 `screen-saver` 窗口层级。Electron 44 在 Windows 上
 
 ## 构建与宿主接入
 
-Windows 用户安装主插件即可使用自动独立窗口，详见 [Windows 安装说明](install-desktop-windows.md)。`desktop/Install-Desktop.ps1` 仅保留为历史宿主补丁维护工具，下方归档补丁命令不属于正常安装流程。
+Windows 用户安装主插件即可使用自动独立窗口，详见 [Windows 安装说明](install-desktop-windows.md)。`desktop/Install-Desktop.ps1` 及 ASAR 补丁器仅保留为历史维护工具，不属于正常安装流程。
 
 ```sh
 pnpm install --frozen-lockfile --ignore-scripts
 pnpm typecheck
 pnpm test
 pnpm build
-pnpm build:local
+node scripts/build-desktop-manifest.mjs
+node scripts/package-companions.mjs
 ```
 
-`build:local` 生成宿主插件、DSH 模块加载器客户端及独立窗口 bundle。自动窗口使用 `companion-host.cjs`、`companion-runtime.cjs` 和 `companion-main.cjs`。若维护旧版宿主内集成，可使用：
-
-```sh
-node desktop/patch-desktop.cjs path/to/original/app.asar path/to/new/app-patched.asar
-```
-
-补丁器只接受已审查的 DSH Desktop 0.2.0-rc.2 归档哈希及本分支前序本地补丁哈希，始终输出新归档。它同时修复该宿主在设置模块重复加载时找不到根 Include 的问题。其他 DSH 版本会拒绝应用，需要重新审查入口。官方自动更新可能覆盖本地集成。
-
-安装前应完全退出 DSH，备份完整 DSH 数据目录及原 `app.asar`，构建并检查补丁，再替换插件与宿主归档。恢复时只恢复程序和插件文件，避免用旧数据备份覆盖后续会话。仓库不包含个人备份、安装收据、应用二进制或聊天数据。
+`build` 生成宿主插件、DSH 模块加载器客户端及独立窗口 bundle。自动窗口使用 `companion-host.cjs`、`companion-runtime.cjs` 和 `companion-main.cjs`。正常构建和安装都不需要修改 `app.asar`。仓库不包含个人备份、安装收据、应用二进制或聊天数据。
 
 ## 验证
 

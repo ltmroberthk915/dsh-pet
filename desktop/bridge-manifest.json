@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "packageName": "dsh-pet-copilot",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "hostVersion": "0.2.0-rc.2",
   "files": {
     "pet-main.js": "f8f8c01004beb66e53519ee2da9f3bc22151152ee676381f31c08a20fd10a391",
@@ -11,14 +11,12 @@
     "overlay.js": "ce8e752d3fe1c1269ab0f92efb3638e85fc9750e6e08582f3c90a50d24a5d2f9",
     "overlay.css": "f3f8c3133a015042842a94a9f38af0caa1b49453153736ea86c1eb22290d582d",
     "patch-desktop.cjs": "740a5225bdb9ae95946988a34d62f02e9418cfb4fdbd24721311d84c666d29da",
-    "archive-support.cjs": "6392817817f295778e640f8cd35e51747c5bb5a47da30084359e741b4efedc9e",
-    "install-desktop.cjs": "dfd4362a7614a22285de6ad5c69191bfa86b8ab49b3314b4deb98f3d3b693f4e",
-    "Install-Desktop.ps1": "ec422b453ce2f9b69469c0bf9e6315a7cd5d5bf53fa2a886ef58a6a025bd4cc8",
+    "archive-support.cjs": "4b28b4311f9de69a99baa2326c133413a46b6c76e6ec55046c47df09ee9129b6",
+    "install-desktop.cjs": "a6c7582894fc1fe3983b6864e89503dca5858de9217aaecdd2e6d6f674b1022f",
+    "Install-Desktop.ps1": "c76a1cf74b1c65059d47f6f53dbd459c035fda5846932b24fcbe3c46b9cfbf8c",
     "companion-runtime.cjs": "617d756d9c2704779ca5b9e8faa67bdd68de6c2445a425ea9ba894f61498c1e4",
     "companion-host.cjs": "a63c745bb476f2d53a0c4a727eed2d04d1b58f21fa7235478ecda699553358bd",
     "companion-main.cjs": "099ec8ba9e26e7d3c9207f5c4b3155ad656ed593f3ec03427bedb8ea78bf46a8"
   },
-  "currentArchives": [
-    "2462590f65b86f79a47134c1eedc82bed56a59ea8ff609265f22d8e30868ce2e"
-  ]
+  "currentArchives": []
 }

@@ -9,7 +9,8 @@ const pkg=JSON.parse(readFileSync(join(root,'package.json')))
 const files=[...runtimeFiles,'patch-desktop.cjs','archive-support.cjs','install-desktop.cjs','Install-Desktop.ps1','companion-runtime.cjs','companion-host.cjs','companion-main.cjs']
 const manifest={schemaVersion:1,packageName:pkg.name,version:pkg.version,hostVersion:'0.2.0-rc.2',files:Object.fromEntries(files.map(name=>[name,sha256(readFileSync(join(dir,name)))])),currentArchives:[]}
 const inputs=process.argv.slice(2)
-if(!inputs.length) throw Error('Supply reviewed original/previous ASAR files to seal the desktop manifest.')
+// Normal releases only seal the plugin payload. Optional archive inputs are
+// exclusively for maintaining the legacy, pre-1.2 host-patching tools.
 for(const file of inputs) {
   const original=readFileSync(file)
   if(!sourceArchives.includes(sha256(original))) throw Error('Unreviewed manifest input: '+file)
