@@ -1,0 +1,48 @@
+name: Stage verified release assets
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Successful CI run for the current commit'
+        required: true
+        type: string
+permissions:
+  contents: write
+  actions: read
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the CI receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ inputs.run_id }}
+        run: |
+          [[ "$CI_RUN_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$CI_RUN_ID" > "$RUNNER_TEMP/ci-run.json"
+          node -e 'const r=require(process.env.RUNNER_TEMP+"/ci-run.json"); if(r.name!=="CI" || r.conclusion!=="success" || r.head_sha!==process.env.GITHUB_SHA) throw Error("A successful CI run of this exact commit is required")'
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-release
+          path: verified
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Check archives and stage in the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          version=$(node -p 'require("./package.json").version')
+          tag="v$version"
+          canonical="dsh-pet-copilot-$version.tgz"
+          archive=$(find verified -name "$canonical" -type f)
+          test -f "$archive"
+          cd "$(dirname "$archive")"
+          sha256sum -c SHA256SUMS.txt
+          cmp "$canonical" dsh-session-pet.tgz
+          tar -xOf "$canonical" package/package.json > "$RUNNER_TEMP/packed-package.json"
+          VERSION="$version" node -e 'const p=require(process.env.RUNNER_TEMP+"/packed-package.json"); if(p.name!=="dsh-pet-copilot" || p.version!==process.env.VERSION || p.scripts || p.devDependencies) throw Error("Wrong consumer archive")'
+          test "$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" = true
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --notes-file release-notes.md
+          gh release upload "$tag" --repo "$GITHUB_REPOSITORY" "$canonical" dsh-session-pet.tgz "dsh-pet-profile-migration-$version.zip" SHA256SUMS.txt --clobber

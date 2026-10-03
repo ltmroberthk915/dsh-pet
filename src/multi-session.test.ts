@@ -6,6 +6,7 @@ import { Context } from '@deepseek-ai/cordis'
 import { PetService } from './service.ts'
 import { loadPetRegistry, petPackageRoot } from './registry.ts'
 import { chooseSessionColor, loadSessionColors, modelPalette, type SessionColor } from './session-colors.ts'
+import { effectiveFps } from './animation.ts'
 
 afterEach(() => vi.useRealTimers())
 function setup() {
@@ -18,6 +19,26 @@ function setup() {
   return { ctx, dir, registry, service, session, phase }
 }
 describe('per-conversation desktop pets', () => {
+  it('carries the selected subagent own generation and footer speed through the primary companion', async () => {
+    const f = setup(), parent = f.session('parent', 'gpt-6', 30)
+    const child = { ...f.session('child', 'claude', 279), header: { origin: 'subagent' } }
+    const sibling = { ...f.session('sibling', 'gpt-6', 80), header: { origin: 'subagent' } }
+    await f.service.setConfig({ multiPetEnabled: true, animationMode: 'tick', animationTickSlope: 1, animationTickIntercept: 1 })
+    for (const session of [parent, child, sibling]) f.ctx.emit('agent/assistant-stream', { agent: { session }, frame: {
+      type: 'chunk', attemptId: session.id, revision: 1, chunk: { type: 'reasoning-delta', index: 0, text: 'working' },
+    } } as any)
+    let state = await f.service.state(child.id)
+    const selected = state.companions!.find(c => c.primary)!
+    expect(selected).toMatchObject({ sessionId: 'child', generation: 'reasoning', animation: 'running-right', performance: { tokensPerSecond: 279, sessionId: 'child' } })
+    expect(effectiveFps(state.display, selected.performance?.tokensPerSecond)).toBe(280)
+    expect(state.companions!.find(c => c.sessionId === 'parent')?.performance?.tokensPerSecond).toBe(30)
+    expect(state.companions!.some(c => c.sessionId === 'sibling')).toBe(false)
+    child.rate = 160
+    state = await f.service.state(child.id)
+    expect(effectiveFps(state.display, state.companions!.find(c => c.primary)?.performance?.tokensPerSecond)).toBe(161)
+    expect((await f.service.state(parent.id)).companions!.map(c => c.sessionId)).toEqual(['parent'])
+  })
+
   it('keeps left/right generation and critical bubbles isolated to their own session', async () => {
     const f = setup(), a = f.session('motion-a', 'gpt-6', 264), b = f.session('motion-b', 'claude', 80)
     await f.service.setConfig({ multiPetEnabled: true, animationMode: 'tick', animationTickSlope: .18, animationTickIntercept: 5 })

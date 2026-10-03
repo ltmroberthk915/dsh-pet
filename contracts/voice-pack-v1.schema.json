@@ -94,6 +94,9 @@
         "subagent": {
           "$ref": "#/definitions/pool"
         },
+          "wait": {
+            "$ref": "#/definitions/pool"
+          },
         "todo": {
           "$ref": "#/definitions/pool"
         },

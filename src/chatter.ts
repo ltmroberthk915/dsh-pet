@@ -194,6 +194,7 @@ export type ToolCategory =
   | 'mcp'
   | 'memory'
   | 'subagent'
+  | 'wait'
   | 'todo'
   | 'browser'
   | 'git'
@@ -209,12 +210,16 @@ export const STATUS_SCENES: readonly StatusScene[] = [
 /** Every tool-family key, in declaration order (voice-pack key allow-list). */
 export const TOOL_CATEGORIES: readonly ToolCategory[] = [
   'read', 'write', 'edit', 'shell', 'grep', 'find', 'ls', 'webSearch',
-  'webFetch', 'mcp', 'memory', 'subagent', 'todo', 'browser', 'git', 'ask', 'generic',
+  'webFetch', 'mcp', 'memory', 'subagent', 'wait', 'todo', 'browser', 'git', 'ask', 'generic',
 ]
 
 /** Map a raw tool name onto its copy family (working-activity style regexes). */
 export function toolCategory(toolName: string): ToolCategory {
   const name = toolName.toLowerCase()
+  // Passive waits must precede the broad agent/task family. Namespaces are
+  // accepted, but incidental words in arguments or tool descriptions are not.
+  if (/(?:^|[.:/]|__)(?:wait(?:_(?:agents?|subagents?|threads))?|wait_for_(?:agents?|subagents?)|sleep)$/.test(name)) return 'wait'
+  if (/(?:^|[.:/]|__)(?:list_agents|team_task_get|team_task_list)$/.test(name)) return 'read'
   // DSH labels job_output as “读取任务输出”. Its job id (e.g. pwsh-8)
   // identifies existing work; waiting for logs is not new model generation.
   // Match before the broad task/subagent family, including namespaced calls.
@@ -245,6 +250,7 @@ export function toolCategory(toolName: string): ToolCategory {
  * entry of every pool is the legacy '正在使用 {tool}' wording.
  */
 export const TOOL_POOLS: Readonly<Record<ToolCategory, readonly string[]>> = {
+  wait: ['等待智能体更新', '等待任务返回', '等待中'],
   read: [
     '正在使用 {tool}',
     '翻翻 {hint}',
@@ -581,6 +587,7 @@ export function whisperCategoryOf(tool: ToolCategory): WhisperCategory {
     case 'browser':
       return 'browsing'
     case 'ask':
+    case 'wait':
     case 'generic':
       return 'generic'
   }

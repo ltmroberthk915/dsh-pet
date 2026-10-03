@@ -27,6 +27,19 @@ function fixture() {
 }
 
 describe('model generation motion and stream boundaries', () => {
+  it.each(['wait_agent', 'collaboration.wait_agent', 'mcp__team__wait_agent', 'wait_subagents', 'functions.wait'])('stays waiting while %s is suspended, including after another tool completes', name => {
+    const f = fixture()
+    f.event('tool/call', { callId: 'write', name: 'write_file', arguments: '{}' })
+    const waiting = f.event('tool/call', { callId: 'wait', name, arguments: '{"timeout_ms":180000}' })
+    expect(waiting).toMatchObject({ phase: 'waiting', animation: 'waiting', generation: undefined, waveKey: undefined })
+    for (const pet of ['miku', 'blue-whale-business', 'custom-cat']) expect(boundAnimation(pet, waiting)).toBe('waiting')
+    expect(f.event('tool/result', { message: { toolCallId: 'write' } })).toMatchObject({ phase: 'waiting', animation: 'waiting' })
+    expect(f.start('live')).toMatchObject({ animation: 'waiting' })
+    expect(f.chunk({ type: 'reasoning-delta', index: 0, text: 'new model output' }, 'live')).toMatchObject({ animation: 'running-right' })
+    expect(f.end('live')).toMatchObject({ animation: 'waiting' })
+    expect(f.event('tool/result', { message: { toolCallId: 'wait' } })).toMatchObject({ animation: 'review' })
+  })
+
   it('runs right for both reasoning and answer text, including code in an answer', () => {
     const f = fixture()
     expect(f.start()).toMatchObject({ animation: 'waiting', generation: undefined })

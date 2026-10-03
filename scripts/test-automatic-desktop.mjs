@@ -35,7 +35,7 @@ exports.start=async(config)=>{
  await require(${JSON.stringify(path.join(root, 'desktop/companion-main.cjs'))}).start(config);
  let running=false;const timer=setInterval(async()=>{if(running)return;running=true;try{
  const windows=await Promise.all(BrowserWindow.getAllWindows().map(async w=>({preferences:w.webContents.getLastWebPreferences(),bounds:w.getBounds(),alwaysOnTop:w.isAlwaysOnTop(),...await w.webContents.executeJavaScript(\
- "(()=>{const sprite=document.querySelector('[data-dsh-pet-animation]');const frame=document.querySelector('[data-dsh-pet-registered-frame]');const canvas=document.querySelector('canvas[data-dsh-pet-frames2d]');return{atlas:frame?.style.backgroundImage||sprite?.style.backgroundImage,canvasPixels:canvas?.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0),canvasTrack:canvas?.dataset.dshPetTrack,connected:document.body.dataset.connected,bridge:!!window.dshPetOverlay}})()") })));
+ "(async()=>{const state=await window.dshPetOverlay.call('state');const sprite=document.querySelector('[data-dsh-pet-animation]');const frame=document.querySelector('[data-dsh-pet-registered-frame]');const canvas=document.querySelector('canvas[data-dsh-pet-frames2d]');return{petSession:state.sessionId,rate:state.performance?.tokensPerSecond,generation:state.generation,visualMotion:sprite?.dataset.dshPetAnimation,atlas:frame?.style.backgroundImage||sprite?.style.backgroundImage,canvasPixels:canvas?.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0),canvasTrack:canvas?.dataset.dshPetTrack,connected:document.body.dataset.connected,bridge:!!window.dshPetOverlay}})()") })));
  fs.writeFileSync(${JSON.stringify(observed)},JSON.stringify({pid:process.pid,checks,windows}));
  }catch{}finally{running=false}},200);app.on('before-quit',()=>clearInterval(timer));
 };`)
@@ -82,6 +82,25 @@ try {
   await service.setPetId('blue-whale-business')
   await wait(() => readObserved().windows?.[0]?.atlas?.includes('blue-whale-business'))
   check('business whale switches without replacing the host archive', true)
+  ctx.provide('sessionProjections', { stateOf: session => ({ decodeTokens: session.rate * 10, decodeMs: 10000 }) })
+  const parent = { id: 'parent', header: {}, rate: 30 }
+  const child = { id: 'child', header: { origin: 'subagent' }, rate: 279 }
+  ctx.emit('session/event', parent, { type: 'tool/call', data: { callId: 'wait', name: 'wait_agent', arguments: '{"timeout_ms":180000}' } })
+  ctx.emit('agent/assistant-stream', { agent: { session: child }, frame: { type: 'chunk', attemptId: 'child-1', revision: 1, chunk: { type: 'reasoning-delta', index: 0, text: 'working' } } })
+  await service.setConfig({ multiPetEnabled: true, animationMode: 'tick', animationTickSlope: 1, animationTickIntercept: 1 })
+  companion.configure({ enabled: true, currentSessionId: child.id })
+  const childWindow = () => readObserved().windows?.find(window => window.petSession === 'child')
+  const parentWindow = () => readObserved().windows?.find(window => window.petSession === 'parent')
+  await wait(() => childWindow()?.rate === 279 && childWindow()?.visualMotion === 'running-right' && parentWindow()?.visualMotion === 'waiting')
+  check('opened subagent native renderer receives its own rate and running animation', childWindow().generation === 'reasoning')
+  check('waiting parent stays still with its own rate while the child generates', parentWindow().rate === 30)
+  child.rate = 160
+  await wait(() => childWindow()?.rate === 160)
+  check('subagent rate updates do not alter the parent rate', parentWindow().rate === 30)
+  companion.configure({ enabled: true, currentSessionId: parent.id })
+  await wait(() => readObserved().windows?.length === 1 && parentWindow()?.visualMotion === 'waiting')
+  check('leaving the subagent restores the parent and removes the extra child window', true)
+  await service.setConfig({ multiPetEnabled: false })
   companion.configure({ enabled: false })
   await wait(() => readObserved().windows?.length === 0)
   check('disabling desktop mode removes all native windows', !companion.status().active)

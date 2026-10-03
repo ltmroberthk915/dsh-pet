@@ -85,9 +85,8 @@ export declare const PET_SETTINGS_NAMESPACE = "pet";
  * One active TOP-LEVEL session as the pet displays it. Sessions run in
  * parallel, so each gets its own bubble while the sprite itself follows the
  * most recent meaningful event (the display session). Subagent children
- * report no bubble of their own: their work is already reflected by the
- * bubble of the conversation that spawned them, and the bubble buttons
- * navigate to GUI sessions, which subagents are not.
+ * get their own main pet and bubble when explicitly opened in the main view;
+ * background children do not add another desktop pet.
  */
 export interface PetSessionView {
     /** Session identity (stringified for the wire; never exposed as a key). */

@@ -146,9 +146,8 @@ export const PET_SETTINGS_NAMESPACE = 'pet'
  * One active TOP-LEVEL session as the pet displays it. Sessions run in
  * parallel, so each gets its own bubble while the sprite itself follows the
  * most recent meaningful event (the display session). Subagent children
- * report no bubble of their own: their work is already reflected by the
- * bubble of the conversation that spawned them, and the bubble buttons
- * navigate to GUI sessions, which subagents are not.
+ * get their own main pet and bubble when explicitly opened in the main view;
+ * background children do not add another desktop pet.
  */
 export interface PetSessionView {
   /** Session identity (stringified for the wire; never exposed as a key). */
@@ -984,10 +983,10 @@ export class PetService extends Service {
     const companions: PetCompanionView[] = []
     if (this.ledger.snapshot.display.multiPetEnabled) {
       for (const [session, activity] of this.sessionActivity) {
-        if (session.header?.origin === 'subagent') continue
+        const id = String(session.id)
+        if (session.header?.origin === 'subagent' && id !== currentSessionId) continue
         const state = activity.machine.render()
         if (state.animation === 'idle' && !activity.retainUntilViewed) continue
-        const id = String(session.id)
         const whisper = (entry.id !== 'whale-girl-refined' || (state.phase !== 'failed' && state.phase !== 'waiting' && state.toolCategory !== 'ask'))
           && activity.whisper && Date.now() - activity.whisper.at < WHISPER_TTL_MS ? activity.whisper.text : undefined
         companions.push({ sessionId: id, primary: id === currentSessionId,
@@ -1002,22 +1001,23 @@ export class PetService extends Service {
       if (!companions.some(c => c.primary)) companions.unshift({
         sessionId: currentSessionId ?? '', primary: true,
         animation: boundAnimation(entry.id, snapshot), phase: snapshot.phase,
-        sessionActive: false, color: this.sessionColor(currentSessionId ?? ''),
+        generation: snapshot.generation, waveKey: snapshot.waveKey, toolCategory: snapshot.toolCategory,
+        bubble: snapshot.bubble, performance: this.footerPerformance(currentSessionId),
+        sessionActive: snapshot.sessionActive, color: this.sessionColor(currentSessionId ?? ''),
       })
     }
     // One bubble per concurrently active TOP-LEVEL session. The GUI's current
     // session leads the stack when reported (the browser half passes its
     // session list's 'current'); everything else keeps the most recent
-    // meaningful event order. Subagent children render no bubble of their own
-    // (their activity already shows through the spawning conversation's
-    // bubble/display, and the bubble buttons navigate to GUI sessions, which
-    // subagents are not). Sessions whose own machine has settled (no bubble
+    // meaningful event order. Only an explicitly selected subagent renders
+    // its own bubble; background children stay out of the desktop list.
+    // Sessions whose own machine has settled (no bubble
     // copy) drop out, so a finished turn does not leave a stale bubble behind.
     const sessions: PetSessionView[] = []
     for (const [session, activity] of [...this.sessionActivity.entries()].reverse()) {
       if (currentSessionId !== undefined && String(session.id) !== currentSessionId) continue
       if (sessions.length >= MAX_SESSION_BUBBLES) break
-      if (session.header?.origin === 'subagent') continue
+      if (session.header?.origin === 'subagent' && String(session.id) !== currentSessionId) continue
       const perSession = activity.machine.render()
       if (perSession.bubble === undefined) continue
       // Each session's whisper rides its own bubble while fresh; an expired

@@ -33,7 +33,7 @@ export declare const STATUS_ROTATE_MS = 4000;
 /** Fixed-copy pools per status scene (first line = legacy wording). */
 export declare const STATUS_POOLS: Readonly<Record<StatusScene, readonly string[]>>;
 /** Tool families for friendlier per-tool status copy. */
-export type ToolCategory = 'read' | 'write' | 'edit' | 'shell' | 'grep' | 'find' | 'ls' | 'webSearch' | 'webFetch' | 'mcp' | 'memory' | 'subagent' | 'todo' | 'browser' | 'git' | 'ask' | 'generic';
+export type ToolCategory = 'read' | 'write' | 'edit' | 'shell' | 'grep' | 'find' | 'ls' | 'webSearch' | 'webFetch' | 'mcp' | 'memory' | 'subagent' | 'wait' | 'todo' | 'browser' | 'git' | 'ask' | 'generic';
 /** Every status scene key, in declaration order (voice-pack key allow-list). */
 export declare const STATUS_SCENES: readonly StatusScene[];
 /** Every tool-family key, in declaration order (voice-pack key allow-list). */

@@ -158,7 +158,7 @@ function projectDurableEvent(event: SessionEvent, runtime: ProjectionRuntime, no
       const category = toolCategory(event.data.name)
       const whisper = runtime.whispers.feed(whisperCategoryOf(category), nowMs)
       const input: PetStateInput = {
-        phase: 'tool', toolCategory: category,
+        phase: category === 'wait' ? 'waiting' : 'tool', toolCategory: category,
         ...(runtime.commandTools.has(callId) ? { toolKind: 'command' as const } : {}),
         ...(category === 'ask' || category === 'subagent' ? { waveKey: callId } : {}),
         line: runtime.voice.tool(event.data.name, displayToolName(event.data.name), toolArgHint(event.data.name, event.data.arguments), nowMs),
@@ -187,12 +187,11 @@ function projectDurableEvent(event: SessionEvent, runtime: ProjectionRuntime, no
           : undefined
       const whisperSpread = whisper === undefined ? {} : { whisper }
       if (runtime.activeTools.size > 0) {
+        const remaining = runtime.toolInputs.get([...runtime.activeTools].at(-1)!)
         return {
           input: {
-            ...runtime.toolInputs.get([...runtime.activeTools].at(-1)!),
-            phase: 'tool',
-            ...(runtime.commandTools.has([...runtime.activeTools].at(-1)!) ? { toolKind: 'command' as const } : {}),
-            line: runtime.voice.toolRemaining(runtime.activeTools.size, nowMs),
+            phase: 'tool', ...remaining,
+            line: remaining?.toolCategory === 'wait' ? remaining.line : runtime.voice.toolRemaining(runtime.activeTools.size, nowMs),
           },
           ...whisperSpread,
         }

@@ -16,7 +16,7 @@ export function boundAnimation(petId: string, snapshot: PetStateSnapshot): PetAn
   if (snapshot.phase === 'tool') {
     if (snapshot.toolKind === 'command' || snapshot.toolCategory === 'shell') return 'running'
     if (['read', 'grep', 'find', 'ls', 'memory'].includes(snapshot.toolCategory ?? '')) return 'review'
-    if (snapshot.toolCategory === 'ask') return 'waiting'
+    if (snapshot.toolCategory === 'ask' || snapshot.toolCategory === 'wait') return 'waiting'
     return 'running-left'
   }
   return snapshot.animation

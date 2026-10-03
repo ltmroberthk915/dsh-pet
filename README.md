@@ -12,6 +12,8 @@ Left/right running uses fixed FPS, original timings, or `FPS = max(1, k × foote
 
 ## Installation
 
+Waiting for another agent uses the waiting pose. Opening a subagent gives the main pet that session's own generation state and footer token rate; returning to the parent restores its independent state.
+
 Enter `dsh-pet-copilot` in DSH's plugin manager when npm has a resolvable version accepted by the local policy. A tag, Release or archive does not prove npm publication. Market discovery also depends on catalog review and synchronization.
 
 Use the Desktop installation's exact CLI, rather than an older global dsh:
