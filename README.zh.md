@@ -50,6 +50,8 @@ DSH 0.2.0-rc.2 / pnpm 11.7.0 的**默认非严格配置**可能安装刚发布�
 
 本项目发布者先发 npm next，确认原 latest 未变；至少满 24 小时并通过无例外的严格 registry 安装后才推广 latest。首次新包名可能暂时没有 latest。项目不会修改用户全局安装策略。
 
+重复添加同一版本另有锁文件检查：隔离实测 1.3.2 → 1.3.3 升级成功后，立即再添加 1.3.3 会报 `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`，已有单版本例外也不保证通过。已装版本和 bundle 选择保留；不要因此删除用户锁文件或关闭全局冷却。首次安装、升级、重复安装分别验收。
+
 维护者运行 `node scripts/release-channel.mjs check 1.3.3`。仅检查时可设置 `DSH_PET_REGISTRY=https://registry.npmmirror.com`，输出会标明 registry 与 authoritative。网络失败会注明查询源，不会误判成未发布。promote 始终忽略镜像设置，重新查询 npm 官方源，并要求成熟后的严格安装回执。
 
 ## 构建与验证

@@ -43,6 +43,8 @@ Default non-strict pnpm 11.7.0 can install a fresh release and automatically add
 
 Publisher policy is stricter: publish to next, verify the previous latest is unchanged, wait at least 24 hours, then require a strict registry-install receipt without exclusions before promoting latest. A first release under a new name may have no latest yet. Consumer global policies are never modified.
 
+Identical-version reinstalls have a separate lockfile check. With real pnpm 11.7.0 and an isolated registry, upgrading 1.3.2 to 1.3.3 succeeds, but immediately adding 1.3.3 again fails with `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` despite both version exclusions. The installed version and bundle selection survive. Do not delete user lockfiles or disable global policies to mask the failure; verify fresh installs, upgrades and reinstalls separately.
+
 Maintainers run `node scripts/release-channel.mjs check 1.3.3`. Checks accept DSH_PET_REGISTRY, such as https://registry.npmmirror.com, and report registry and authoritative. Network errors identify the queried source instead of claiming the package is unpublished. Promotion ignores mirrors and rechecks identity, time and tags against official npm.
 
 ## Development

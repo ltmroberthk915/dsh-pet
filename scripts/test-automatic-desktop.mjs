@@ -36,6 +36,9 @@ exports.start=async(config)=>{
  let running=false;const timer=setInterval(async()=>{if(running)return;running=true;try{
  const windows=await Promise.all(BrowserWindow.getAllWindows().map(async w=>({preferences:w.webContents.getLastWebPreferences(),bounds:w.getBounds(),alwaysOnTop:w.isAlwaysOnTop(),...await w.webContents.executeJavaScript(\
  "(async()=>{const state=await window.dshPetOverlay.call('state');const sprite=document.querySelector('[data-dsh-pet-animation]');const frame=document.querySelector('[data-dsh-pet-registered-frame]');const canvas=document.querySelector('canvas[data-dsh-pet-frames2d]');return{petSession:state.sessionId,rate:state.performance?.tokensPerSecond,generation:state.generation,visualMotion:sprite?.dataset.dshPetAnimation,atlas:frame?.style.backgroundImage||sprite?.style.backgroundImage,canvasPixels:canvas?.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0),canvasTrack:canvas?.dataset.dshPetTrack,connected:document.body.dataset.connected,bridge:!!window.dshPetOverlay}})()") })));
+ const first=BrowserWindow.getAllWindows()[0];
+ if(first&&windows[0]?.bridge&&!checks.roundTrip){checks.roundTrip=await first.webContents.executeJavaScript(
+ "(async()=>{const [state,pets]=await Promise.all([window.dshPetOverlay.call('state'),window.dshPetOverlay.call('pets')]);const result=await window.dshPetOverlay.call('rename',{name:'原生往返测试'});let renamed;const deadline=Date.now()+5000;do{renamed=await window.dshPetOverlay.call('state');if(renamed.name===result.name)break;await new Promise(resolve=>setTimeout(resolve,100))}while(Date.now()<deadline);let rejected=false;try{await window.dshPetOverlay.call('unknown-test-action')}catch{rejected=true}return{queries:!!state.pet&&Array.isArray(pets)&&pets.length===3,writeAcknowledged:result.ok===true,name:renamed.name,rejected}})()");}
  fs.writeFileSync(${JSON.stringify(observed)},JSON.stringify({pid:process.pid,checks,windows}));
  }catch{}finally{running=false}},200);app.on('before-quit',()=>clearInterval(timer));
 };`)
@@ -70,6 +73,9 @@ try {
   check('private bridge rejects missing credentials', observation.checks.unauth === 403)
   check('private bridge rejects browser origins', observation.checks.crossOrigin === 403)
   check('private bridge cannot forward arbitrary host APIs', observation.checks.unknown === 404)
+  check('native renderer completes concurrent state and catalog requests', observation.checks.roundTrip?.queries === true)
+  check('native rename write returns through the real service and read path', observation.checks.roundTrip?.writeAcknowledged === true && observation.checks.roundTrip?.name === '原生往返测试')
+  check('native renderer receives a rejected unknown action', observation.checks.roundTrip?.rejected === true)
   check('window retains sandbox, isolation and disabled Node', native.preferences.sandbox && native.preferences.contextIsolation && !native.preferences.nodeIntegration)
   check('window is independent and always on top', native.alwaysOnTop && observation.windows.length === 1)
   check('package and running window versions match', companion.status().version === JSON.parse(fs.readFileSync(path.join(root, 'package.json'))).version)
