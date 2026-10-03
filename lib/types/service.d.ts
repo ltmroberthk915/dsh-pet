@@ -63,6 +63,8 @@ export interface PetSettingsSection {
     /** Bubble typography multiplier (#1549); see PetDisplayConfig. */
     bubbleScale?: number;
     animationFps?: number;
+    animationRunFpsLimit?: number;
+    animationActionFps?: number;
     animationMode?: AnimationMode;
     animationTickSlope?: number;
     animationTickIntercept?: number;

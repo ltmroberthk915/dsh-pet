@@ -71,7 +71,7 @@ export interface Frames2dRendererHandle extends PetRendererHandle {
     /** Session motion is the base track; explicit gameplay overrides keep priority. */
     setActivityTrack(track: string | undefined): void;
     /** Retime both run directions without remounting, redecoding, or resetting the stride. */
-    setPlaybackFps(fps: number | undefined): void;
+    setPlaybackFps(fps: number | undefined, runLimit?: number, actionFps?: number): void;
     /** The track currently playing (diagnostics and tests). */
     currentTrack(): string;
 }

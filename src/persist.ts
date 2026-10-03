@@ -1,5 +1,5 @@
 import { loadSessionColors, type SessionColor } from './session-colors.ts'
-import { animationFps, animationMode, tickSlope, tickIntercept, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, type AnimationMode } from './animation.ts'
+import { animationFps, animationMode, optionalFps, tickSlope, tickIntercept, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, type AnimationMode } from './animation.ts'
 /**
  * Pet persistence — tiny JSON store for affinity + display config, written
  * under $DSH_HOME (defaults to ~/.dsh) as `pet.json`. Deliberately minimal:
@@ -35,8 +35,10 @@ export interface PetDisplayConfig {
    */
   bubbleScale: number
   animationFps?: number
+  animationRunFpsLimit?: number
+  animationActionFps?: number
   animationMode?: AnimationMode
-  /** FPS = k × footer tok/s + b, clamped to 1–60 FPS. */
+  /** Running FPS = k × footer tok/s + b; an optional user cap is applied separately. */
   animationTickSlope?: number
   animationTickIntercept?: number
   desktopEnabled?: boolean
@@ -52,6 +54,8 @@ export const defaultDisplayConfig: PetDisplayConfig = {
   bottom: 120,
   bubbleScale: 1,
   animationFps: 12,
+  animationRunFpsLimit: 0,
+  animationActionFps: 0,
   animationMode: 'fixed',
   animationTickSlope: DEFAULT_TICK_SLOPE,
   animationTickIntercept: DEFAULT_TICK_INTERCEPT,
@@ -106,7 +110,7 @@ export function bubbleScaleFor(display: Pick<PetDisplayConfig, 'size'> & { bubbl
 export interface PetPersist {
   sessionColors?: Record<string, SessionColor>
   /** Playback preferences belong to a character, not to the whole application. */
-  playback?: Record<string, Pick<PetDisplayConfig, 'animationFps' | 'animationMode' | 'animationTickSlope' | 'animationTickIntercept'>>
+  playback?: Record<string, Pick<PetDisplayConfig, 'animationFps' | 'animationRunFpsLimit' | 'animationActionFps' | 'animationMode' | 'animationTickSlope' | 'animationTickIntercept'>>
   /** Selected pet id (a registry entry; clamped at service startup). */
   petId: string
   /**
@@ -269,6 +273,8 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       bottom: Math.round(clamp(finiteNum(rawDisplay.bottom, base.display.bottom), DISPLAY_INSET_MAX)),
       // Fractional on purpose: the multiplier is a ratio, not a pixel count.
       animationFps: animationFps(rawDisplay.animationFps),
+      animationRunFpsLimit: optionalFps(rawDisplay.animationRunFpsLimit),
+      animationActionFps: optionalFps(rawDisplay.animationActionFps),
       animationMode: animationMode(rawDisplay.animationMode),
       animationTickSlope: tickSlope(rawDisplay.animationTickSlope),
       animationTickIntercept: tickIntercept(rawDisplay.animationTickIntercept),
@@ -284,6 +290,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
     if (typeof parsed.playback === 'object' && parsed.playback !== null && !Array.isArray(parsed.playback)) {
       playback = Object.fromEntries(Object.entries(parsed.playback).filter(([id, value]) => id.length > 0 && id.length <= 200
         && typeof value === 'object' && value !== null && !Array.isArray(value)).map(([id, value]) => [id, {
+        animationRunFpsLimit: optionalFps(value.animationRunFpsLimit), animationActionFps: optionalFps(value.animationActionFps),
         animationFps: animationFps(value.animationFps), animationMode: animationMode(value.animationMode),
         animationTickSlope: tickSlope(value.animationTickSlope), animationTickIntercept: tickIntercept(value.animationTickIntercept),
       }]))

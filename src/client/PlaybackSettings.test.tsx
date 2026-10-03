@@ -7,11 +7,11 @@ import { t } from './locales.ts'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers() })
 
-function mockHost(desktop?: DesktopStatus) {
+function mockHost(desktop?: DesktopStatus, tokensPerSecond = 264) {
   let snapshot = { pet: { id: 'whale-girl-refined', displayName: '鲸鱼娘' },
     desktop,
     display: { animationMode: 'tick', animationFps: 20, animationTickSlope: 0.1, animationTickIntercept: 4, desktopEnabled: true },
-    performance: { tokensPerSecond: 264 } }
+    performance: { tokensPerSecond } }
   const writes: unknown[] = []
   vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
     if (!init?.body) return { ok: true, json: async () => snapshot }
@@ -25,6 +25,31 @@ function mockHost(desktop?: DesktopStatus) {
 }
 
 describe('Tick settings', () => {
+  it('previews uncapped running and saves an independent other-action rate across remounts', async () => {
+    const host = mockHost(undefined, 293)
+    const view = render(<PlaybackSettings />)
+    await screen.findByLabelText('斜率 k')
+    fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText('截距 b'), { target: { value: '1' } })
+    expect(screen.getByText('预览：293 tok/s → 294.0 FPS')).toBeTruthy()
+    fireEvent.click(screen.getByLabelText('限制左右跑动帧率'))
+    fireEvent.change(screen.getByLabelText('左右跑动最高 FPS'), { target: { value: '30' } })
+    fireEvent.click(screen.getByLabelText('自设其他动作速率'))
+    fireEvent.change(screen.getByLabelText('其他动作 FPS'), { target: { value: '144' } })
+    expect(screen.getByText('预览：293 tok/s → 30.0 FPS')).toBeTruthy()
+    fireEvent.click(screen.getByText('保存动画设置'))
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).toMatchObject({ animationRunFpsLimit: 30, animationActionFps: 144 })
+    view.unmount()
+    render(<PlaybackSettings />)
+    expect((await screen.findByLabelText('其他动作 FPS') as HTMLInputElement).value).toBe('144')
+    expect((screen.getByLabelText('左右跑动最高 FPS') as HTMLInputElement).value).toBe('30')
+    fireEvent.click(screen.getByLabelText('限制左右跑动帧率'))
+    expect(screen.getByText('预览：293 tok/s → 294.0 FPS')).toBeTruthy()
+    fireEvent.click(screen.getByText('保存动画设置'))
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).toMatchObject({ animationRunFpsLimit: 0, animationActionFps: 144 })
+  })
   it('recovers from an installation gap, distinguishes authorization errors, and blocks stale writes', async () => {
     vi.useFakeTimers()
     let status = 404
@@ -96,13 +121,13 @@ describe('Tick settings', () => {
   it('previews and saves both parameters against the actual footer rate', async () => {
     const host = mockHost()
     render(<PlaybackSettings />)
-    expect(await screen.findByText('预览：264 tok/s → 12.0 FPS')).toBeTruthy()
+    expect(await screen.findByText('预览：264 tok/s → 30.4 FPS')).toBeTruthy()
     fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '0.2' } })
     fireEvent.change(screen.getByLabelText('截距 b'), { target: { value: '5' } })
-    expect(screen.getByText('预览：264 tok/s → 12.0 FPS')).toBeTruthy()
+    expect(screen.getByText('预览：264 tok/s → 57.8 FPS')).toBeTruthy()
     fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
-    expect(host.writes).toEqual([{ petId: 'whale-girl-refined', animationMode: 'tick', animationFps: 20,
+    expect(host.writes).toEqual([{ petId: 'whale-girl-refined', animationMode: 'tick', animationFps: 20, animationRunFpsLimit: 0, animationActionFps: 0,
       desktopEnabled: true, multiPetEnabled: false, hoverPanelEnabled: false, animationTickSlope: 0.2, animationTickIntercept: 5 }])
   })
 
@@ -116,9 +141,9 @@ describe('Tick settings', () => {
     fireEvent.click(screen.getByText('保存动画设置'))
     expect(host.writes).toEqual([])
     fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '1' } })
-    expect(screen.getByText('预览：264 tok/s → 12.0 FPS')).toBeTruthy()
-    fireEvent.change(screen.getByLabelText('动画 FPS'), { target: { value: '100' } })
-    expect(screen.getByText('帧率需为 1–60 之间的数字；当前输入尚未提交保存。')).toBeTruthy()
+    expect(screen.getByText('预览：264 tok/s → 268.0 FPS')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('动画 FPS'), { target: { value: '0' } })
+    expect(screen.getByText('帧率需为不小于 1 的有效数字；当前输入尚未提交保存。')).toBeTruthy()
     expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(true)
   })
 

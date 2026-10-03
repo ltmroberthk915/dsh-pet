@@ -159,19 +159,44 @@ describe('frames2dRenderer', () => {
     handle.dispose()
   })
 
-  it('displays the extra in-between image without slowing the run cycle', () => {
+  it('uses the requested actual FPS even for a dense frame set', () => {
     const { ctx, img } = setup()
     const run = { frames: ['/run/key1.webp','/run/mid1.webp','/run/key2.webp','/run/mid2.webp'], durations: [50,50,50,50], loop: true }
     const config = { ...CONFIG, frameDensity: 2, tracks: { ...CONFIG.tracks, 'running-right': run } }
     const handle = frames2dRenderer.mount(ctx, frames2dRenderer.validateConfig(config)) as Frames2dRendererHandle
     handle.setActivityTrack('running-right')
-    handle.setPlaybackFps(10)
+    handle.setPlaybackFps(20)
     vi.advanceTimersByTime(50)
     expect(img().getAttribute('src')).toBe('/run/mid1.webp')
     vi.advanceTimersByTime(50)
     expect(img().getAttribute('src')).toBe('/run/key2.webp')
     vi.advanceTimersByTime(100)
     expect(img().getAttribute('src')).toBe('/run/key1.webp')
+    handle.dispose()
+  })
+
+  it('plays above 60 FPS and applies independent user settings in the live renderer', () => {
+    const { ctx, img } = setup()
+    const run = { frames: ['/run/1.webp', '/run/2.webp', '/run/3.webp'], durations: [100, 100, 100], loop: true }
+    const handle = frames2dRenderer.mount(ctx, frames2dRenderer.validateConfig({ ...CONFIG, tracks: { ...CONFIG.tracks, 'running-right': run, 'running-left': run } })) as Frames2dRendererHandle
+    handle.setPlaybackFps(250, 0, 5)
+    handle.setActivityTrack('running-right')
+    vi.advanceTimersByTime(4)
+    expect(img().getAttribute('src')).toBe('/run/2.webp')
+    handle.setPlaybackFps(250, 10, 5)
+    handle.setActivityTrack('running-left')
+    vi.advanceTimersByTime(99)
+    expect(img().getAttribute('src')).toBe('/run/1.webp')
+    vi.advanceTimersByTime(1)
+    expect(img().getAttribute('src')).toBe('/run/2.webp')
+    handle.setActivityTrack('idle')
+    vi.advanceTimersByTime(199)
+    expect(img().getAttribute('src')).toBe('/pet/miku/idle/1.webp')
+    vi.advanceTimersByTime(1)
+    expect(img().getAttribute('src')).toBe('/pet/miku/idle/2.webp')
+    handle.setPlaybackFps(250, 10, 100)
+    vi.advanceTimersByTime(10)
+    expect(img().getAttribute('src')).toBe('/pet/miku/idle/1.webp')
     handle.dispose()
   })
 

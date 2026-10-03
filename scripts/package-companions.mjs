@@ -15,6 +15,11 @@ mkdirSync(output,{recursive:true})
 const stage = mkdtempSync(join(output,'companion-package-stage-'))
 const unpack = mkdtempSync(join(output,'companion-package-unpack-'))
 const manifest = JSON.parse(readFileSync(join(root,'package.json'),'utf8'))
+const { loadPetRegistry: loadSourceRegistry } = await import(pathToFileURL(join(root, 'lib/index.js')))
+const miku = loadSourceRegistry({packageRoot:root,singlePet:true,petsDir:'',dshPetsDir:''}).byId('miku')
+if (!miku) throw new Error('Missing MIKU definition')
+const activeMikuFrames = new Set(miku.servable.map(file => resolve(miku.dir, file)))
+let omittedInactiveFrames = 0
 delete manifest.scripts
 delete manifest.devDependencies
 delete manifest.packageManager
@@ -27,7 +32,16 @@ const copy = (relative,filter) => {
   cpSync(source,join(stage,relative),{recursive:true,filter})
 }
 try {
-  for (const relative of includes) copy(relative,path=>!path.endsWith('.test.ts')&&!path.endsWith('.test.tsx'))
+  for (const relative of includes) copy(relative,file=>{
+    if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) return false
+    // The calm animation tracks no longer reference these generated in-between
+    // frames. Keep them in source control, but ship only those the registry uses.
+    if (file.startsWith(resolve(miku.dir) + sep) && /^mid-\d+\.webp$/.test(basename(file)) && !activeMikuFrames.has(resolve(file))) {
+      omittedInactiveFrames++
+      return false
+    }
+    return true
+  })
   // Include every runtime chunk/vendor bundle. A fixed list of entrypoints
   // silently drops the files introduced by code splitting or a new renderer.
   copy('lib',path=>statSync(path).isDirectory()||path.endsWith('.js')||path.endsWith('.d.ts'))
@@ -65,7 +79,7 @@ try {
   const sha256 = createHash('sha256').update(readFileSync(archive)).digest('hex')
   const result = {status:'passed',name:manifest.name,version:manifest.version,archive:basename(archive),
     bytes:statSync(archive).size,sha256,packageFiles:metadata.files.length,petIds:ids,defaultPet:registry.defaultEntry().id,
-    servedFiles,installScripts:false,files:metadata.files.map(file=>file.path)}
+    servedFiles,omittedInactiveFrames,installScripts:false,files:metadata.files.map(file=>file.path)}
   writeFileSync(join(output,'companion-verification/package-results.json'),JSON.stringify(result,null,2)+'\n')
   writeFileSync(archive+'.sha256',sha256+'  '+basename(archive)+'\n')
   console.log(JSON.stringify({...result,files:undefined},null,2))

@@ -96,6 +96,14 @@ try {
     const pets = await response.json()
     check('all three characters are available after restart', pets.length === 3)
     check('upgraded users receive quiet hover by default', snapshot.display.hoverPanelEnabled === false)
+    check('running has no automatic limit after migration', snapshot.display.animationRunFpsLimit === 0)
+    for (const settings of [{ animationFps: 294, animationRunFpsLimit: 30, animationActionFps: 144 }, { animationFps: 294, animationRunFpsLimit: 0, animationActionFps: 6 }]) {
+      const response = await fetch(`http://127.0.0.1:${app.ctx.webServer.port}/api/pet/set-config`, {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(settings),
+      })
+      const saved = await response.json()
+      check('real host persists independent action FPS ' + settings.animationActionFps, response.ok && Object.entries(settings).every(([key, value]) => saved.display[key] === value))
+    }
     for (const enabled of [true, false]) {
       const response = await fetch(`http://127.0.0.1:${app.ctx.webServer.port}/api/pet/set-config`, {
         method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ hoverPanelEnabled: enabled }),

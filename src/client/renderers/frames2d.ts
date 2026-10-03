@@ -26,7 +26,7 @@
 
 import { PET_RENDERER_API_VERSION, type PetRenderer, type PetRendererContext, type PetRendererHandle } from '../../contracts/renderer.ts'
 import type { ActivityPhase } from '../../state.ts'
-import { animationFps } from '../../animation.ts'
+import { animationFps, optionalFps, playbackFrameDuration } from '../../animation.ts'
 
 /** One track as served inside the pet definition (browser URLs). */
 export interface Frames2dTrackConfig {
@@ -76,7 +76,7 @@ export interface Frames2dRendererHandle extends PetRendererHandle {
   /** Session motion is the base track; explicit gameplay overrides keep priority. */
   setActivityTrack(track: string | undefined): void
   /** Retime both run directions without remounting, redecoding, or resetting the stride. */
-  setPlaybackFps(fps: number | undefined): void
+  setPlaybackFps(fps: number | undefined, runLimit?: number, actionFps?: number): void
   /** The track currently playing (diagnostics and tests). */
   currentTrack(): string
 }
@@ -322,6 +322,8 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
     let override: string | undefined
     let activityTrack: string | undefined
     let playbackFps: number | undefined
+    let runningLimit = 0
+    let otherActionFps = 0
     // Skin base idle: every "back to idle" target resolves through this
     // (idle phase, unmapped phases and fallbacks), so a selected skin swaps
     // the pet's resting look without touching gameplay tracks.
@@ -340,8 +342,7 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       ? trackForPhase(ctx.phase.get())
       : activityTrack === config.phases.idle ? baseIdle : activityTrack
 
-    const frameDuration = (): number => playbackFps !== undefined && (track === 'running-right' || track === 'running-left')
-      ? 1000 / Math.min(60, playbackFps * (config.frameDensity ?? 1)) : config.tracks[track]?.durations[frameIndex] ?? 200
+    const frameDuration = (): number => playbackFrameDuration(track, config.tracks[track]?.durations[frameIndex] ?? 200, playbackFps, runningLimit, otherActionFps)
 
     /** Canvas path: paints the newest requested frame; stale draws drop out. */
     const paintCanvas = (url: string): void => {
@@ -385,18 +386,23 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       if (disposed) return
       const def = config.tracks[track]
       if (def === undefined || def.frames.length === 0) return
-      lastAdvance = Date.now()
-      const next = frameIndex + 1
-      if (next < def.frames.length) {
-        frameIndex = next
-        show(track, frameIndex)
-        schedule(frameDuration())
-        return
-      }
+      const now = Date.now()
+      let remaining = Math.max(0, now - lastAdvance)
       if (def.loop) {
-        frameIndex = 0
+        const cycle = def.durations.reduce((sum, ms) => sum + playbackFrameDuration(track, ms, playbackFps, runningLimit, otherActionFps), 0)
+        remaining %= cycle
+      }
+      let completed = false
+      while (remaining >= frameDuration()) {
+        remaining -= frameDuration()
+        if (frameIndex + 1 < def.frames.length) frameIndex++
+        else if (def.loop) frameIndex = 0
+        else { completed = true; break }
+      }
+      if (!completed) {
+        lastAdvance = now - remaining
         show(track, frameIndex)
-        schedule(frameDuration())
+        schedule(Math.max(1, frameDuration() - remaining))
         return
       }
       // Non-loop completion: settle into the fallback — an explicit fallback to
@@ -512,14 +518,17 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
           if (target !== track) play(target)
         }
       },
-      setPlaybackFps(next: number | undefined): void {
+      setPlaybackFps(next: number | undefined, runLimit = 0, actionFps = 0): void {
         if (disposed) return
         const value = next === undefined ? undefined : animationFps(next)
-        if (playbackFps === value) return
+        const limit = optionalFps(runLimit), actions = optionalFps(actionFps)
+        if (playbackFps === value && runningLimit === limit && otherActionFps === actions) return
         const previous = frameDuration()
         const progress = Math.min(1, Math.max(0, (Date.now() - lastAdvance) / previous))
         playbackFps = value
-        if (reducedMotion || (track !== 'running-right' && track !== 'running-left')) return
+        runningLimit = limit
+        otherActionFps = actions
+        if (reducedMotion) return
         if (timer !== undefined) clearTimeout(timer)
         const duration = frameDuration()
         lastAdvance = Date.now() - progress * duration

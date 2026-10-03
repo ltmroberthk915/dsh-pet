@@ -247,9 +247,14 @@ app.whenReady().then(async()=> {
     await pause(650)
   }
   check('whale idle whole-image pixels remain unchanged between blinks',new Set(idleHashes).size===1,idleHashes)
-  for(const id of ['whale-girl-refined','blue-whale-business']) {
-    current=makeState(id,'running-right')
-    current.companions[0].performance.tokensPerSecond=297
+  for(const id of ['whale-girl-refined','blue-whale-business']) for (const scenario of [
+    { label:'uncapped running', animation:'running-right', limit:0, actions:0, min:20, max:120 },
+    { label:'user-capped running', animation:'running-left', limit:8, actions:0, min:6, max:11 },
+    { label:'independent other-action FPS', animation:'jumping', limit:8, actions:4, min:2, max:6 },
+  ]) {
+    current=makeState(id,scenario.animation)
+    Object.assign(current.display,{animationTickSlope:1,animationTickIntercept:1,animationRunFpsLimit:scenario.limit,animationActionFps:scenario.actions})
+    current.companions[0].performance.tokensPerSecond=293
     win=await refresh()
     const timings=await win.webContents.executeJavaScript(`new Promise(resolve=>{
       const el=document.querySelector('[data-dsh-pet-registered-frame]');
@@ -259,7 +264,7 @@ app.whenReady().then(async()=> {
       observer.observe(el,{attributes:true,attributeFilter:['data-column']});
       setTimeout(()=>{observer.disconnect();resolve(changes)},1100);
     })`)
-    check(id+' stays within 12 FPS at 297 tok/s',timings.length>=6&&timings.length<=14,timings)
+    check(id+' '+scenario.label,timings.length>=scenario.min&&timings.length<=scenario.max,timings)
   }
   check('no renderer, preload or missing-asset errors',report.errors.length===0,report.errors)
   report.success=true

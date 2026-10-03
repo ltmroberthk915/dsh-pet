@@ -1,4 +1,4 @@
-import { companionFps, effectiveFps } from '../../animation.ts'
+import { effectiveFps } from '../../animation.ts'
 /**
  * Renderer switch — the client dispatch seam of the pet center (issue #623,
  * milestone M2 P5 / M3). The pet's manifest picks the renderer: sprite2d
@@ -48,7 +48,9 @@ export function PetRendererSwitch(props: {
     const visual = (
       <Frames2dVisualMount
         definition={props.definition}
-        fps={companionFps(props.definition.id, effectiveFps(props.children.props.display, props.children.props.snapshot?.performance?.tokensPerSecond))}
+        fps={effectiveFps(props.children.props.display, props.children.props.snapshot?.performance?.tokensPerSecond)}
+        runLimit={props.children.props.display.animationRunFpsLimit}
+        actionFps={props.children.props.display.animationActionFps}
         phase={props.phase}
         snapshot={props.children.props.snapshot}
         feedback={props.children.props.feedback}

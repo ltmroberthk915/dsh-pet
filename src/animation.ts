@@ -1,14 +1,9 @@
 /** Animation policy shared by the embedded pet and the desktop window. */
 export type AnimationMode = 'fixed' | 'native' | 'tick'
 export const DEFAULT_ANIMATION_FPS = 12
-export const MAX_ANIMATION_FPS = 60
-/** Hand-drawn companions need a readable gait, even with very fast models. */
-export const MAX_COMPANION_FPS = 12
-
-export function companionFps(petId: string, fps?: number): number | undefined {
-  return fps === undefined ? undefined
-    : ['whale-girl-refined', 'blue-whale-business', 'miku'].includes(petId)
-      ? Math.min(MAX_COMPANION_FPS, animationFps(fps)) : fps
+/** Zero means no running cap, or original timing for other actions. */
+export function optionalFps(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 1 ? value : 0
 }
 export const DEFAULT_TICK_SLOPE = 1 / 6
 export const DEFAULT_TICK_INTERCEPT = 6
@@ -33,13 +28,13 @@ export function animationMode(value: unknown): AnimationMode {
 
 export function animationFps(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value)
-    ? Math.min(MAX_ANIMATION_FPS, Math.max(1, value)) : DEFAULT_ANIMATION_FPS
+    ? Math.max(1, value) : DEFAULT_ANIMATION_FPS
 }
 
-/** Positive linear slope, with saturation at the renderer's 1–60 FPS limits. */
+/** Positive linear slope; no imposed upper FPS limit. */
 export function tickFps(tokensPerSecond: number, slope = DEFAULT_TICK_SLOPE, intercept = DEFAULT_TICK_INTERCEPT): number {
   const rate = Number.isFinite(tokensPerSecond) ? Math.max(0, tokensPerSecond) : 0
-  return Math.min(MAX_ANIMATION_FPS, Math.max(1, tickSlope(slope) * rate + tickIntercept(intercept)))
+  return Math.min(Number.MAX_VALUE, Math.max(1, tickSlope(slope) * rate + tickIntercept(intercept)))
 }
 
 /** Match the bottom composer StatsPills, including its display rounding. */
@@ -53,16 +48,32 @@ export function footerTokensPerSecond(stats: unknown): number | undefined {
   return rate >= 10 ? Math.round(rate) : Math.round(rate * 10) / 10
 }
 
-export function effectiveFps(display: { animationMode?: AnimationMode; animationFps?: number; animationTickSlope?: number; animationTickIntercept?: number }, rate?: number): number | undefined {
+export function effectiveFps(display: { animationMode?: AnimationMode; animationFps?: number; animationTickSlope?: number; animationTickIntercept?: number; animationRunFpsLimit?: number }, rate?: number): number | undefined {
   if (display.animationMode === 'native') return undefined
-  if (display.animationMode === 'tick' && rate !== undefined) return tickFps(rate, display.animationTickSlope, display.animationTickIntercept)
-  return animationFps(display.animationFps)
+  const fps = display.animationMode === 'tick' && rate !== undefined
+    ? tickFps(rate, display.animationTickSlope, display.animationTickIntercept) : animationFps(display.animationFps)
+  const limit = optionalFps(display.animationRunFpsLimit)
+  return limit > 0 ? Math.min(limit, fps) : fps
 }
 
-/** Both running directions share the selected FPS policy, including tool execution. */
-export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number, runningTrack: 'running-right' | 'running-left' = 'running-right', density = 1): Record<string, T> {
-  if (fps === undefined) return tracks
-  const ms = 1000 / Math.min(MAX_ANIMATION_FPS, animationFps(fps) * Math.max(1, Math.min(4, density)))
-  return Object.fromEntries(Object.entries(tracks).map(([key, track]) => [key, key === runningTrack
-    ? { ...track, durations: track.durations.map(() => ms) } : track]))
+export function playbackFrameDuration(track: string, nativeMs: number, runFps?: number, runLimit = 0, actionFps = 0): number {
+  if (track === 'running-right' || track === 'running-left') {
+    const duration = runFps === undefined ? nativeMs : 1000 / animationFps(runFps)
+    const limit = optionalFps(runLimit)
+    return limit > 0 ? Math.max(duration, 1000 / limit) : duration
+  }
+  const fps = optionalFps(actionFps)
+  return fps > 0 ? 1000 / fps : nativeMs
+}
+
+/** Running and all other actions have independent, user-controlled timing. */
+export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number, runLimit = 0, actionFps = 0): Record<string, T> {
+  let changed = false
+  const result = Object.fromEntries(Object.entries(tracks).map(([key, track]) => {
+    const durations = track.durations.map(ms => playbackFrameDuration(key, ms, fps, runLimit, actionFps))
+    if (durations.every((ms, i) => ms === track.durations[i])) return [key, track]
+    changed = true
+    return [key, { ...track, durations }]
+  }))
+  return changed ? result : tracks
 }

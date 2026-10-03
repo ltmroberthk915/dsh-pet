@@ -8,7 +8,7 @@
     "pet-layout.js": "ea1caf2dd52ac7420456fe89e4345a5a5455d751d5c7bd9b88581557a8205a64",
     "pet-preload.cjs": "770b6bd9b96555b31fe755ce0134e8856584dc2dfef83db0ac6356cfaa047a8a",
     "pet-window.html": "57789e977aa35aa603e3c2bf9158e1b004f188c41f0728d94d3f14281a2e88ec",
-    "overlay.js": "9841ab75ce0f61385a4ebb227cd135ac3f3b2707ec2a30733f604e6cc54b2f6c",
+    "overlay.js": "ce8e752d3fe1c1269ab0f92efb3638e85fc9750e6e08582f3c90a50d24a5d2f9",
     "overlay.css": "f3f8c3133a015042842a94a9f38af0caa1b49453153736ea86c1eb22290d582d",
     "patch-desktop.cjs": "740a5225bdb9ae95946988a34d62f02e9418cfb4fdbd24721311d84c666d29da",
     "archive-support.cjs": "6392817817f295778e640f8cd35e51747c5bb5a47da30084359e741b4efedc9e",
@@ -19,6 +19,6 @@
     "companion-main.cjs": "099ec8ba9e26e7d3c9207f5c4b3155ad656ed593f3ec03427bedb8ea78bf46a8"
   },
   "currentArchives": [
-    "c2f2d2e6a0b4f905f446f76c816a6a6d1895fa8cd9c0e8a37043b5c957fac529"
+    "2462590f65b86f79a47134c1eedc82bed56a59ea8ff609265f22d8e30868ce2e"
   ]
 }

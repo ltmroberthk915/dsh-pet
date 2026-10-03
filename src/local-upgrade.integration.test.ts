@@ -53,6 +53,23 @@ describe('installed desktop plugin integration', () => {
     expect(response.status).toBe(400)
     expect(service.display().hoverPanelEnabled).toBe(false)
   })
+  it('persists uncapped running, an optional cap and independent other-action FPS through the API', async () => {
+    for (const limit of [30, 0]) {
+      const patch = { animationFps: 294, animationRunFpsLimit: limit, animationActionFps: 144 }
+      const response = await fetch(base + '/api/pet/set-config', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(patch) })
+      expect(response.status).toBe(200)
+      expect((await response.json()).display).toMatchObject(patch)
+      expect(loadPetPersist(dir).display).toMatchObject(patch)
+      expect(loadPetPersist(dir).playback?.[service.selectedPetId()]).toMatchObject(patch)
+    }
+    for (const value of [-1, .5, '60', null]) {
+      for (const key of ['animationRunFpsLimit', 'animationActionFps']) {
+        const response = await fetch(base + '/api/pet/set-config', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ [key]: value }) })
+        expect(response.status).toBe(400)
+      }
+    }
+    await service.setConfig({ animationFps: 24, animationRunFpsLimit: 0, animationActionFps: 0 })
+  })
   it('rejects malformed JSON, non-JSON writes and invalid numeric settings', async () => {
     for(const [body,contentType,status] of [['{','application/json',400],['[]','application/json',400],['{}','text/plain',415],['{"animationFps":"60"}','application/json',400],['{"animationMode":"fast"}','application/json',400],['{"animationFps":1e400}','application/json',400]] as const) {
       const r=await fetch(base+'/api/pet/set-config',{method:'POST',headers:{'content-type':contentType},body})

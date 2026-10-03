@@ -21,6 +21,8 @@ import type { NS } from '../locales.ts';
 export declare function Frames2dVisualMount(props: {
     definition: PetDefinition;
     fps?: number;
+    runLimit?: number;
+    actionFps?: number;
     phase: ActivityPhase;
     snapshot?: PetStateView | null;
     feedback?: PetFeedback | null;

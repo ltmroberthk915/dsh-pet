@@ -26,7 +26,7 @@ import { RemarkPicker, type PetRemarks } from './remarks.ts'
 import type { PetDisplayConfig, PetPersist } from './persist.ts'
 import type { PetGameplayState } from './gameplay.ts'
 import type { SessionColor } from './session-colors.ts'
-import { animationFps, animationMode, tickSlope, tickIntercept } from './animation.ts'
+import { animationFps, animationMode, optionalFps, tickSlope, tickIntercept } from './animation.ts'
 
 /** Tuning overrides for the affinity economy. */
 export interface LedgerConfig {
@@ -112,6 +112,7 @@ export class PetLedger {
   /** Replace the display block (clamping stays a caller concern). */
   setDisplay(display: PetDisplayConfig): void {
     this.current = { ...this.current, display, playback: { ...this.current.playback, [this.current.petId]: {
+      animationRunFpsLimit: optionalFps(display.animationRunFpsLimit), animationActionFps: optionalFps(display.animationActionFps),
       animationFps: animationFps(display.animationFps), animationMode: animationMode(display.animationMode),
       animationTickSlope: tickSlope(display.animationTickSlope), animationTickIntercept: tickIntercept(display.animationTickIntercept),
     } } }
@@ -122,11 +123,13 @@ export class PetLedger {
   setPetId(petId: string): void {
     if (this.current.petId === petId) return
     const playback = { ...this.current.playback, [this.current.petId]: {
+      animationRunFpsLimit: optionalFps(this.current.display.animationRunFpsLimit), animationActionFps: optionalFps(this.current.display.animationActionFps),
       animationFps: animationFps(this.current.display.animationFps), animationMode: animationMode(this.current.display.animationMode),
       animationTickSlope: tickSlope(this.current.display.animationTickSlope), animationTickIntercept: tickIntercept(this.current.display.animationTickIntercept),
     } }
     const selected = Object.hasOwn(playback, petId) ? playback[petId] : undefined
     this.current = { ...this.current, petId, playback, display: { ...this.current.display,
+      animationRunFpsLimit: optionalFps(selected?.animationRunFpsLimit), animationActionFps: optionalFps(selected?.animationActionFps),
       animationFps: animationFps(selected?.animationFps), animationMode: animationMode(selected?.animationMode),
       animationTickSlope: tickSlope(selected?.animationTickSlope), animationTickIntercept: tickIntercept(selected?.animationTickIntercept),
     } }

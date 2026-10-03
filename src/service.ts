@@ -1,4 +1,4 @@
-import { animationFps, animationMode, tickSlope, tickIntercept, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, footerTokensPerSecond, type AnimationMode } from './animation.ts'
+import { animationFps, animationMode, optionalFps, tickSlope, tickIntercept, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, footerTokensPerSecond, type AnimationMode } from './animation.ts'
 import { boundAnimation } from './animation-bindings.ts'
 /**
  * Pet host service — the `pet.*` RPC domain. A composition facade: it wires
@@ -122,6 +122,8 @@ export interface PetSettingsSection {
   /** Bubble typography multiplier (#1549); see PetDisplayConfig. */
   bubbleScale?: number
   animationFps?: number
+  animationRunFpsLimit?: number
+  animationActionFps?: number
   animationMode?: AnimationMode
   animationTickSlope?: number
   animationTickIntercept?: number
@@ -859,13 +861,16 @@ export class PetService extends Service {
   async setConfig(patch: Partial<PetDisplayConfig>, expectedPetId?: unknown): Promise<{ ok: true; display: PetDisplayConfig }> {
     if (expectedPetId !== undefined && expectedPetId !== this.selectedPetId()) throw new Error('pet-changed-reopen-settings')
     for (const [key, value] of Object.entries(patch)) {
-      if (['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationTickSlope', 'animationTickIntercept'].includes(key) && (typeof value !== 'number' || !Number.isFinite(value))) throw new Error('invalid-' + key)
+      if (['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationRunFpsLimit', 'animationActionFps', 'animationTickSlope', 'animationTickIntercept'].includes(key) && (typeof value !== 'number' || !Number.isFinite(value))) throw new Error('invalid-' + key)
+      if (['animationRunFpsLimit', 'animationActionFps'].includes(key) && value !== 0 && (value as number) < 1) throw new Error('invalid-' + key)
       if (key === 'animationTickSlope' && ((value as number) < MIN_TICK_SLOPE || (value as number) > MAX_TICK_SLOPE)) throw new Error('invalid-animationTickSlope')
       if (key === 'animationTickIntercept' && ((value as number) < MIN_TICK_INTERCEPT || (value as number) > MAX_TICK_INTERCEPT)) throw new Error('invalid-animationTickIntercept')
       if (['visible', 'desktopEnabled', 'multiPetEnabled', 'hoverPanelEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
       if (key === 'animationMode' && !['fixed', 'native', 'tick'].includes(value as string)) throw new Error('invalid-animationMode')
     }
     const next = { ...this.ledger.snapshot.display, ...patch }
+    next.animationRunFpsLimit = optionalFps(next.animationRunFpsLimit)
+    next.animationActionFps = optionalFps(next.animationActionFps)
     next.animationFps = animationFps(next.animationFps)
     next.animationMode = animationMode(next.animationMode)
     next.animationTickSlope = tickSlope(next.animationTickSlope)
@@ -911,6 +916,8 @@ export class PetService extends Service {
     const next = { ...this.ledger.snapshot.display }
     // A pet picker commit still carries the previous pet's form values.
     if (!selectionChanged) {
+      next.animationRunFpsLimit = optionalFps(section.animationRunFpsLimit ?? next.animationRunFpsLimit)
+      next.animationActionFps = optionalFps(section.animationActionFps ?? next.animationActionFps)
       next.animationFps = animationFps(section.animationFps ?? next.animationFps)
       next.animationMode = animationMode(section.animationMode ?? next.animationMode)
       next.animationTickSlope = tickSlope(section.animationTickSlope ?? next.animationTickSlope)
@@ -942,6 +949,8 @@ export class PetService extends Service {
       bottom: snapshot.display.bottom,
       bubbleScale: snapshot.display.bubbleScale,
       animationFps: snapshot.display.animationFps,
+      animationRunFpsLimit: snapshot.display.animationRunFpsLimit,
+      animationActionFps: snapshot.display.animationActionFps,
       animationMode: snapshot.display.animationMode,
       animationTickSlope: snapshot.display.animationTickSlope,
       animationTickIntercept: snapshot.display.animationTickIntercept,

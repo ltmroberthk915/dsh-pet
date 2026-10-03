@@ -107,12 +107,12 @@ describe('model generation motion and stream boundaries', () => {
     const fps = effectiveFps({ animationMode: 'tick', animationTickSlope: .1, animationTickIntercept: 5 }, 150)
     expect(fps).toBe(20)
     for (const direction of ['running-right', 'running-left'] as const) {
-      const result = retimeTracks(tracks, fps, direction)
+      const result = retimeTracks(tracks, fps)
       expect(result[direction].durations).toEqual([50, 50])
       expect(result.running).toBe(tracks.running)
-      expect(result[direction === 'running-left' ? 'running-right' : 'running-left'].durations).toEqual([300, 400])
+      expect(result[direction === 'running-left' ? 'running-right' : 'running-left'].durations).toEqual([50, 50])
     }
-    expect(retimeTracks(tracks, undefined, 'running-left')).toBe(tracks)
+    expect(retimeTracks(tracks, undefined)).toBe(tracks)
   })
 
   it.each([['read_file', 'review'], ['grep', 'review'], ['memory_recall', 'review'], ['web_search', 'running-left'], ['browser_click', 'running-left'], ['git_status', 'running-left'], ['ask_user', 'waiting'], ['subagent', 'running-left']])('uses the distinct execution posture for %s', (name, animation) => {

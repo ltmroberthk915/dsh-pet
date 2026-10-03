@@ -29,6 +29,8 @@ import type { NS } from '../locales.ts'
 export function Frames2dVisualMount(props: {
   definition: PetDefinition
   fps?: number
+  runLimit?: number
+  actionFps?: number
   phase: ActivityPhase
   snapshot?: PetStateView | null
   feedback?: PetFeedback | null
@@ -73,7 +75,7 @@ export function Frames2dVisualMount(props: {
       return () => { for (const fn of cleanups.splice(0)) fn() }
     }
     handleRef.current = handle
-    handle.setPlaybackFps?.(props.fps)
+    handle.setPlaybackFps?.(props.fps, props.runLimit, props.actionFps)
     // The gameplay HUD steers one shared override slot through the bus;
     // mode rules (work blocks drag, sleep wakes on it) keep the two
     // producers from fighting over the slot.
@@ -118,7 +120,7 @@ export function Frames2dVisualMount(props: {
 
   // Footer statistics change timing in-place; they must never restart a stride
   // or throw away the decoded-frame cache on each host poll.
-  useEffect(() => { handleRef.current?.setPlaybackFps?.(props.fps) }, [props.fps, frames2d])
+  useEffect(() => { handleRef.current?.setPlaybackFps?.(props.fps, props.runLimit, props.actionFps) }, [props.fps, props.runLimit, props.actionFps, frames2d])
 
   useEffect(() => {
     const animation = hasSessionMotion ? props.snapshot?.animation : undefined

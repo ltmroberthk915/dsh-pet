@@ -133,6 +133,8 @@ export const PET_FORM_DEFAULTS = {
   bottom: 20,
   bubbleScale: 1,
   animationFps: 12,
+  animationRunFpsLimit: 0,
+  animationActionFps: 0,
   animationMode: 'fixed',
   animationTickSlope: DEFAULT_TICK_SLOPE,
   animationTickIntercept: DEFAULT_TICK_INTERCEPT,
@@ -169,6 +171,8 @@ export interface PetFormConfig {
   /** Bubble typography multiplier on the automatic size following (#1549). */
   bubbleScale?: LiveField<number>
   animationFps?: LiveField<number>
+  animationRunFpsLimit?: LiveField<number>
+  animationActionFps?: LiveField<number>
   animationMode?: LiveField<'fixed' | 'native' | 'tick'>
   animationTickSlope?: LiveField<number>
   animationTickIntercept?: LiveField<number>
@@ -200,7 +204,9 @@ export const Config = z.object({
   right: z.number().step(1).min(0).max(DISPLAY_INSET_MAX).default(PET_FORM_DEFAULTS.right).volatile(),
   bottom: z.number().step(1).min(0).max(DISPLAY_INSET_MAX).default(PET_FORM_DEFAULTS.bottom).volatile(),
   bubbleScale: z.number().step(BUBBLE_SCALE_STEP).min(BUBBLE_SCALE_MIN).max(BUBBLE_SCALE_MAX).default(PET_FORM_DEFAULTS.bubbleScale).volatile(),
-  animationFps: z.number().min(1).max(60).default(12).volatile(),
+  animationFps: z.number().min(1).default(12).volatile(),
+  animationRunFpsLimit: z.number().min(0).default(0).volatile(),
+  animationActionFps: z.number().min(0).default(0).volatile(),
   animationMode: z.union(['fixed', 'native', 'tick']).default('fixed').volatile(),
   animationTickSlope: z.number().min(MIN_TICK_SLOPE).max(MAX_TICK_SLOPE).default(DEFAULT_TICK_SLOPE).volatile(),
   animationTickIntercept: z.number().min(MIN_TICK_INTERCEPT).max(MAX_TICK_INTERCEPT).default(DEFAULT_TICK_INTERCEPT).volatile(),
@@ -288,6 +294,8 @@ export function petSettingsSection(
     bottom: displayField('bottom', config.bottom, persisted, committed),
     bubbleScale: displayField('bubbleScale', config.bubbleScale, persisted, committed),
     animationFps: displayField('animationFps', config.animationFps, persisted, committed),
+    animationRunFpsLimit: displayField('animationRunFpsLimit', config.animationRunFpsLimit, persisted, committed),
+    animationActionFps: displayField('animationActionFps', config.animationActionFps, persisted, committed),
     animationMode: displayField('animationMode', config.animationMode, persisted, committed),
     animationTickSlope: displayField('animationTickSlope', config.animationTickSlope, persisted, committed),
     animationTickIntercept: displayField('animationTickIntercept', config.animationTickIntercept, persisted, committed),

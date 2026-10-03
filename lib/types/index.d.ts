@@ -45,6 +45,8 @@ export declare const PET_FORM_DEFAULTS: {
     readonly bottom: 20;
     readonly bubbleScale: 1;
     readonly animationFps: 12;
+    readonly animationRunFpsLimit: 0;
+    readonly animationActionFps: 0;
     readonly animationMode: "fixed";
     readonly animationTickSlope: number;
     readonly animationTickIntercept: 6;
@@ -79,6 +81,8 @@ export interface PetFormConfig {
     /** Bubble typography multiplier on the automatic size following (#1549). */
     bubbleScale?: LiveField<number>;
     animationFps?: LiveField<number>;
+    animationRunFpsLimit?: LiveField<number>;
+    animationActionFps?: LiveField<number>;
     animationMode?: LiveField<'fixed' | 'native' | 'tick'>;
     animationTickSlope?: LiveField<number>;
     animationTickIntercept?: LiveField<number>;
@@ -110,6 +114,8 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     bottom: z<number, number, "volatile-defined">;
     bubbleScale: z<number, number, "volatile-defined">;
     animationFps: z<number, number, "volatile-defined">;
+    animationRunFpsLimit: z<number, number, "volatile-defined">;
+    animationActionFps: z<number, number, "volatile-defined">;
     animationMode: z<"fixed" | "native" | "tick", "fixed" | "native" | "tick", "volatile-defined">;
     animationTickSlope: z<number, number, "volatile-defined">;
     animationTickIntercept: z<number, number, "volatile-defined">;
@@ -126,6 +132,8 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     bottom: z<number, number, "volatile-defined">;
     bubbleScale: z<number, number, "volatile-defined">;
     animationFps: z<number, number, "volatile-defined">;
+    animationRunFpsLimit: z<number, number, "volatile-defined">;
+    animationActionFps: z<number, number, "volatile-defined">;
     animationMode: z<"fixed" | "native" | "tick", "fixed" | "native" | "tick", "volatile-defined">;
     animationTickSlope: z<number, number, "volatile-defined">;
     animationTickIntercept: z<number, number, "volatile-defined">;

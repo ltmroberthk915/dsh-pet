@@ -1,4 +1,4 @@
-import { companionFps, effectiveFps, retimeTracks } from '../animation.ts'
+import { effectiveFps, playbackFrameDuration, retimeTracks } from '../animation.ts'
 import { sessionMotionPet } from '../animation-bindings.ts'
 import { createBlinkFilter } from './blink-frequency.ts'
 import { paletteAtlas, paletteFilter } from './palette.ts'
@@ -325,20 +325,16 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
       return
     }
     setWave(waveKey)
-    const duration = definition.tracks.waving.durations.reduce((a, b) => a + b, 0)
+    const duration = definition.tracks.waving.durations.reduce((a, b) => a + playbackFrameDuration('waving', b, undefined, 0, display.animationActionFps), 0)
     const timer = window.setTimeout(() => setWave(undefined), duration)
     return () => window.clearTimeout(timer)
-  }, [waveKey, waveBlocked, definition.tracks.waving])
+  }, [waveKey, waveBlocked, definition.tracks.waving, display.animationActionFps])
   const animation = wave !== undefined && wave === waveKey && !waveBlocked ? 'waving' : baseAnimation
   const sequences = definition.sequences
   const selectedSequence = animation === animationForPhase(phase) ? sequences?.[phase] : undefined
-  const usesRightRun = animation === 'running-right' || selectedSequence?.includes('running-right') === true
-  const runningTrack = animation === 'running-left' ? 'running-left' : 'running-right'
-  const canRetime = sessionMotionPet(definition.id)
-    ? animation === 'running-right' || animation === 'running-left'
-    : usesRightRun
-  const fps = canRetime ? companionFps(definition.id, effectiveFps(display, snapshot?.performance?.tokensPerSecond)) : undefined
-  const tracks = useMemo(() => retimeTracks(definition.tracks, fps, runningTrack, definition.frameDensity) as typeof definition.tracks, [definition.tracks, fps, runningTrack, definition.frameDensity])
+  const fps = effectiveFps(display, snapshot?.performance?.tokensPerSecond)
+  const tracks = useMemo(() => retimeTracks(definition.tracks, fps, display.animationRunFpsLimit, display.animationActionFps) as typeof definition.tracks,
+    [definition.tracks, fps, display.animationRunFpsLimit, display.animationActionFps])
   // Hover-panel chrome from the pet's voice pack (pet-center M4, issue
   // #677): every slot falls back to the i18n dictionary when unset. Stat
   // formats carry {rank}/{n}/{points} placeholders the host validated.
@@ -506,8 +502,11 @@ export function PetSprite(props: PetSpriteProps): ReactPortal {
       }
       st.elapsed += delta
       const maxIndex = track.frames.length - 1
-      while (st.elapsed >= Math.max(1, track.durations[st.index] ?? 100)) {
-        st.elapsed -= Math.max(1, track.durations[st.index] ?? 100)
+      // Skip complete cycles in one operation, so an uncapped rate cannot
+      // turn a delayed paint into an unbounded per-frame catch-up loop.
+      if (track.loop) st.elapsed %= track.durations.reduce((sum, ms) => sum + ms, 0)
+      while (st.elapsed >= (track.durations[st.index] ?? 100)) {
+        st.elapsed -= track.durations[st.index] ?? 100
         if (st.index < maxIndex) st.index += 1
         else if (track.loop) st.index = 0
         else { st.elapsed = 0; break }

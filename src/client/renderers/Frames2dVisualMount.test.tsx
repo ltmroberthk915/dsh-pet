@@ -100,7 +100,7 @@ describe('Frames2dVisualMount', () => {
     view.rerender(<Frames2dVisualMount {...props} fps={25} />)
     expect(mount).toHaveBeenCalledTimes(1)
     expect(handle.dispose).not.toHaveBeenCalled()
-    expect(handle.setPlaybackFps).toHaveBeenLastCalledWith(25)
+    expect(handle.setPlaybackFps).toHaveBeenLastCalledWith(25, undefined, undefined)
     expect(handle.setActivityTrack).toHaveBeenCalledWith('running-right')
   })
 })

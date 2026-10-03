@@ -612,7 +612,7 @@ export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCa
       return service.setVisible(visible)
     }),
     postRoute(ctx, PET_API_PREFIX + '/set-config', (body) => service.setConfig({
-      ...Object.fromEntries(['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationMode', 'animationTickSlope', 'animationTickIntercept', 'desktopEnabled', 'multiPetEnabled', 'hoverPanelEnabled', 'visible'].filter(key => Object.hasOwn(body, key)).map(key => [key, body[key]])),
+      ...Object.fromEntries(['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationRunFpsLimit', 'animationActionFps', 'animationMode', 'animationTickSlope', 'animationTickIntercept', 'desktopEnabled', 'multiPetEnabled', 'hoverPanelEnabled', 'visible'].filter(key => Object.hasOwn(body, key)).map(key => [key, body[key]])),
       ...(typeof body.right === 'number' ? { right: body.right } : {}),
       ...(typeof body.bottom === 'number' ? { bottom: body.bottom } : {}),
       ...(typeof body.visible === 'boolean' ? { visible: body.visible } : {}),

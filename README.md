@@ -2,6 +2,8 @@
 
 An independently maintained fork published as `dsh-pet-copilot`. [中文说明](README.zh.md).
 
+v1.3.2 adds quiet hover panels, 75% business-whale sizing, uncapped running FPS with an optional user limit, and a separate FPS setting for other actions. The same timing rules apply to every character. See [installation and package-name migration](docs/fresh-install-v1.3.2.md).
+
 Based on [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet), licensed under Apache-2.0 with upstream attribution preserved in LICENSE and NOTICE.
 
 ![Model palettes](docs/palettes.png)

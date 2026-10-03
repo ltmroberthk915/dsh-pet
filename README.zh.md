@@ -2,6 +2,8 @@
 
 独立维护的 DSH 插件：`dsh-pet-copilot`。本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，沿用 Apache-2.0 许可证及原素材署名；改动由 ltmroberthk915 维护。
 
+v1.3.2：悬停看板默认关闭；商务小鲸鱼含底板统一为 75%。左右跑动 FPS 默认无上限，可自行限制；其他动作可单独设定 FPS，所有形象规则一致。旧包迁移和安装说明见 [新机安装说明](docs/fresh-install-v1.3.2.md)。
+
 ![五套模型配色](docs/palettes.png)
 
 ## 功能

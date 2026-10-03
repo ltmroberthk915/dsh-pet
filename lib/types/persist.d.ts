@@ -22,8 +22,10 @@ export interface PetDisplayConfig {
      */
     bubbleScale: number;
     animationFps?: number;
+    animationRunFpsLimit?: number;
+    animationActionFps?: number;
     animationMode?: AnimationMode;
-    /** FPS = k × footer tok/s + b, clamped to 1–60 FPS. */
+    /** Running FPS = k × footer tok/s + b; an optional user cap is applied separately. */
     animationTickSlope?: number;
     animationTickIntercept?: number;
     desktopEnabled?: boolean;
@@ -66,7 +68,7 @@ export declare function bubbleScaleFor(display: Pick<PetDisplayConfig, 'size'> &
 export interface PetPersist {
     sessionColors?: Record<string, SessionColor>;
     /** Playback preferences belong to a character, not to the whole application. */
-    playback?: Record<string, Pick<PetDisplayConfig, 'animationFps' | 'animationMode' | 'animationTickSlope' | 'animationTickIntercept'>>;
+    playback?: Record<string, Pick<PetDisplayConfig, 'animationFps' | 'animationRunFpsLimit' | 'animationActionFps' | 'animationMode' | 'animationTickSlope' | 'animationTickIntercept'>>;
     /** Selected pet id (a registry entry; clamped at service startup). */
     petId: string;
     /**

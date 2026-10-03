@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { companionFps } from '../animation.ts'
-import { animationFps, animationMode, tickSlope, tickIntercept, effectiveFps, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, type AnimationMode } from '../animation.ts'
+import { animationFps, animationMode, optionalFps, tickSlope, tickIntercept, effectiveFps, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, type AnimationMode } from '../animation.ts'
 import type { PetStateView } from '../service.ts'
 import { desktopConnection, desktopRequest } from './desktop-connection.ts'
 import { petJson, petServiceFailure, type PetServiceStatus } from './pet-api.ts'
@@ -17,6 +16,10 @@ export function PlaybackSettings() {
   const [snapshot, setSnapshot] = useState<PetStateView | null>(null)
   const [mode, setMode] = useState<AnimationMode>('fixed')
   const [fps, setFps] = useState('12')
+  const [limitRunning, setLimitRunning] = useState(false)
+  const [runLimit, setRunLimit] = useState('60')
+  const [customActions, setCustomActions] = useState(false)
+  const [actionFps, setActionFps] = useState('12')
   const [slope, setSlope] = useState(String(DEFAULT_TICK_SLOPE))
   const [intercept, setIntercept] = useState(String(DEFAULT_TICK_INTERCEPT))
   const [desktop, setDesktop] = useState(true)
@@ -37,6 +40,9 @@ export function PlaybackSettings() {
       if (selected !== state.pet.id) {
         selected = state.pet.id
         setMode(animationMode(state.display.animationMode)); setFps(String(animationFps(state.display.animationFps)))
+        const limit = optionalFps(state.display.animationRunFpsLimit), actions = optionalFps(state.display.animationActionFps)
+        setLimitRunning(limit > 0); setRunLimit(String(limit || 60))
+        setCustomActions(actions > 0); setActionFps(String(actions || 12))
         setSlope(String(tickSlope(state.display.animationTickSlope)))
         setIntercept(String(tickIntercept(state.display.animationTickIntercept)))
         setDesktop(state.display.desktopEnabled !== false)
@@ -54,16 +60,22 @@ export function PlaybackSettings() {
   const connected = serviceStatus === 'ready' && snapshot !== null
   const validLinear = slope.trim() !== '' && Number.isFinite(Number(slope)) && Number(slope) >= MIN_TICK_SLOPE && Number(slope) <= MAX_TICK_SLOPE
     && intercept.trim() !== '' && Number.isFinite(Number(intercept)) && Number(intercept) >= MIN_TICK_INTERCEPT && Number(intercept) <= MAX_TICK_INTERCEPT
-  const validFps = fps.trim() !== '' && Number.isFinite(Number(fps)) && Number(fps) >= 1 && Number(fps) <= 60
-  const valid = validFps && (mode !== 'tick' || validLinear)
+  const positiveFps = (value: string) => value.trim() !== '' && Number.isFinite(Number(value)) && Number(value) >= 1
+  const validFps = positiveFps(fps)
+  const validLimit = !limitRunning || positiveFps(runLimit)
+  const validActions = !customActions || positiveFps(actionFps)
+  const savedLimit = limitRunning ? Number(runLimit) : 0
+  const savedActions = customActions ? Number(actionFps) : 0
+  const valid = validFps && validLimit && validActions && (mode !== 'tick' || validLinear)
   async function save() {
     if (!valid || busy || !connected) return
     setBusy(true); setMessage('')
     try {
       const linear = validLinear ? { animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) } : {}
-      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), desktopEnabled: desktop, multiPetEnabled: multi, hoverPanelEnabled: hoverPanel, ...linear })
+      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), animationRunFpsLimit: savedLimit, animationActionFps: savedActions, desktopEnabled: desktop, multiPetEnabled: multi, hoverPanelEnabled: hoverPanel, ...linear })
       if (result.ok !== true || result.display?.animationMode !== mode || result.display?.animationFps !== Number(fps)
         || result.display?.desktopEnabled !== desktop || result.display?.multiPetEnabled !== multi || result.display?.hoverPanelEnabled !== hoverPanel
+        || result.display?.animationRunFpsLimit !== savedLimit || result.display?.animationActionFps !== savedActions
         || (validLinear && (result.display?.animationTickSlope !== Number(slope) || result.display?.animationTickIntercept !== Number(intercept)))) throw new Error('设置未保存')
       setSlope(String(tickSlope(result.display.animationTickSlope)))
       setIntercept(String(tickIntercept(result.display.animationTickIntercept)))
@@ -99,21 +111,28 @@ export function PlaybackSettings() {
     <fieldset disabled={!connected || busy} style={{ display: 'grid', gap: 10, border: 0, padding: 0, margin: 0, minWidth: 0 }}>
     <label><input aria-label="悬停展开看板" type="checkbox" checked={hoverPanel} onChange={e => setHoverPanel(e.target.checked)} /> 悬停展开看板</label>
     <div style={{ opacity: .8 }}>默认关闭，鼠标经过宠物时不展开补充能量、命名和隐藏面板。需要时仍可右键宠物打开；开启后恢复悬停展开。</div>
-    <label>播放模式 <select aria-label="播放模式" value={mode} onChange={e => setMode(e.target.value as AnimationMode)}>
+    <label>左右跑动模式 <select aria-label="播放模式" value={mode} onChange={e => setMode(e.target.value as AnimationMode)}>
       <option value="fixed">固定 FPS</option><option value="native">素材原速</option><option value="tick">Tick · 跟随底部 tok/s</option>
     </select></label>
-    <label>{mode === 'tick' ? '无统计数据时的 FPS' : '动画 FPS'} <input aria-label="动画 FPS" type="number" min="1" max="60" step="1" value={fps} disabled={mode === 'native'} onChange={e => setFps(e.target.value)} style={{ width: 64 }} /></label>
-    {!validFps && <div role="alert">帧率需为 1–60 之间的数字；当前输入尚未提交保存。</div>}
-    <div style={{ opacity: .8, lineHeight: 1.6 }}>思考、回答及其他工具参数生成向右跑；写文件、编辑和补丁内容生成向左跑。跑步及游泳跟随此设置，其他动作保持舒缓节奏。内置形象最高 12 FPS，避免高速生成时动作闪动。</div>
+    <label>{mode === 'tick' ? '无统计数据时的 FPS' : '左右跑动 FPS'} <input aria-label="动画 FPS" type="number" min="1" step="any" value={fps} disabled={mode === 'native'} onChange={e => setFps(e.target.value)} style={{ width: 88 }} /></label>
+    {!validFps && <div role="alert">帧率需为不小于 1 的有效数字；当前输入尚未提交保存。</div>}
+    <div style={{ opacity: .8, lineHeight: 1.6 }}>思考、回答及其他工具参数生成向右跑；写文件、编辑和补丁内容生成向左跑。左右跑动默认不设上限，所有形象使用同一规则。</div>
+    <label><input aria-label="限制左右跑动帧率" type="checkbox" checked={limitRunning} onChange={e => setLimitRunning(e.target.checked)} /> 限制左右跑动帧率</label>
+    {limitRunning && <label>左右跑动最高 FPS <input aria-label="左右跑动最高 FPS" type="number" min="1" step="any" value={runLimit} onChange={e => setRunLimit(e.target.value)} style={{ width: 88 }} /></label>}
+    {!validLimit && <div role="alert">左右跑动上限需为不小于 1 的有效数字。</div>}
     {snapshot?.pet.id === 'blue-whale-business' && <div style={{ opacity: .8 }}>商务小蓝鲸的形象和占位底板统一为设定大小的 75%，主宠物与后台小宠物均生效。</div>}
     {mode === 'tick' && <>
-      <div>FPS = k × 底部 tok/s + b；内置形象最高 12 FPS，其他形象最高 60 FPS。</div>
+      <div>FPS = k × 底部 tok/s + b；{limitRunning ? `上限由你设为 ${runLimit} FPS。` : '未设置上限。'}</div>
       <label>斜率 k <input aria-label="斜率 k" type="number" min={MIN_TICK_SLOPE} max={MAX_TICK_SLOPE} step="any" value={slope} onChange={e => setSlope(e.target.value)} style={{ width: 180 }} /></label>
       <label>截距 b（FPS） <input aria-label="截距 b" type="number" min={MIN_TICK_INTERCEPT} max={MAX_TICK_INTERCEPT} step="any" value={intercept} onChange={e => setIntercept(e.target.value)} style={{ width: 96 }} /></label>
       <div style={{ opacity: .8, lineHeight: 1.6 }}>k 控制速度每增加 1 tok/s 时增加多少 FPS；b 控制起始帧率。跟随当前会话底栏统计，步骤完成后更新。</div>
       {!validLinear && <div role="alert">k 需在 {MIN_TICK_SLOPE}–{MAX_TICK_SLOPE} 之间，b 需在 {MIN_TICK_INTERCEPT}–{MAX_TICK_INTERCEPT} 之间。</div>}
-      {validLinear && <div>{rate === undefined ? `底栏暂无速度，使用备用 ${companionFps(snapshot?.pet.id ?? '', Number(fps))} FPS` : `预览：${rate} tok/s → ${companionFps(snapshot?.pet.id ?? '', effectiveFps({ animationMode: 'tick', animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) }, rate))?.toFixed(1)} FPS`}</div>}
+      {validLinear && validLimit && validFps && <div>{rate === undefined ? `底栏暂无速度，使用备用 ${effectiveFps({ animationFps: Number(fps), animationRunFpsLimit: savedLimit })} FPS` : `预览：${rate} tok/s → ${effectiveFps({ animationMode: 'tick', animationTickSlope: Number(slope), animationTickIntercept: Number(intercept), animationRunFpsLimit: savedLimit }, rate)?.toFixed(1)} FPS`}</div>}
     </>}
+    <label><input aria-label="自设其他动作速率" type="checkbox" checked={customActions} onChange={e => setCustomActions(e.target.checked)} /> 自设其他动作速率</label>
+    {customActions && <label>其他动作 FPS <input aria-label="其他动作 FPS" type="number" min="1" step="any" value={actionFps} onChange={e => setActionFps(e.target.value)} style={{ width: 88 }} /></label>}
+    <div style={{ opacity: .8 }}>用于待机、挥手、喂食等非左右跑动动作，与 tok/s 无关。可以自行填写 FPS，不设 12 或 60 FPS 上限；关闭时保留素材原速。</div>
+    {!validActions && <div role="alert">其他动作帧率需为不小于 1 的有效数字。</div>}
     <label><input aria-label="多宠物模式" type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)} /> 多宠物模式</label>
     <div style={{ opacity: .8, lineHeight: 1.6 }}>{multi
       ? '活跃对话各一只，分别跟随自己的 tok/s；主对话保持原大小，其余为 52.7% 且不弹气泡。新建、尺寸切换或拖动结束时自动避让。后台对话结束后，小宠物保留等待查看；点开对话或双击小宠物即可查看并变为主宠物，不需要输入文字。查看后切到其他对话时回收。'

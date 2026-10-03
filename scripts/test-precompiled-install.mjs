@@ -7,12 +7,13 @@ import { pathToFileURL } from 'node:url'
 const [pnpm, source] = process.argv.slice(2)
 if (!pnpm || !source) throw Error('Supply pnpm.mjs and the release archive or Git spec.')
 const root = path.resolve(import.meta.dirname, '..'), output = path.join(root, 'output/precompiled-install-verification')
+const target = fs.existsSync(path.resolve(source)) ? path.resolve(source) : source
 fs.mkdirSync(output, { recursive: true })
 const dir = fs.mkdtempSync(path.join(output, 'profile-'))
 fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'pet-clean-profile', private: true, version: '0.0.0' }))
 // Keep restrictive pnpm 11 defaults. No build allowlist, shim or install hook.
 fs.writeFileSync(path.join(dir, 'pnpm-workspace.yaml'), 'strictDepBuilds: true\n')
-const result = spawnSync(process.execPath, [path.resolve(pnpm), 'add', path.isAbsolute(source) ? path.resolve(source) : source,
+const result = spawnSync(process.execPath, [path.resolve(pnpm), 'add', target,
   '--registry=https://registry.npmjs.org', '--reporter=append-only'], { cwd: dir, windowsHide: true, encoding: 'utf8', timeout: 180000, maxBuffer: 4 * 1024 * 1024 })
 fs.writeFileSync(path.join(dir, 'install.log'), result.stdout + '\n' + result.stderr)
 assert.equal(result.status, 0, result.stdout + result.stderr)
