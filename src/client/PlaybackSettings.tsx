@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
+import { companionFps } from '../animation.ts'
 import { animationFps, animationMode, tickSlope, tickIntercept, effectiveFps, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, type AnimationMode } from '../animation.ts'
 import type { PetStateView } from '../service.ts'
 import { desktopConnection, desktopRequest } from './desktop-connection.ts'
+import { petJson, petServiceFailure, type PetServiceStatus } from './pet-api.ts'
+import { t } from './locales.ts'
 
 async function request(action: string, body?: unknown): Promise<any> {
-  const response = await fetch('/api/pet/' + (action === 'config' ? 'set-config' : 'state'), body === undefined ? {} : {
+  return petJson('/api/pet/' + (action === 'config' ? 'set-config' : 'state'), body === undefined ? {} : {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
   })
-  if (!response.ok) throw new Error('HTTP ' + response.status)
-  return response.json()
 }
 
 /** Also works in aggregate profiles that do not expose a Host settings form. */
@@ -20,14 +21,19 @@ export function PlaybackSettings() {
   const [intercept, setIntercept] = useState(String(DEFAULT_TICK_INTERCEPT))
   const [desktop, setDesktop] = useState(true)
   const [multi, setMulti] = useState(false)
+  const [hoverPanel, setHoverPanel] = useState(false)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const [serviceStatus, setServiceStatus] = useState<PetServiceStatus>('loading')
   useEffect(() => {
     let alive = true
+    let timer: number | undefined
     let selected: string | undefined
     const refresh = () => request('state').then((state: PetStateView) => {
       if (!alive) return
+      if (typeof state.pet?.id !== 'string' || !state.display) throw new Error('Invalid pet service state')
       setSnapshot(state)
+      setServiceStatus('ready')
       if (selected !== state.pet.id) {
         selected = state.pet.id
         setMode(animationMode(state.display.animationMode)); setFps(String(animationFps(state.display.animationFps)))
@@ -35,24 +41,29 @@ export function PlaybackSettings() {
         setIntercept(String(tickIntercept(state.display.animationTickIntercept)))
         setDesktop(state.display.desktopEnabled !== false)
         setMulti(state.display.multiPetEnabled === true)
+        setHoverPanel(state.display.hoverPanelEnabled === true)
       }
-    }).catch(() => { if (alive) setMessage('宠物服务暂不可用，请启用插件后重试。') })
+    }).catch((error) => {
+      if (alive) { setServiceStatus(petServiceFailure(error)); setMessage('') }
+    }).finally(() => {
+      if (alive) timer = window.setTimeout(() => void refresh(), 2000)
+    })
     void refresh()
-    const timer = window.setInterval(() => void refresh(), 2000)
-    return () => { alive = false; window.clearInterval(timer) }
+    return () => { alive = false; window.clearTimeout(timer) }
   }, [])
+  const connected = serviceStatus === 'ready' && snapshot !== null
   const validLinear = slope.trim() !== '' && Number.isFinite(Number(slope)) && Number(slope) >= MIN_TICK_SLOPE && Number(slope) <= MAX_TICK_SLOPE
     && intercept.trim() !== '' && Number.isFinite(Number(intercept)) && Number(intercept) >= MIN_TICK_INTERCEPT && Number(intercept) <= MAX_TICK_INTERCEPT
   const validFps = fps.trim() !== '' && Number.isFinite(Number(fps)) && Number(fps) >= 1 && Number(fps) <= 60
   const valid = validFps && (mode !== 'tick' || validLinear)
   async function save() {
-    if (!valid || busy) return
+    if (!valid || busy || !connected) return
     setBusy(true); setMessage('')
     try {
       const linear = validLinear ? { animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) } : {}
-      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), desktopEnabled: desktop, multiPetEnabled: multi, ...linear })
+      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), desktopEnabled: desktop, multiPetEnabled: multi, hoverPanelEnabled: hoverPanel, ...linear })
       if (result.ok !== true || result.display?.animationMode !== mode || result.display?.animationFps !== Number(fps)
-        || result.display?.desktopEnabled !== desktop || result.display?.multiPetEnabled !== multi
+        || result.display?.desktopEnabled !== desktop || result.display?.multiPetEnabled !== multi || result.display?.hoverPanelEnabled !== hoverPanel
         || (validLinear && (result.display?.animationTickSlope !== Number(slope) || result.display?.animationTickIntercept !== Number(intercept)))) throw new Error('设置未保存')
       setSlope(String(tickSlope(result.display.animationTickSlope)))
       setIntercept(String(tickIntercept(result.display.animationTickIntercept)))
@@ -62,7 +73,7 @@ export function PlaybackSettings() {
   }
   async function resetPosition() {
     const bridge = desktopConnection(snapshot?.desktop)
-    if (!bridge || busy) return
+    if (!bridge || busy || !connected) return
     setBusy(true)
     try {
       const result = await bridge.resetPosition()
@@ -73,6 +84,7 @@ export function PlaybackSettings() {
   const rate = snapshot?.performance?.tokensPerSecond
   const desktopStatus = snapshot?.desktop
   async function retryDesktop() {
+    if (busy || !connected) return
     setBusy(true)
     try {
       await desktopRequest('retry')
@@ -82,19 +94,25 @@ export function PlaybackSettings() {
   }
   return <section data-pet-controls style={{ padding: 16, border: '1px solid #7775', borderRadius: 12, display: 'grid', gap: 10, color: 'inherit', fontSize: 13 }}>
     <strong>{snapshot?.pet.displayName ?? '当前形象'} · 生成速度动画</strong>
+    {serviceStatus !== 'ready' && <p role="status">{t(serviceStatus === 'authorization' ? 'settings.serviceAuthorization'
+      : serviceStatus === 'loading' ? 'settings.serviceLoading' : 'settings.serviceUnavailable')}</p>}
+    <fieldset disabled={!connected || busy} style={{ display: 'grid', gap: 10, border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+    <label><input aria-label="悬停展开看板" type="checkbox" checked={hoverPanel} onChange={e => setHoverPanel(e.target.checked)} /> 悬停展开看板</label>
+    <div style={{ opacity: .8 }}>默认关闭，鼠标经过宠物时不展开补充能量、命名和隐藏面板。需要时仍可右键宠物打开；开启后恢复悬停展开。</div>
     <label>播放模式 <select aria-label="播放模式" value={mode} onChange={e => setMode(e.target.value as AnimationMode)}>
       <option value="fixed">固定 FPS</option><option value="native">素材原速</option><option value="tick">Tick · 跟随底部 tok/s</option>
     </select></label>
     <label>{mode === 'tick' ? '无统计数据时的 FPS' : '动画 FPS'} <input aria-label="动画 FPS" type="number" min="1" max="60" step="1" value={fps} disabled={mode === 'native'} onChange={e => setFps(e.target.value)} style={{ width: 64 }} /></label>
     {!validFps && <div role="alert">帧率需为 1–60 之间的数字；当前输入尚未提交保存。</div>}
-    <div style={{ opacity: .8, lineHeight: 1.6 }}>思考、回答及其他工具参数生成向右跑；写文件、编辑和补丁内容生成向左跑。所有左右跑步（含工具执行）共用此帧率设置，其他动作按各自节奏播放。固定帧率默认 12 FPS，支持 1–60。</div>
+    <div style={{ opacity: .8, lineHeight: 1.6 }}>思考、回答及其他工具参数生成向右跑；写文件、编辑和补丁内容生成向左跑。跑步及游泳跟随此设置，其他动作保持舒缓节奏。内置形象最高 12 FPS，避免高速生成时动作闪动。</div>
+    {snapshot?.pet.id === 'blue-whale-business' && <div style={{ opacity: .8 }}>商务小蓝鲸的形象和占位底板统一为设定大小的 75%，主宠物与后台小宠物均生效。</div>}
     {mode === 'tick' && <>
-      <div>FPS = k × 底部 tok/s + b，结果限制在 1–60 FPS。</div>
+      <div>FPS = k × 底部 tok/s + b；内置形象最高 12 FPS，其他形象最高 60 FPS。</div>
       <label>斜率 k <input aria-label="斜率 k" type="number" min={MIN_TICK_SLOPE} max={MAX_TICK_SLOPE} step="any" value={slope} onChange={e => setSlope(e.target.value)} style={{ width: 180 }} /></label>
       <label>截距 b（FPS） <input aria-label="截距 b" type="number" min={MIN_TICK_INTERCEPT} max={MAX_TICK_INTERCEPT} step="any" value={intercept} onChange={e => setIntercept(e.target.value)} style={{ width: 96 }} /></label>
       <div style={{ opacity: .8, lineHeight: 1.6 }}>k 控制速度每增加 1 tok/s 时增加多少 FPS；b 控制起始帧率。跟随当前会话底栏统计，步骤完成后更新。</div>
       {!validLinear && <div role="alert">k 需在 {MIN_TICK_SLOPE}–{MAX_TICK_SLOPE} 之间，b 需在 {MIN_TICK_INTERCEPT}–{MAX_TICK_INTERCEPT} 之间。</div>}
-      {validLinear && <div>{rate === undefined ? `底栏暂无速度，使用备用 ${fps} FPS` : `预览：${rate} tok/s → ${effectiveFps({ animationMode: 'tick', animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) }, rate)?.toFixed(1)} FPS`}</div>}
+      {validLinear && <div>{rate === undefined ? `底栏暂无速度，使用备用 ${companionFps(snapshot?.pet.id ?? '', Number(fps))} FPS` : `预览：${rate} tok/s → ${companionFps(snapshot?.pet.id ?? '', effectiveFps({ animationMode: 'tick', animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) }, rate))?.toFixed(1)} FPS`}</div>}
     </>}
     <label><input aria-label="多宠物模式" type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)} /> 多宠物模式</label>
     <div style={{ opacity: .8, lineHeight: 1.6 }}>{multi
@@ -113,6 +131,7 @@ export function PlaybackSettings() {
     </div>}
     {(desktopStatus?.supported || window.dshPetDesktop) && <div><button type="button" onClick={() => void resetPosition()} disabled={busy}>宠物窗口归位</button></div>}
     {desktopStatus && !desktopStatus.supported && !window.dshPetDesktop && <div>独立窗口支持 Windows 原生 DSH；当前环境使用应用内宠物。</div>}
-    <div><button type="button" onClick={() => void save()} disabled={busy || !valid || snapshot === null}>{busy ? '保存中…' : '保存动画设置'}</button> <span role="status">{message}</span></div>
+    <div><button type="button" onClick={() => void save()} disabled={busy || !valid || !connected}>{busy ? '保存中…' : '保存动画设置'}</button> <span role="status">{message}</span></div>
+    </fieldset>
   </section>
 }

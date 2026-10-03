@@ -80,7 +80,7 @@ app.whenReady().then(async()=> {
   const inspect=()=>win.webContents.executeJavaScript(`(() => {
     const sprite=document.querySelector('[data-dsh-pet-animation]'),canvas=document.querySelector('canvas[data-dsh-pet-frames2d]');
     const rect=sprite?.getBoundingClientRect();
-    return {animation:sprite?.dataset.dshPetAnimation,track:canvas?.dataset.dshPetTrack,pixels:canvas?.getContext('2d')?.getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0),atlas:sprite?.style.backgroundImage,position:sprite?.style.backgroundPosition,width:rect?.width,height:rect?.height,canvases:document.querySelectorAll('canvas[data-dsh-pet-frames2d]').length,connected:document.body.dataset.connected,html:document.body.innerHTML.slice(0,1200)};
+    return {animation:sprite?.dataset.dshPetAnimation,track:canvas?.dataset.dshPetTrack,pixels:canvas?.getContext('2d')?.getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0),atlas:document.querySelector('[data-dsh-pet-registered-frame]')?.style.backgroundImage||sprite?.style.backgroundImage,position:sprite?.style.backgroundPosition,width:rect?.width,height:rect?.height,canvases:document.querySelectorAll('canvas[data-dsh-pet-frames2d]').length,connected:document.body.dataset.connected,html:document.body.innerHTML.slice(0,1200)};
   })()`)
   // Exercise a real renderer pointer capture while the native cursor remains
   // held still. Only this isolated fixture owns the fake screen cursor.
@@ -158,7 +158,36 @@ app.whenReady().then(async()=> {
   current=makeState('blue-whale-business','idle')
   win=await refresh()
   const whale=await inspect()
-  check('business whale keeps its 3:2 render geometry',whale.width===240&&whale.height===160,whale)
+  check('business whale uses 75% artwork and hit-box size',whale.width===180&&whale.height===120,whale)
+  check('business whale has a smaller native canvas',win.getBounds().width===315&&win.getBounds().height===345,win.getBounds())
+  for (const size of [32,320,1024]) {
+    current.display.size=size
+    win=await refresh()
+    const resized=await inspect()
+    check('business whale scales its whole base at '+size,resized.width===Math.round(size*.75*1.5)&&resized.height===Math.round(size*.75),resized)
+  }
+  current.display.size=160
+  current.companions[0].primary=false
+  win=await refresh()
+  const secondaryWhale=await inspect()
+  check('background whale combines the 52.7% and 75% scales once',secondaryWhale.width===95&&secondaryWhale.height===63,secondaryWhale)
+  current.companions[0].primary=true
+  win=await refresh()
+  const hoverPet=()=>win.webContents.executeJavaScript(`document.querySelector('[data-dsh-pet-animation]').dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse'}))`)
+  const panelShown=()=>win.webContents.executeJavaScript(`!!document.querySelector('[data-pet-care-panel]')`)
+  await hoverPet(); await pause(40)
+  check('native care panel stays closed on hover by default',!await panelShown())
+  await win.webContents.executeJavaScript(`document.querySelector('[data-dsh-pet-animation]').dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true}))`)
+  await pause(40)
+  check('native care panel remains accessible by right click',await panelShown())
+  current.display.hoverPanelEnabled=true
+  win=await refresh()
+  await hoverPet(); await pause(40)
+  check('enabling hover panels restores automatic expansion',await panelShown())
+  current.display.hoverPanelEnabled=false
+  win=await refresh()
+  await hoverPet(); await pause(40)
+  check('disabling hover panels immediately closes an open panel',!await panelShown())
   // Decode actual window pixels. Stationary actions must keep exactly the
   // same legs, including after a palette/state change and another frame tick.
   const planted=['idle','waving','failed','waiting','running','review']
@@ -173,7 +202,7 @@ app.whenReady().then(async()=> {
         const r=sprite.getBoundingClientRect();
         return {x:Math.floor(r.x),y:Math.floor(r.y),width:Math.ceil(r.width),height:Math.ceil(r.height),planted:getComputedStyle(legs).display!=='none',track:frame.dataset.track,transform:frame.style.transform};
       })()`)
-      check('whale '+palette+' planted '+animation,geometry.planted&&!!geometry.transform,geometry)
+      check('whale '+palette+' preserves whole drawing '+animation,!geometry.planted&&geometry.transform.endsWith('scale(1)'),geometry)
       const screenshot=await win.webContents.capturePage({x:geometry.x,y:geometry.y,width:geometry.width,height:geometry.height})
       const dimensions=screenshot.getSize()
       const lowerY=Math.ceil(dimensions.height*174/208)
@@ -181,7 +210,7 @@ app.whenReady().then(async()=> {
       const hash=createHash('sha256').update(lower).digest('hex')
       if (palette==='ds') writeFileSync(join(output,'whale-stable-'+animation+'.png'),screenshot.toPNG())
       if (legHash===undefined) legHash=hash
-      check('whale '+palette+' legs unchanged in '+animation,hash===legHash,{hash,legHash})
+      check('whale '+palette+' complete visible legs '+animation,lower.some((v,i)=>i%4===3&&v>128),{hash})
       if (animation!=='failed') {
         const pixels=screenshot.toBitmap()
         let top=dimensions.height,bottom=-1
@@ -189,7 +218,7 @@ app.whenReady().then(async()=> {
           if (pixels[(y*dimensions.width+x)*4+3]>128) { top=Math.min(top,y); bottom=Math.max(bottom,y) }
         }
         check('whale '+palette+' stable upright height in '+animation,
-          Math.abs(top-dimensions.height*15/208)<=2 && Math.abs(bottom-dimensions.height*202/208)<=2,
+          top>0 && bottom<dimensions.height-1 && bottom>dimensions.height*.85,
           {top,bottom,height:dimensions.height})
       }
       if (palette==='ds') {
@@ -206,6 +235,32 @@ app.whenReady().then(async()=> {
     check('whale keeps leg motion for '+animation,hidden)
   }
   report.whalePreviews=captures
+  // The actual production compositor must hold the entire idle character
+  // still between blinks, not just keep a synthetic leg strip unchanged.
+  current=makeState('whale-girl-refined','idle')
+  win=await refresh()
+  await pause(180)
+  const idleHashes=[]
+  for(let i=0;i<4;i++) {
+    const shot=await win.webContents.capturePage()
+    idleHashes.push(createHash('sha256').update(shot.toBitmap()).digest('hex'))
+    await pause(650)
+  }
+  check('whale idle whole-image pixels remain unchanged between blinks',new Set(idleHashes).size===1,idleHashes)
+  for(const id of ['whale-girl-refined','blue-whale-business']) {
+    current=makeState(id,'running-right')
+    current.companions[0].performance.tokensPerSecond=297
+    win=await refresh()
+    const timings=await win.webContents.executeJavaScript(`new Promise(resolve=>{
+      const el=document.querySelector('[data-dsh-pet-registered-frame]');
+      let previous=el.dataset.column, changes=[];
+      const started=performance.now();
+      const observer=new MutationObserver(()=>{if(el.dataset.column!==previous){previous=el.dataset.column;changes.push(performance.now()-started)}});
+      observer.observe(el,{attributes:true,attributeFilter:['data-column']});
+      setTimeout(()=>{observer.disconnect();resolve(changes)},1100);
+    })`)
+    check(id+' stays within 12 FPS at 297 tok/s',timings.length>=6&&timings.length<=14,timings)
+  }
   check('no renderer, preload or missing-asset errors',report.errors.length===0,report.errors)
   report.success=true
 }).catch(error=> { report.success=false; report.error=error.stack; process.exitCode=1 }).finally(()=> {

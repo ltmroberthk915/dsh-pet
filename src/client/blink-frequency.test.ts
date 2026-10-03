@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { createBlinkFilter } from './blink-frequency.ts'
 
 describe('refined whale blink frequency', () => {
+  it('never substitutes unrelated 8-column drawings in the dense atlas', () => {
+    const frame = createBlinkFilter('whale-girl-refined',32)
+    for (let cycle=0;cycle<4;cycle++) for (let column=0;column<32;column++) expect(frame('idle',column)).toBe(column)
+  })
   it('halves blink appearances across repeated frames without changing other artwork', () => {
     const frame = createBlinkFilter('whale-girl-refined')
     let blinks = 0

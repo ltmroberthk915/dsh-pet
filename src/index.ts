@@ -8,7 +8,7 @@
  * those sources, never touching host or client code. Install via
  * 'dsh plugin --profile web add link:<dsh-web>/packages/dsh-pet'; the
  * cordis.patch.yml inserts this plugin row.
- * @module @ltmroberthk915/dsh-pet
+ * @module dsh-pet-copilot
  */
 
 import { Context, type Volatile } from '@deepseek-ai/cordis'
@@ -138,6 +138,7 @@ export const PET_FORM_DEFAULTS = {
   animationTickIntercept: DEFAULT_TICK_INTERCEPT,
   desktopEnabled: true,
   multiPetEnabled: false,
+  hoverPanelEnabled: false,
   petId: DEFAULT_PET_ID,
   enabled: true,
   decorationEnabled: true,
@@ -173,6 +174,7 @@ export interface PetFormConfig {
   animationTickIntercept?: LiveField<number>
   desktopEnabled?: LiveField<boolean>
   multiPetEnabled?: LiveField<boolean>
+  hoverPanelEnabled?: LiveField<boolean>
   /** Selected pet id (a registry entry; the service clamps stale values). */
   petId?: LiveField<string | undefined>
 }
@@ -204,6 +206,7 @@ export const Config = z.object({
   animationTickIntercept: z.number().min(MIN_TICK_INTERCEPT).max(MAX_TICK_INTERCEPT).default(DEFAULT_TICK_INTERCEPT).volatile(),
   desktopEnabled: z.boolean().default(true).volatile(),
   multiPetEnabled: z.boolean().default(false).volatile(),
+  hoverPanelEnabled: z.boolean().default(false).volatile(),
   // An absent profile choice must leave the selection persisted in pet.json
   // intact across restarts (aggregate rows have no served Host pet form).
   petId: z.string().volatile(),
@@ -290,6 +293,7 @@ export function petSettingsSection(
     animationTickIntercept: displayField('animationTickIntercept', config.animationTickIntercept, persisted, committed),
     desktopEnabled: displayField('desktopEnabled', config.desktopEnabled, persisted, committed),
     multiPetEnabled: displayField('multiPetEnabled', config.multiPetEnabled, persisted, committed),
+    hoverPanelEnabled: displayField('hoverPanelEnabled', config.hoverPanelEnabled, persisted, committed),
     petId: readLive(config.petId, fallbackPetId),
     enabled: readLive(config.enabled, PET_FORM_DEFAULTS.enabled),
     decorationEnabled: readLive(config.decorationEnabled, PET_FORM_DEFAULTS.decorationEnabled),
@@ -339,6 +343,7 @@ function servedRow(ctx: Context): ServedSettingsRow | undefined {
 }
 
 /** Register the pet service and its API + asset routes on the context. */
+// Keep the guard shared with the former package during name migration.
 export const apply = mountOnce('@ltmroberthk915/dsh-pet', applyImpl)
 
 /** Plugin config: the tuning block a profile may declare plus the pet's settings fields. */

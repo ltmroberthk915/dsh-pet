@@ -22,6 +22,17 @@ function tempDir(): string {
 }
 
 describe('resolvePetManifest', () => {
+  it('plays explicit reviewed atlas columns in order and rejects out-of-row columns', () => {
+    const manifest = {id:'fox',displayName:'Fox',spritesheetPath:'atlas.png',columns:8,frames:Array(9).fill(8),
+      tracks:{idle:{frames:[6,2,4,2],durations:[4600,90,140,90]}}}
+    const entry=resolvePetManifest(manifest,join(tmpdir(),'fox'))!
+    expect(entry.tracks.idle.frames).toEqual([6,2,4,2])
+    expect(entry.tracks.idle.durations).toEqual([4600,90,140,90])
+    expect(entry.rows[0]).toBe(8)
+    for (const frames of [[],[8],[-1],[1.5],Array(9).fill(0)]) {
+      expect(resolvePetManifest({...manifest,tracks:{idle:{frames}}},join(tmpdir(),'fox'))).toBeUndefined()
+    }
+  })
   it('resolves a bare Codex manifest onto the hatch-pet contract defaults', () => {
     const entry = resolvePetManifest({
       id: 'otter',

@@ -4,7 +4,7 @@
  * snapshots, marking dirty so the owning facade decides when to flush. Read
  * paths (view) no longer settle the economy; settlements happen on explicit
  * economic events: completed-turn rewards (official or legacy) and feeds.
- * @module @ltmroberthk915/dsh-pet/ledger
+ * @module dsh-pet-copilot/ledger
  */
 import { type AffinityConfig, type PetAffinityView, type PetInteraction } from './affinity.ts';
 import { type TreatConfig } from './treats.ts';

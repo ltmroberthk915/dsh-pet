@@ -4,7 +4,7 @@
  * entry without per-pet code. The per-track tables (frames, durations, loop,
  * fallback) also come from the registry; these helpers only place frames,
  * guard track lengths, and map the fixed 9-row animation contract.
- * @module @ltmroberthk915/dsh-pet/client/spritesheet
+ * @module dsh-pet-copilot/client/spritesheet
  */
 import { type PetAnimation } from '../state.ts';
 import type { PetCell, PetTrackDef } from '../registry.ts';

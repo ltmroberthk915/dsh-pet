@@ -2,6 +2,11 @@
 export const SECONDARY_SCALE = 0.62 * 0.85
 export const PET_GAP = 10
 
+/** Character base size, shared by the renderer, hit area and native placement. */
+export function petRenderSize(petId, size) {
+  return size * (petId === 'blue-whale-business' ? 0.75 : 1)
+}
+
 export function artworkRect(bounds, geometry) {
   return { x: bounds.x + (geometry.dimensions.width - geometry.artwork.width) / 2,
     y: bounds.y + geometry.dimensions.height - 135 - geometry.artwork.height, ...geometry.artwork }

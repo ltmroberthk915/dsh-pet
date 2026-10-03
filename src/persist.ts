@@ -4,7 +4,7 @@ import { animationFps, animationMode, tickSlope, tickIntercept, DEFAULT_TICK_SLO
  * Pet persistence — tiny JSON store for affinity + display config, written
  * under $DSH_HOME (defaults to ~/.dsh) as `pet.json`. Deliberately minimal:
  * one file, atomic rename write, tolerant read (corrupt file → defaults).
- * @module @ltmroberthk915/dsh-pet/persist
+ * @module dsh-pet-copilot/persist
  */
 
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
@@ -41,6 +41,8 @@ export interface PetDisplayConfig {
   animationTickIntercept?: number
   desktopEnabled?: boolean
   multiPetEnabled?: boolean
+  /** Open the care panel on pointer hover; off by default to avoid interruptions. */
+  hoverPanelEnabled?: boolean
 }
 
 export const defaultDisplayConfig: PetDisplayConfig = {
@@ -55,6 +57,7 @@ export const defaultDisplayConfig: PetDisplayConfig = {
   animationTickIntercept: DEFAULT_TICK_INTERCEPT,
   desktopEnabled: true,
   multiPetEnabled: false,
+  hoverPanelEnabled: false,
 }
 
 /** Display value bounds (shared by load-time validation and setConfig). */
@@ -271,6 +274,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       animationTickIntercept: tickIntercept(rawDisplay.animationTickIntercept),
       desktopEnabled: rawDisplay.desktopEnabled !== false,
       multiPetEnabled: rawDisplay.multiPetEnabled === true,
+      hoverPanelEnabled: rawDisplay.hoverPanelEnabled === true,
       bubbleScale: Math.min(BUBBLE_SCALE_MAX, Math.max(BUBBLE_SCALE_MIN, finiteNum(rawDisplay.bubbleScale, base.display.bubbleScale))),
     }
     const petId = typeof parsed.petId === 'string' && parsed.petId.trim() !== ''

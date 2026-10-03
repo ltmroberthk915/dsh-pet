@@ -3,6 +3,7 @@ import { PetDockEntry, type PetDockEntryProps } from './PetDockEntry.tsx'
 import { createPetStore } from './pet-store.ts'
 import { SECONDARY_PET_SCALE } from '../session-colors.ts'
 import type { PetCompanionView, PetStateView } from '../service.ts'
+import { petRenderSize } from '../../desktop/pet-layout.js'
 
 /** Embedded fallback uses the same conversation projections as desktop windows. */
 export function PetGroupEntry(props: PetDockEntryProps) {
@@ -28,7 +29,7 @@ function EmbeddedCompanion(props: PetDockEntryProps & { snapshot: PetStateView; 
     local.actions.setSnapshot({ ...snapshot, ...c, companions: undefined,
       sessions: c.bubble ? [{ ...c, bubble: c.bubble }] : [], announcement: c.primary ? snapshot.announcement : undefined,
       display: { ...snapshot.display, size, ...(position.current ?? {
-        right: snapshot.display.right + (c.primary ? 0 : (props.index + 1) * (size + 20)), bottom: snapshot.display.bottom,
+        right: snapshot.display.right + (c.primary ? 0 : (props.index + 1) * (petRenderSize(snapshot.pet.id, size) + 20)), bottom: snapshot.display.bottom,
       }) } })
   }, [local, ui.pets, ui.feedback, snapshot, c, props.index])
   return <PetDockEntry {...props} store={local} dragEnd={(right, bottom) => {

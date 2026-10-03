@@ -61,7 +61,7 @@ const snapshot: PetStateView = {
     petCooldown: false,
     feedCooldown: false,
   },
-  display: { visible: true, size: 160, right: 24, bottom: 20, bubbleScale: 1 },
+  display: { visible: true, size: 160, right: 24, bottom: 20, bubbleScale: 1, hoverPanelEnabled: true },
   pet: { id: 'whale-girl', displayName: '鲸鱼娘', description: '测试用鲸鱼娘' },
   name: '泡泡',
   treats: { stocked: 3, max: 5 },
@@ -154,14 +154,14 @@ describe('refined whale token playback', () => {
     const view = render(<PetSprite {...props} />)
     const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
     expect(parseFloat(sprite.style.backgroundPosition)).toBe(0)
-    now = 51; act(() => tick?.(now))
+    now = 90; act(() => tick?.(now))
     const advanced = sprite.style.backgroundPosition
     expect(parseFloat(advanced)).toBeLessThan(0)
     view.rerender(<PetSprite {...props} snapshot={{ ...state, performance: { ...state.performance!, tokensPerSecond: 250 } }} />)
     expect(sprite.style.backgroundPosition).toBe(advanced)
     view.rerender(<PetSprite {...props} snapshot={{ ...state, generation: undefined }} />)
     expect(sprite.style.backgroundPosition).toBe(advanced)
-    now = 110; act(() => tick?.(now))
+    now = 180; act(() => tick?.(now))
     expect(parseFloat(sprite.style.backgroundPosition)).toBeLessThan(parseFloat(advanced))
   })
 
@@ -280,6 +280,31 @@ function openRename(): HTMLInputElement {
   fireEvent.click(screen.getByText('改名'))
   return screen.getByPlaceholderText('输入新名字') as HTMLInputElement
 }
+
+describe('quiet care panel and business whale base size', () => {
+  it('defaults to quiet hover, allows deliberate right-click access, and responds to the setting', () => {
+    renderPet({ display: { ...snapshot.display, hoverPanelEnabled: undefined } })
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    fireEvent.pointerOver(sprite)
+    expect(screen.queryByText('改名')).toBeNull()
+    fireEvent.contextMenu(sprite)
+    expect(screen.getByText('改名')).toBeTruthy()
+    fireEvent.keyDown(sprite, { key: 'Escape' })
+    expect(screen.queryByText('改名')).toBeNull()
+    cleanup()
+    renderPet({ display: { ...snapshot.display, hoverPanelEnabled: true } })
+    fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
+    expect(screen.getByText('改名')).toBeTruthy()
+  })
+
+  it.each([32, 160, 320, 1024, Math.round(160 * 0.527)])('shrinks the business whale artwork and hit area at base size %s', size => {
+    renderPet({ definition: { ...petDefinition(), id: 'blue-whale-business', cell: { width: 192, height: 128 } }, display: { ...snapshot.display, size } })
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    expect(sprite.style.height).toBe(Math.round(size * 0.75) + 'px')
+    expect(sprite.style.width).toBe(Math.round(size * 0.75 * 1.5) + 'px')
+    expect((sprite.parentElement as HTMLElement).style.height).toBe(sprite.style.height)
+  })
+})
 
 /**
  * Fire a keydown whose native event reports an active IME composition, the

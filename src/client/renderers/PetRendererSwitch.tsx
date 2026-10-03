@@ -1,4 +1,4 @@
-import { effectiveFps } from '../../animation.ts'
+import { companionFps, effectiveFps } from '../../animation.ts'
 /**
  * Renderer switch — the client dispatch seam of the pet center (issue #623,
  * milestone M2 P5 / M3). The pet's manifest picks the renderer: sprite2d
@@ -6,7 +6,7 @@ import { effectiveFps } from '../../animation.ts'
  * sprite chrome (the dock, bubbles and panel belong to the pet center, not
  * the renderer); a renderer this build cannot serve renders a clear
  * diagnostic card instead of blanking.
- * @module @ltmroberthk915/dsh-pet/client/renderers/PetRendererSwitch
+ * @module dsh-pet-copilot/client/renderers/PetRendererSwitch
  */
 
 import { cloneElement, isValidElement, useRef, type ReactElement, type ReactNode } from 'react'
@@ -48,7 +48,7 @@ export function PetRendererSwitch(props: {
     const visual = (
       <Frames2dVisualMount
         definition={props.definition}
-        fps={effectiveFps(props.children.props.display, props.children.props.snapshot?.performance?.tokensPerSecond)}
+        fps={companionFps(props.definition.id, effectiveFps(props.children.props.display, props.children.props.snapshot?.performance?.tokensPerSecond))}
         phase={props.phase}
         snapshot={props.children.props.snapshot}
         feedback={props.children.props.feedback}

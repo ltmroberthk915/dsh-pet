@@ -42,9 +42,9 @@ $taskNodeVersion = & $NodePath -p 'process.versions.node'
 if ($LASTEXITCODE -ne 0 -or [int]($taskNodeVersion.Split('.')[0]) -lt 22) { throw 'Node.js 22 or newer is required.' }
 if (-not $PluginDirectory) {
   $taskSiblingPackage = Join-Path $PSScriptRoot '..\package.json'
-  if ((Test-Path -LiteralPath $taskSiblingPackage) -and ((Get-Content -LiteralPath $taskSiblingPackage -Raw -Encoding UTF8 | ConvertFrom-Json).name -eq '@ltmroberthk915/dsh-pet')) {
+  if ((Test-Path -LiteralPath $taskSiblingPackage) -and ((Get-Content -LiteralPath $taskSiblingPackage -Raw -Encoding UTF8 | ConvertFrom-Json).name -eq 'dsh-pet-copilot')) {
     $PluginDirectory = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-  } else { $PluginDirectory = Join-Path $DshHome 'profiles\desktop\node_modules\@ltmroberthk915\dsh-pet' }
+  } else { $PluginDirectory = Join-Path $DshHome 'profiles\desktop\node_modules\dsh-pet-copilot' }
 }
 $taskArguments = @((Join-Path $PSScriptRoot 'install-desktop.cjs'), ('--' + $Mode.ToLowerInvariant()), '--app-dir', $AppDirectory, '--dsh-home', $DshHome, '--plugin-dir', $PluginDirectory)
 if ($ReceiptPath) { $taskArguments += @('--receipt', $ReceiptPath) }

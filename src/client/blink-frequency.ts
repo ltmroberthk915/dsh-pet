@@ -2,6 +2,9 @@ import type { PetAnimation } from '../state.ts'
 
 /** Keep one out of every two closed-eye appearances, without changing timing. */
 export function createBlinkFilter(petId: string, columns = 8): (animation: PetAnimation, column: number) => number {
+  // Dense atlases use explicitly reviewed timelines. The legacy 8-column
+  // blink map addresses unrelated drawings in a 32-column atlas.
+  if (columns === 32) return (_animation, column) => column
   const smooth = columns === 16
   const openFrames: Partial<Record<PetAnimation, Record<number, number>>> = petId === 'whale-girl-refined'
     ? smooth

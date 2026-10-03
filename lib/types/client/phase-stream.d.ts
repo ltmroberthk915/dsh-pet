@@ -5,7 +5,7 @@
  * dispatched on CHANGE only (phase transitions are sparse — done/failed hold
  * a timed window before falling back to idle — and renderers like Live2D pay
  * per transition, not per tick).
- * @module @ltmroberthk915/dsh-pet/client/phase-stream
+ * @module dsh-pet-copilot/client/phase-stream
  */
 import type { ActivityPhase } from '../state.ts';
 /** The renderer-facing phase stream. */

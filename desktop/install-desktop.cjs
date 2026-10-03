@@ -44,8 +44,8 @@ function install(options={},dependencies={}) {
   let pluginDir=options.pluginDir;
   if(!pluginDir) {
     const sibling=path.join(__dirname,'..','package.json');
-    pluginDir=fs.existsSync(sibling)&&JSON.parse(fs.readFileSync(sibling)).name==='@ltmroberthk915/dsh-pet'
-      ?path.join(__dirname,'..'):path.join(dshHome,'profiles','desktop','node_modules','@ltmroberthk915','dsh-pet');
+    pluginDir=fs.existsSync(sibling)&&JSON.parse(fs.readFileSync(sibling)).name==='dsh-pet-copilot'
+      ?path.join(__dirname,'..'):path.join(dshHome,'profiles','desktop','node_modules','dsh-pet-copilot');
   }
   const payload=loadPayload(pluginDir);
   let receipt,receiptPath;

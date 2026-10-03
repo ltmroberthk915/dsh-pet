@@ -63,7 +63,7 @@ function loadPayload(pluginDir) {
   const root=fs.realpathSync(pluginDir),dir=path.join(root,'desktop');
   const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
   const manifest=JSON.parse(fs.readFileSync(path.join(dir,'bridge-manifest.json'),'utf8'));
-  if(pkg.name!=='@ltmroberthk915/dsh-pet'||manifest.packageName!==pkg.name||manifest.version!==pkg.version) throw Error('Install the matching @ltmroberthk915/dsh-pet package first.');
+  if(pkg.name!=='dsh-pet-copilot'||manifest.packageName!==pkg.name||manifest.version!==pkg.version) throw Error('Install the matching dsh-pet-copilot package first.');
   for(const [name,digest] of Object.entries(manifest.files)) {
     if(!/^[a-zA-Z0-9.-]+$/.test(name)) throw Error('Invalid desktop manifest path');
     if(sha256(fs.readFileSync(path.join(dir,name)))!==digest) throw Error('Desktop file checksum mismatch: '+name);

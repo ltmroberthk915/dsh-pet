@@ -6,7 +6,7 @@
  * when the Host form is absent.
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useSyncExternalStore } from 'react'
 import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
 import { PetSettingsCard, PetSettingsCardController, type PetSettings } from './PetSettingsCard.tsx'
@@ -100,6 +100,43 @@ describe('pet settings input validation', () => {
 })
 
 describe('pet selection without a Host settings form', () => {
+  it('keeps reconnecting after three failures and retains a draft across a host outage', async () => {
+    vi.useFakeTimers()
+    const { scope, mutate } = unavailableForm()
+    let status = 404
+    const fetch = vi.fn(async (input: RequestInfo | URL) => ({
+      ok: status === 200, status,
+      json: async () => String(input).endsWith('/pets')
+        ? [{ id: 'whale-girl', displayName: '鲸鱼娘' }, { id: 'jyn', displayName: '女仆鲸鱼娘' }]
+        : { pet: { id: 'whale-girl' }, display: { visible: true } },
+    }))
+    vi.stubGlobal('fetch', fetch)
+    const controller = new PetSettingsCardController(scope)
+    const face = controller.inject(), store = face.hooks.petSettingsCard
+    render(<PetSettingsCard t={t} usePetSettingsCard={select => useSyncExternalStore(store.subscribe, () => select(store.getSnapshot()))}
+      save={face.save} discard={face.discard} edit={face.edit} resetField={face.resetField} />)
+    await act(async () => { await vi.advanceTimersByTimeAsync(12000) })
+    expect(screen.getByText(t('settings.serviceUnavailable'))).toBeTruthy()
+    expect(screen.queryByText(/settings.yaml/)).toBeNull()
+    status = 200
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(store.getSnapshot()).toMatchObject({ serviceStatus: 'ready', petSelectionFallback: true, writable: true })
+    act(() => face.edit('petId', 'jyn'))
+    status = 401
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(screen.getByText(t('settings.serviceAuthorization'))).toBeTruthy()
+    expect(store.getSnapshot()).toMatchObject({ writable: false, dirty: true, petId: { text: 'jyn' } })
+    act(() => face.save())
+    expect(fetch.mock.calls.every(([url]) => !String(url).includes('/set-'))).toBe(true)
+    expect(mutate).not.toHaveBeenCalled()
+    status = 200
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(store.getSnapshot()).toMatchObject({ writable: true, dirty: true, petId: { text: 'jyn' } })
+    controller.dispose()
+    const calls = fetch.mock.calls.length
+    await act(async () => { await vi.advanceTimersByTimeAsync(6000) })
+    expect(fetch.mock.calls.length).toBe(calls)
+  })
   it('user saves the selected pet through its persisted API and confirms the read-back', async () => {
     // Given the aggregate shell exposes no pet configuration form
     vi.useFakeTimers()

@@ -1,15 +1,12 @@
 node_modules/
-# Precompiled lib/ is intentionally tracked so Git installs never build.
-lib/*
-!lib/index.js
-!lib/client.js
-!lib/invariant.js
-!lib/types/
-lib/types/**
-!lib/types/**/
-!lib/types/**/*.d.ts
+output/
 *.tsbuildinfo
+__pycache__/
+*.pyc
 .DS_Store
-
-# hatch-pet 素材生成流水线的中间产物（prompts / QA / 原始帧），不入库
+# Commit the entire precompiled JavaScript closure, including vendor chunks.
+lib/**
+!lib/**/
+!lib/**/*.js
+!lib/**/*.d.ts
 assets/run-whale-girl*/

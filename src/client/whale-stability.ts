@@ -1,5 +1,5 @@
 import type { PetAnimation } from '../state.ts'
-import { denseWhaleTops } from './whale-dense-geometry.ts'
+import { companionRegistration } from './companion-registration.ts'
 
 // Alpha > 128 bounds measured from the packaged 16-column DS atlas. All five
 // palettes share its alpha geometry. CSS registration keeps the original
@@ -17,7 +17,8 @@ const tops: Record<PetAnimation, readonly number[]> = {
 }
 
 export function whaleFramePose(animation: PetAnimation, column: number, columns = 16) {
-  const geometry = columns === 32 ? denseWhaleTops : tops
+  if (columns === 32) return companionFramePose('whale-girl-refined', animation, column)
+  const geometry = tops
   const top = geometry[animation][column] ?? geometry[animation][0]!
   const locomotion = animation === 'running-left' || animation === 'running-right'
   const planted = !locomotion && animation !== 'jumping'
@@ -26,5 +27,11 @@ export function whaleFramePose(animation: PetAnimation, column: number, columns 
   const pivotY = planted ? 166 : 202
   const scale = animation === 'failed' || animation === 'jumping' ? 1
     : locomotion ? (202 - 15) / (201 - top) : (pivotY - 15) / (pivotY - top)
-  return { planted, scale, pivotY, offsetY: locomotion ? scale : 0 }
+  return { planted, scale, pivotY, offsetX: 0, offsetY: locomotion ? scale : 0 }
+}
+
+/** Register whole drawings with translation only; never resize the body or graft legs. */
+export function companionFramePose(petId: string, animation: PetAnimation, column: number) {
+  const [offsetX = 0, offsetY = 0] = companionRegistration[petId]?.[animation]?.[column] ?? []
+  return { planted: false, scale: 1, pivotY: 0, offsetX, offsetY }
 }

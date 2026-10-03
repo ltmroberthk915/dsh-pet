@@ -28,6 +28,8 @@ export interface PetDisplayConfig {
     animationTickIntercept?: number;
     desktopEnabled?: boolean;
     multiPetEnabled?: boolean;
+    /** Open the care panel on pointer hover; off by default to avoid interruptions. */
+    hoverPanelEnabled?: boolean;
 }
 export declare const defaultDisplayConfig: PetDisplayConfig;
 /** Display value bounds (shared by load-time validation and setConfig). */

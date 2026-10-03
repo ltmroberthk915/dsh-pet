@@ -2,6 +2,9 @@
 export type AnimationMode = 'fixed' | 'native' | 'tick';
 export declare const DEFAULT_ANIMATION_FPS = 12;
 export declare const MAX_ANIMATION_FPS = 60;
+/** Hand-drawn companions need a readable gait, even with very fast models. */
+export declare const MAX_COMPANION_FPS = 12;
+export declare function companionFps(petId: string, fps?: number): number | undefined;
 export declare const DEFAULT_TICK_SLOPE: number;
 export declare const DEFAULT_TICK_INTERCEPT = 6;
 export declare const MIN_TICK_SLOPE = 0.0001;

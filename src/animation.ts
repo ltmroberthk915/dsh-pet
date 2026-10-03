@@ -2,6 +2,14 @@
 export type AnimationMode = 'fixed' | 'native' | 'tick'
 export const DEFAULT_ANIMATION_FPS = 12
 export const MAX_ANIMATION_FPS = 60
+/** Hand-drawn companions need a readable gait, even with very fast models. */
+export const MAX_COMPANION_FPS = 12
+
+export function companionFps(petId: string, fps?: number): number | undefined {
+  return fps === undefined ? undefined
+    : ['whale-girl-refined', 'blue-whale-business', 'miku'].includes(petId)
+      ? Math.min(MAX_COMPANION_FPS, animationFps(fps)) : fps
+}
 export const DEFAULT_TICK_SLOPE = 1 / 6
 export const DEFAULT_TICK_INTERCEPT = 6
 export const MIN_TICK_SLOPE = 0.0001
@@ -54,7 +62,7 @@ export function effectiveFps(display: { animationMode?: AnimationMode; animation
 /** Both running directions share the selected FPS policy, including tool execution. */
 export function retimeTracks<T extends { durations: number[] }>(tracks: Record<string, T>, fps?: number, runningTrack: 'running-right' | 'running-left' = 'running-right', density = 1): Record<string, T> {
   if (fps === undefined) return tracks
-  const ms = 1000 / (animationFps(fps) * Math.max(1, Math.min(4, density)))
+  const ms = 1000 / Math.min(MAX_ANIMATION_FPS, animationFps(fps) * Math.max(1, Math.min(4, density)))
   return Object.fromEntries(Object.entries(tracks).map(([key, track]) => [key, key === runningTrack
     ? { ...track, durations: track.durations.map(() => ms) } : track]))
 }

@@ -28,16 +28,17 @@ const copy = (relative,filter) => {
 }
 try {
   for (const relative of includes) copy(relative,path=>!path.endsWith('.test.ts')&&!path.endsWith('.test.tsx'))
-  for (const file of ['index.js','client.js','invariant.js']) copy('lib/'+file)
-  copy('lib/types',path=>statSync(path).isDirectory()||path.endsWith('.d.ts'))
+  // Include every runtime chunk/vendor bundle. A fixed list of entrypoints
+  // silently drops the files introduced by code splitting or a new renderer.
+  copy('lib',path=>statSync(path).isDirectory()||path.endsWith('.js')||path.endsWith('.d.ts'))
   writeFileSync(join(stage,'package.json'),JSON.stringify(manifest,null,2)+'\n')
-  const npm = process.env.DSH_PET_NPM_CLI ?? 'C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js'
+  const npm = process.env.DSH_PET_NPM_CLI ?? realpathSync(join(process.execPath,
+    process.platform === 'win32' ? '../node_modules/npm/bin/npm-cli.js' : '../npm'))
   const packed = spawnSync(process.execPath,[npm,'pack','--ignore-scripts','--json','--pack-destination',output],
     {cwd:stage,encoding:'utf8',windowsHide:true,maxBuffer:4*1024*1024})
   if (packed.status!==0) throw new Error(packed.stderr||packed.stdout)
   const metadata = JSON.parse(packed.stdout)[0]
-  const archive = join(output,'dsh-session-pet-'+manifest.version+'.tgz')
-  cpSync(join(output,metadata.filename),archive)
+  const archive = join(output,metadata.filename)
   const opened = spawnSync('tar',['-xf',archive,'-C',unpack],{encoding:'utf8',windowsHide:true})
   if (opened.status!==0) throw new Error(opened.stderr)
   const installed = join(unpack,'package')
@@ -53,13 +54,14 @@ try {
     if (!existsSync(join(pet.dir,path))) throw new Error('Missing packaged asset: '+pet.id+'/'+path)
     servedFiles++
   }
-  for (const file of ['desktop/overlay.js','desktop/overlay.css','desktop/bridge-manifest.json','desktop/install-desktop.cjs','desktop/Install-Desktop.ps1','desktop/archive-support.cjs','desktop/companion-main.cjs','desktop/companion-host.cjs','desktop/companion-runtime.cjs','docs/install-desktop-windows.md','lib/client.js','lib/types/index.d.ts','lib/types/client/index.d.ts']) {
+  for (const file of ['desktop/overlay.js','desktop/overlay.css','desktop/bridge-manifest.json','desktop/install-desktop.cjs','desktop/Install-Desktop.ps1','desktop/archive-support.cjs','desktop/companion-main.cjs','desktop/companion-host.cjs','desktop/companion-runtime.cjs','docs/install-desktop-windows.md','lib/client.js','lib/live2d-vendor.js','lib/types/index.d.ts','lib/types/client/index.d.ts']) {
     if (!existsSync(join(installed,file))) throw new Error('Missing packaged entry: '+file)
   }
   require(join(installed,'desktop/archive-support.cjs')).loadPayload(installed)
   const actual = JSON.parse(readFileSync(join(installed,'package.json'),'utf8'))
   if (actual.scripts||actual.devDependencies||actual.packageManager) throw new Error('Install-time hooks leaked into package')
-  if (!readFileSync(join(installed,'lib/client.js'),'utf8').includes('@ltmroberthk915/dsh-pet')) throw new Error('Wrong browser module identity')
+  if (!readFileSync(join(installed,'lib/client.js'),'utf8').startsWith(`window.__ModuleLoader__.load({id:${JSON.stringify(manifest.name)},`)) throw new Error('Wrong browser module identity')
+  if (!readFileSync(join(installed,'cordis.patch.yml'),'utf8').includes(`name: '${manifest.name}'`)) throw new Error('Wrong host bundle identity')
   const sha256 = createHash('sha256').update(readFileSync(archive)).digest('hex')
   const result = {status:'passed',name:manifest.name,version:manifest.version,archive:basename(archive),
     bytes:statSync(archive).size,sha256,packageFiles:metadata.files.length,petIds:ids,defaultPet:registry.defaultEntry().id,

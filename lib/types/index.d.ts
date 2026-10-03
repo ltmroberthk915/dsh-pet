@@ -8,7 +8,7 @@
  * those sources, never touching host or client code. Install via
  * 'dsh plugin --profile web add link:<dsh-web>/packages/dsh-pet'; the
  * cordis.patch.yml inserts this plugin row.
- * @module @ltmroberthk915/dsh-pet
+ * @module dsh-pet-copilot
  */
 import { Context, type Volatile } from '@deepseek-ai/cordis';
 import z from '@deepseek-ai/schemastery';
@@ -50,6 +50,7 @@ export declare const PET_FORM_DEFAULTS: {
     readonly animationTickIntercept: 6;
     readonly desktopEnabled: true;
     readonly multiPetEnabled: false;
+    readonly hoverPanelEnabled: false;
     readonly petId: "whale-girl";
     readonly enabled: true;
     readonly decorationEnabled: true;
@@ -83,6 +84,7 @@ export interface PetFormConfig {
     animationTickIntercept?: LiveField<number>;
     desktopEnabled?: LiveField<boolean>;
     multiPetEnabled?: LiveField<boolean>;
+    hoverPanelEnabled?: LiveField<boolean>;
     /** Selected pet id (a registry entry; the service clamps stale values). */
     petId?: LiveField<string | undefined>;
 }
@@ -113,6 +115,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     animationTickIntercept: z<number, number, "volatile-defined">;
     desktopEnabled: z<boolean, boolean, "volatile-defined">;
     multiPetEnabled: z<boolean, boolean, "volatile-defined">;
+    hoverPanelEnabled: z<boolean, boolean, "volatile-defined">;
     petId: z<string, string, "volatile">;
     enabled: z<boolean, boolean, "volatile-defined">;
     decorationEnabled: z<boolean, boolean, "volatile-defined">;
@@ -128,6 +131,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     animationTickIntercept: z<number, number, "volatile-defined">;
     desktopEnabled: z<boolean, boolean, "volatile-defined">;
     multiPetEnabled: z<boolean, boolean, "volatile-defined">;
+    hoverPanelEnabled: z<boolean, boolean, "volatile-defined">;
     petId: z<string, string, "volatile">;
     enabled: z<boolean, boolean, "volatile-defined">;
     decorationEnabled: z<boolean, boolean, "volatile-defined">;

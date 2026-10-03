@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { animationFps, effectiveFps, footerTokensPerSecond, retimeTracks, tickFps } from './animation.ts'
+import { animationFps, companionFps, effectiveFps, footerTokensPerSecond, retimeTracks, tickFps } from './animation.ts'
 
 describe('playback modes and footer speed', () => {
   it('uses the footer formula and the same rounding, without counting chunks or characters', () => {
@@ -48,10 +48,19 @@ describe('playback modes and footer speed', () => {
   it('keeps cycle speed when a pet has twice as many distinct drawings', () => {
     const old = { 'running-right': { durations: Array(8).fill(125) } }
     const dense = { 'running-right': { durations: Array(16).fill(62.5) } }
-    for (const fps of [6,12,30,50,60]) {
+    for (const fps of [6,12,30]) {
       const cycle = (tracks: Record<string, { durations: number[] }>) => tracks['running-right']!.durations.reduce((a,b)=>a+b,0)
       expect(cycle(retimeTracks(dense,fps,'running-right',2))).toBeCloseTo(cycle(retimeTracks(old,fps)))
     }
     expect(retimeTracks(dense,undefined,'running-right',2)).toBe(dense)
+    expect(retimeTracks(dense,60,'running-right',2)['running-right']!.durations.every(ms => ms >= 1000/60)).toBe(true)
+  })
+  it('caps built-in companion movement at 12 actual FPS at high token rates', () => {
+    for (const pet of ['whale-girl-refined','blue-whale-business','miku']) {
+      expect(companionFps(pet,effectiveFps({animationMode:'tick'},297))).toBe(12)
+      expect(companionFps(pet,6)).toBe(6)
+      expect(companionFps(pet,undefined)).toBeUndefined()
+    }
+    expect(companionFps('custom',50)).toBe(50)
   })
 })

@@ -6,7 +6,7 @@
  * forwards the chrome's drag gesture onto the conventional 'drag' track
  * (when the pet declares one), and renders the localized fallback card when
  * the served config is invalid.
- * @module @ltmroberthk915/dsh-pet/client/renderers/Frames2dVisualMount
+ * @module dsh-pet-copilot/client/renderers/Frames2dVisualMount
  */
 
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'

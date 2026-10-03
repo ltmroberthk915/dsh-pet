@@ -6,7 +6,7 @@
  * float-text toasts. It talks to the host through the injected verb API,
  * writes results straight back into the store (the 2 s poll stays the
  * backstop), and steers the frames2d renderer through the per-pet bus.
- * @module @ltmroberthk915/dsh-pet/client/GameplayHud
+ * @module dsh-pet-copilot/client/GameplayHud
  */
 import { type ReactElement } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';

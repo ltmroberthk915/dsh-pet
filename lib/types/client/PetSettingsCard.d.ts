@@ -13,6 +13,7 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client';
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store';
 import { type CardActions, type CardShell, type FieldState as CardFieldState } from './settings-form.ts';
+import { type PetServiceStatus } from './pet-api.ts';
 /** The pet's settings fields this card edits (the namespace's full schema). */
 export interface PetSettings {
     /** Master switch for the plugin. */
@@ -34,6 +35,7 @@ export interface PetSettings {
 }
 /** What the pet settings card renders. */
 export interface PetSettingsCardState extends CardShell {
+    serviceStatus: PetServiceStatus;
     /** The aggregate shell has no Host settings form; pet selection uses its own persisted API. */
     petSelectionFallback: boolean;
     /** Plugin master switch. */
@@ -78,15 +80,14 @@ export declare class PetSettingsCardController {
     private savingPet;
     private petSaveFailed;
     private loaded;
-    private attempts;
+    private serviceStatus;
     private disposed;
     /** Pending deferred-load or retry timer; cancelled by dispose(). */
     private pendingTimer;
     /** @param scope - the bound configuration form for the 'pet' entry. */
     constructor(scope: ConfigForm<PetSettings>);
-    /** Resolve the registry choices once (retried a few times on failure). */
-    private loadPets;
-    private loadPetState;
+    /** Retry throughout installation/reload; retain drafts until a verified save. */
+    private refreshService;
     private fallback;
     /**
      * The visibility the fallback switch renders: the staged draft when the user

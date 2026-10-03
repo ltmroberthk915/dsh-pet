@@ -8,7 +8,7 @@
  * slots keep the built-in lines. Picks cycle round-robin within a pool so
  * repeated interactions stay varied while tests stay deterministic (no
  * randomness, no clock).
- * @module @ltmroberthk915/dsh-pet/remarks
+ * @module dsh-pet-copilot/remarks
  */
 /** Interaction events a reaction line can accompany. */
 export type RemarkKind = 'pet' | 'petCooldown' | 'feed' | 'feedCooldown' | 'noTreats';

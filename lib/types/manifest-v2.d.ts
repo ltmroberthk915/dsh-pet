@@ -20,7 +20,7 @@
  * This file is imported directly by scripts/ (dsh-pet-migrate-v2) under
  * node's strip-only TypeScript mode: keep it erasable-syntax-only (no
  * parameter properties, enums, or namespaces).
- * @module @ltmroberthk915/dsh-pet/manifest-v2
+ * @module dsh-pet-copilot/manifest-v2
  */
 import type { ActivityPhase, PetAnimation } from './state.ts';
 import { type PetGameplayManifest } from './gameplay.ts';

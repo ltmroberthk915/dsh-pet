@@ -18,7 +18,7 @@
  * mandatory. Groups with multiple motions pick a random entry, and a tap
  * that hits a declared hit area plays the conventional 'TapBody' group,
  * returning to the phase's group when the tap motion finishes.
- * @module @ltmroberthk915/dsh-pet/client/renderers/live2d
+ * @module dsh-pet-copilot/client/renderers/live2d
  */
 
 import type { ActivityPhase } from '../../state.ts'

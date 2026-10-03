@@ -8,6 +8,7 @@ import type { PetStateView } from '../service.ts'
 import type { PetDefinition } from '../registry.ts'
 import { defaultPetRendererRegistry } from './renderers/registry.ts'
 import { frames2dRenderer } from './renderers/frames2d.ts'
+import { petRenderSize } from '../../desktop/pet-layout.js'
 
 defaultPetRendererRegistry.register(frames2dRenderer)
 const bridge = window.dshPetOverlay!
@@ -18,7 +19,7 @@ let latest: PetStateView | undefined
 function renderState() {
   if (!latest) return
   const pet = knownPets.find(p => p.id === latest!.pet.id)
-  const width = latest.display.size * (pet?.cell.width ?? 192) / (pet?.cell.height ?? 208)
+  const width = Math.round(petRenderSize(latest.pet.id, latest.display.size) * (pet?.cell.width ?? 192) / (pet?.cell.height ?? 208))
   store.actions.setSnapshot({ ...latest, display: { ...latest.display, right: (window.innerWidth - width) / 2, bottom: 135 } })
 }
 async function refresh() {

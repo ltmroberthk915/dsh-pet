@@ -3,7 +3,7 @@
  * (reaction bubbles), written only through the store's audit actions. The
  * RPC polling and interactions live in the plugin apply body; components
  * only ever read snapshots.
- * @module @ltmroberthk915/dsh-pet/client/pet-store
+ * @module dsh-pet-copilot/client/pet-store
  */
 
 import { defineStore } from '@deepseek-ai/dsh-client-store'

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { PlaybackSettings } from './PlaybackSettings.tsx'
 import type { DesktopStatus } from '../desktop-status.ts'
+import { t } from './locales.ts'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers() })
 
@@ -24,6 +25,34 @@ function mockHost(desktop?: DesktopStatus) {
 }
 
 describe('Tick settings', () => {
+  it('recovers from an installation gap, distinguishes authorization errors, and blocks stale writes', async () => {
+    vi.useFakeTimers()
+    let status = 404
+    let writes = 0
+    const state = { pet: { id: 'whale-girl-refined', displayName: '鲸鱼娘' }, display: { animationMode: 'tick', animationFps: 8, animationTickSlope: 0.02, animationTickIntercept: 4 } }
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.body) writes++
+      return { ok: status === 200, status, json: async () => state }
+    }))
+    render(<PlaybackSettings />)
+    await act(async () => { await vi.advanceTimersByTimeAsync(8000) })
+    expect(screen.getByText(t('settings.serviceUnavailable'))).toBeTruthy()
+    expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(true)
+    status = 200
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+    expect(screen.queryByText(t('settings.serviceUnavailable'))).toBeNull()
+    fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '0.15' } })
+    status = 401
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+    expect(screen.getByText(t('settings.serviceAuthorization'))).toBeTruthy()
+    fireEvent.click(screen.getByText('保存动画设置'))
+    expect(writes).toBe(0)
+    status = 200
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+    expect(screen.queryByText(t('settings.serviceAuthorization'))).toBeNull()
+    expect((screen.getByLabelText('斜率 k') as HTMLInputElement).value).toBe('0.15')
+    expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(false)
+  })
   it('shows the automatically started window version without asking for a patch', async () => {
     mockHost({ supported: true, state: 'ready', active: true, version: '1.2.0' })
     render(<PlaybackSettings />)
@@ -47,19 +76,34 @@ describe('Tick settings', () => {
     expect(checkbox.checked).toBe(true)
     fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
-    expect(host.writes).toEqual([expect.objectContaining({ multiPetEnabled: true, animationTickSlope: 0.1, animationTickIntercept: 4 })])
+    expect(host.writes).toEqual([expect.objectContaining({ multiPetEnabled: true, hoverPanelEnabled: false, animationTickSlope: 0.1, animationTickIntercept: 4 })])
+  })
+  it('lets the user turn hover panels on and back off', async () => {
+    const host = mockHost()
+    render(<PlaybackSettings />)
+    await screen.findByLabelText('斜率 k')
+    const checkbox = screen.getByLabelText('悬停展开看板') as HTMLInputElement
+    expect(checkbox.checked).toBe(false)
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByText('保存动画设置'))
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).toMatchObject({ hoverPanelEnabled: true })
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByText('保存动画设置'))
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).toMatchObject({ hoverPanelEnabled: false })
   })
   it('previews and saves both parameters against the actual footer rate', async () => {
     const host = mockHost()
     render(<PlaybackSettings />)
-    expect(await screen.findByText('预览：264 tok/s → 30.4 FPS')).toBeTruthy()
+    expect(await screen.findByText('预览：264 tok/s → 12.0 FPS')).toBeTruthy()
     fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '0.2' } })
     fireEvent.change(screen.getByLabelText('截距 b'), { target: { value: '5' } })
-    expect(screen.getByText('预览：264 tok/s → 57.8 FPS')).toBeTruthy()
+    expect(screen.getByText('预览：264 tok/s → 12.0 FPS')).toBeTruthy()
     fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes).toEqual([{ petId: 'whale-girl-refined', animationMode: 'tick', animationFps: 20,
-      desktopEnabled: true, multiPetEnabled: false, animationTickSlope: 0.2, animationTickIntercept: 5 }])
+      desktopEnabled: true, multiPetEnabled: false, hoverPanelEnabled: false, animationTickSlope: 0.2, animationTickIntercept: 5 }])
   })
 
   it('blocks a nonpositive slope and displays output limits in the preview', async () => {
@@ -72,7 +116,7 @@ describe('Tick settings', () => {
     fireEvent.click(screen.getByText('保存动画设置'))
     expect(host.writes).toEqual([])
     fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '1' } })
-    expect(screen.getByText('预览：264 tok/s → 60.0 FPS')).toBeTruthy()
+    expect(screen.getByText('预览：264 tok/s → 12.0 FPS')).toBeTruthy()
     fireEvent.change(screen.getByLabelText('动画 FPS'), { target: { value: '100' } })
     expect(screen.getByText('帧率需为 1–60 之间的数字；当前输入尚未提交保存。')).toBeTruthy()
     expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(true)

@@ -24,7 +24,7 @@
  * that only carry 'frames' keep working: geometry, per-row frame counts and
  * per-track rhythm all fall back to the hatch-pet contract defaults, and the
  * whale-girl manifest overrides its own durations.
- * @module @ltmroberthk915/dsh-pet/registry
+ * @module dsh-pet-copilot/registry
  */
 import type { ActivityPhase, PetAnimation } from './state.ts';
 import { type PetRemarks, type PetRemarksManifest } from './remarks.ts';
@@ -111,6 +111,8 @@ export interface PetManifest {
 }
 /** Per-track rhythm overrides a manifest may carry. */
 export interface PetTrackOverride {
+    /** Explicit atlas columns, in playback order; permits reviewed subsets. */
+    frames?: number[];
     /** Per-frame durations in ms (cycled to the row's frame count). */
     durations?: number[];
     /** Whether the track loops. */

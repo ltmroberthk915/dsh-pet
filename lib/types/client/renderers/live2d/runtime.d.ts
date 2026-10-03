@@ -10,7 +10,7 @@
  * The vendor surface below is the structural slice the renderer consumes;
  * the real objects come from 'window.__dshPetLive2d' (lib/live2d-vendor.js),
  * so this module never imports pixi — the client bundle stays lean.
- * @module @ltmroberthk915/dsh-pet/client/renderers/live2d/runtime
+ * @module dsh-pet-copilot/client/renderers/live2d/runtime
  */
 /** The pixi Application slice the renderer uses. */
 export interface Live2dVendorApp {

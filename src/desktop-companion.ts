@@ -1,5 +1,4 @@
 import { createRequire } from 'node:module'
-import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { dshHome } from './dsh-home.ts'
@@ -11,8 +10,9 @@ export function createDesktopCompanion(options: { routes(): WebRoute[]; enabled(
   const root = petPackageRoot(import.meta.url)
   const { createCompanion } = createRequire(import.meta.url)(join(root, 'desktop/companion-host.cjs'))
   const home = dshHome()
-  const cacheDir = process.env.LOCALAPPDATA
-    ? join(process.env.LOCALAPPDATA, 'dsh-pet', createHash('sha256').update(home).digest('hex').slice(0, 16))
-    : join(home, 'pet-desktop')
+  // Windows Store launchers can virtualize individual AppData files while
+  // realpath(parent) still names the physical directory. Keep the private
+  // runtime under DSH's data root so strict containment/hash checks remain valid.
+  const cacheDir = join(home, 'cache', 'pet-desktop')
   return createCompanion({ ...options, pluginDir: root, cacheDir }) as DesktopCompanion
 }

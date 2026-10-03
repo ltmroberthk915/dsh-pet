@@ -9,7 +9,7 @@
  * This contract only serves real consumers: sprite2d (existing) and live2d
  * (M3). Speculative capabilities join only when a renderer actually needs
  * them.
- * @module @ltmroberthk915/dsh-pet/contracts/renderer
+ * @module dsh-pet-copilot/contracts/renderer
  */
 import type { ActivityPhase } from '../state.ts';
 /** Contract version renderers declare against (independent of the manifest). */

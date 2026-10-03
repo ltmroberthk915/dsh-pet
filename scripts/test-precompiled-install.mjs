@@ -16,7 +16,7 @@ const result = spawnSync(process.execPath, [path.resolve(pnpm), 'add', path.isAb
   '--registry=https://registry.npmjs.org', '--reporter=append-only'], { cwd: dir, windowsHide: true, encoding: 'utf8', timeout: 180000, maxBuffer: 4 * 1024 * 1024 })
 fs.writeFileSync(path.join(dir, 'install.log'), result.stdout + '\n' + result.stderr)
 assert.equal(result.status, 0, result.stdout + result.stderr)
-const installed = path.join(dir, 'node_modules/@ltmroberthk915/dsh-pet')
+const installed = path.join(dir, 'node_modules/dsh-pet-copilot')
 const manifest = JSON.parse(fs.readFileSync(path.join(installed, 'package.json')))
 for (const hook of ['prepare', 'preinstall', 'install', 'postinstall', 'prepack']) assert.equal(manifest.scripts?.[hook], undefined)
 if (!source.startsWith('git+')) assert.equal(manifest.packageManager, undefined)

@@ -1,6 +1,6 @@
 # DSH Session Pet
 
-An independently maintained fork published as `@ltmroberthk915/dsh-pet`. [中文说明](README.zh.md).
+An independently maintained fork published as `dsh-pet-copilot`. [中文说明](README.zh.md).
 
 Based on [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet), licensed under Apache-2.0 with upstream attribution preserved in LICENSE and NOTICE.
 
@@ -8,21 +8,19 @@ Based on [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet), lice
 
 Choose a refined whale-girl, upstream v0.4.4 MIKU with additional session animations, or an original modern business blue whale in Settings → Pet. All three support one companion per active top-level conversation, a full-size main companion and 52.7% background companions, model-based palettes, per-session footer tok/s playback with editable slope and intercept, shared affinity and feeding, and finished companions that wait until their results are viewed. Selecting a conversation promotes its pet without requiring a message. A viewed, completed companion retires when the user leaves that conversation. See the [new companions guide](docs/miku-business-pets.md).
 
-Install the prebuilt package from this repository's releases:
+Install the downloaded precompiled package using the official Desktop installation's dsh command (replace the local path):
 
-```sh
-dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/latest/download/dsh-session-pet.tgz
+```powershell
+dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.2.tgz'
 ```
 
-Use your web profile for a web host. Back up DSH first and disable/remove the upstream package's loading declaration before enabling this fork; both provide the same pet service. Settings retain the existing `pet` identity and shared care data. Updates should come from this repository's releases, not the upstream npm package.
+**Save your work, fully quit DSH and reopen it after installation or upgrade.** DSH 0.2.0-rc.2 attempts to hot-load first-time installs; replacing an installed version requires a restart. The pet's independent windows start automatically once its host loads. No Agent, host patch or additional runtime download is required. The private runtime lives under $DSH_HOME/cache/pet-desktop; the host archive and care data are preserved.
 
-**Starting with v1.2.0, installing the plugin automatically starts independent windows in native Windows DSH.** No Agent, patch script, additional download or DSH restart is required. On first use, the plugin prepares a private copy of DSH's Electron runtime in the current user's cache. It leaves the host archive intact and loads the renderer directly from the installed plugin, so plugin updates also update the native window. The previous patched renderer is disabled during the transition.
+The market distribution identity is dsh-pet-copilot. Use add dsh-pet-copilot@1.3.2 only after that version resolves from npm. Preparing a tarball does not publish it. The market's official desktop bridge cannot update floating Git dependencies. Named registry and local-file targets let DSH recognize repeated installations. All JavaScript chunks are precompiled and included, without consumer build hooks or a packageManager field. Preserve the user's release-age and build policies. See the [fresh-install notes](docs/fresh-install-v1.3.2.md).
 
-Settings shows preparation, readiness and actionable failures, with Retry and Reset Position buttons. Verified with isolated native windows using DSH Desktop 0.2.0-rc.2 / Electron 44; other platforms and plain web hosts retain the embedded pet. See the [Windows guide](docs/install-desktop-windows.md) for runtime storage and optional legacy rollback.
+Use the web profile for a web host. Back up DSH and disable the upstream @linxin666/dsh-pet loading declaration before enabling this fork; both own the same pet service. Existing settings, names and shared care data remain compatible. Settings includes automatic connection recovery, a native-window Retry button and Reset Position. See the [Windows guide](docs/install-desktop-windows.md).
 
-Update with `dsh plugin --profile desktop update @ltmroberthk915/dsh-pet`. If the dependency is pinned to an older release URL, add the explicit new `releases/download/v1.3.0/dsh-session-pet.tgz` URL instead. Reinstalling an identical URL through the GUI's Install action can trigger DSH's `ambiguous-install` error. Distribution currently uses precompiled GitHub releases; the Git branch also includes `lib/` and has no `prepare` or consumer build hooks. Its pnpm version declaration is for development and CI; consumer installs do not run a nested package-manager install. Release tarballs omit the declaration entirely. Do not work around old Git build errors by changing global `allowBuilds` or `strictDepBuilds` settings. The [Chinese troubleshooting table](README.zh.md#安装故障排查) covers the reported installation errors.
-
-Build with `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm build:entries`, `pnpm typecheck`, and `pnpm build:local`. Automatic-window checks exercise the production controller, all three pets, sandboxing, bridge authentication, lifecycle and recovery in isolated native windows. The user's separate new computer has not been tested directly. Completion-review state is transient and released when the host session or application is disposed.
+Build with pnpm install --frozen-lockfile --ignore-scripts, pnpm typecheck and pnpm build:local. Integration checks use an isolated DSH home and the real desktop market bridge; they do not replace verification on the user's separate new computer or the public npm registry.
 
 Version 1.1.1 fixes `job_output` waiting so reading command output uses the review pose. The five whale palettes share planted legs and registered upright height; bows, hops and running retain their intentional movement. Historical validation: 155 relevant regression tests, TypeScript checks and 120 isolated Electron checks. Version 1.2.0 removes the need to update a separate host renderer.
 

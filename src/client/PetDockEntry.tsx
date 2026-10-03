@@ -9,7 +9,7 @@
  * renders a fixed-position summon button. Which sprite renders is decided by
  * the host snapshot's pet id resolved against the registry list — no per-pet
  * component exists.
- * @module @ltmroberthk915/dsh-pet/client/PetDockEntry
+ * @module dsh-pet-copilot/client/PetDockEntry
  */
 
 import { useEffect, useRef, useSyncExternalStore, type ReactElement } from 'react'

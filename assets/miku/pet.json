@@ -13,57 +13,35 @@
       "idle": {
         "frames": [
           "miku-pet-stop1.webp",
-          "mid-01.webp",
           "miku-pet-stop2.webp",
-          "mid-02.webp",
           "miku-pet-stop3.webp",
-          "mid-03.webp",
-          "miku-pet-stop4.webp",
-          "mid-04.webp"
+          "miku-pet-stop4.webp"
         ],
         "frameMs": [
-          750,
-          750,
-          140,
-          140,
-          60,
-          60,
-          240,
-          240
+          1500,
+          280,
+          120,
+          480
         ]
       },
       "drag": {
         "frames": [
           "miku-pet-move1.webp",
-          "mid-01.webp",
           "miku-pet-move2.webp",
-          "mid-02.webp",
           "miku-pet-move3.webp",
-          "mid-03.webp",
           "miku-pet-move4.webp",
-          "mid-04.webp",
           "miku-pet-move5.webp",
-          "mid-05.webp",
           "miku-pet-move6.webp",
-          "mid-06.webp",
-          "miku-pet-move7.webp",
-          "mid-07.webp"
+          "miku-pet-move7.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ]
       },
       "standup": {
@@ -71,43 +49,25 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-yun1.webp",
-          "mid-01.webp",
           "miku-pet-yun2.webp",
-          "mid-02.webp",
           "miku-pet-yun3.webp",
-          "mid-03.webp",
           "miku-pet-yun4.webp",
-          "mid-04.webp",
           "miku-pet-yun5.webp",
-          "mid-05.webp",
           "miku-pet-yun6.webp",
-          "mid-06.webp",
           "miku-pet-yun7.webp",
-          "mid-07.webp",
           "miku-pet-yun8.webp",
-          "mid-08.webp",
-          "miku-pet-yun9.webp",
-          "mid-09.webp"
+          "miku-pet-yun9.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ]
       },
       "sleep-intro": {
@@ -115,71 +75,45 @@
         "fallback": "sleep",
         "frames": [
           "miku-pet-sleep1.webp",
-          "mid-01.webp",
           "miku-pet-sleep2.webp",
-          "mid-02.webp",
-          "miku-pet-sleep3.webp",
-          "mid-03.webp"
+          "miku-pet-sleep3.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200
         ]
       },
       "sleep": {
         "frames": [
           "miku-pet-sleep4.webp",
-          "mid-01.webp",
           "miku-pet-sleep5.webp",
-          "mid-02.webp",
           "miku-pet-sleep6.webp",
-          "mid-03.webp",
-          "miku-pet-sleep7.webp",
-          "mid-04.webp"
+          "miku-pet-sleep7.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200
         ]
       },
       "work": {
         "frames": [
           "miku-pet-working1.webp",
-          "mid-01.webp",
           "miku-pet-working2.webp",
-          "mid-02.webp",
           "miku-pet-working3.webp",
-          "mid-03.webp",
           "miku-pet-working4.webp",
-          "mid-04.webp",
           "miku-pet-working5.webp",
-          "mid-05.webp",
-          "miku-pet-working6.webp",
-          "mid-06.webp"
+          "miku-pet-working6.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ]
       },
       "success": {
@@ -187,27 +121,17 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-workingyes1.webp",
-          "mid-01.webp",
           "miku-pet-workingyes2.webp",
-          "mid-02.webp",
           "miku-pet-workingyes3.webp",
-          "mid-03.webp",
           "miku-pet-workingyes4.webp",
-          "mid-04.webp",
-          "miku-pet-workingyes5.webp",
-          "mid-05.webp"
+          "miku-pet-workingyes5.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200
         ]
       },
       "fail": {
@@ -215,39 +139,23 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-workerr1.webp",
-          "mid-01.webp",
           "miku-pet-workerr2.webp",
-          "mid-02.webp",
           "miku-pet-workerr3.webp",
-          "mid-03.webp",
           "miku-pet-workerr4.webp",
-          "mid-04.webp",
           "miku-pet-workerr5.webp",
-          "mid-05.webp",
           "miku-pet-workerr6.webp",
-          "mid-06.webp",
           "miku-pet-workerr7.webp",
-          "mid-07.webp",
-          "miku-pet-workerr8.webp",
-          "mid-08.webp"
+          "miku-pet-workerr8.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ]
       },
       "happy": {
@@ -255,19 +163,13 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-happy1.webp",
-          "mid-01.webp",
           "miku-pet-happy2.webp",
-          "mid-02.webp",
-          "miku-pet-happy3.webp",
-          "mid-03.webp"
+          "miku-pet-happy3.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200
         ]
       },
       "shy": {
@@ -275,19 +177,13 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-shy1.webp",
-          "mid-01.webp",
           "miku-pet-shy2.webp",
-          "mid-02.webp",
-          "miku-pet-shy3.webp",
-          "mid-03.webp"
+          "miku-pet-shy3.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200
         ]
       },
       "flirty": {
@@ -295,19 +191,13 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-flirty1.webp",
-          "mid-01.webp",
           "miku-pet-flirty2.webp",
-          "mid-02.webp",
-          "miku-pet-flirty3.webp",
-          "mid-03.webp"
+          "miku-pet-flirty3.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200
         ]
       },
       "angry": {
@@ -315,19 +205,13 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-angry1.webp",
-          "mid-01.webp",
           "miku-pet-angry2.webp",
-          "mid-02.webp",
-          "miku-pet-angry3.webp",
-          "mid-03.webp"
+          "miku-pet-angry3.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200
         ]
       },
       "scratch": {
@@ -335,31 +219,19 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-stand1.webp",
-          "mid-01.webp",
           "miku-pet-stand2.webp",
-          "mid-02.webp",
           "miku-pet-stand3.webp",
-          "mid-03.webp",
           "miku-pet-stand4.webp",
-          "mid-04.webp",
           "miku-pet-stand5.webp",
-          "mid-05.webp",
-          "miku-pet-stand6.webp",
-          "mid-06.webp"
+          "miku-pet-stand6.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ]
       },
       "blink1": {
@@ -367,15 +239,11 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-closeeyes1.webp",
-          "mid-01.webp",
-          "miku-pet-closeeyes2.webp",
-          "mid-02.webp"
+          "miku-pet-closeeyes2.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100
+          200,
+          200
         ]
       },
       "blink2": {
@@ -383,15 +251,11 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-closeeye1.webp",
-          "mid-01.webp",
-          "miku-pet-closeeye2.webp",
-          "mid-02.webp"
+          "miku-pet-closeeye2.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100
+          200,
+          200
         ]
       },
       "eat": {
@@ -399,47 +263,27 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-eat1.webp",
-          "mid-01.webp",
           "miku-pet-eat2.webp",
-          "mid-02.webp",
           "miku-pet-eat3.webp",
-          "mid-03.webp",
           "miku-pet-eat4.webp",
-          "mid-04.webp",
           "miku-pet-eat5.webp",
-          "mid-05.webp",
           "miku-pet-eat6.webp",
-          "mid-06.webp",
           "miku-pet-eat7.webp",
-          "mid-07.webp",
           "miku-pet-eat8.webp",
-          "mid-08.webp",
           "miku-pet-eat9.webp",
-          "mid-09.webp",
-          "miku-pet-eat10.webp",
-          "mid-10.webp"
+          "miku-pet-eat10.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ]
       },
       "shop": {
@@ -447,123 +291,75 @@
         "fallback": "idle",
         "frames": [
           "miku-pet-shop1.webp",
-          "mid-01.webp",
           "miku-pet-shop2.webp",
-          "mid-02.webp",
           "miku-pet-shop4.webp",
-          "mid-03.webp",
-          "miku-pet-shop6.webp",
-          "mid-04.webp"
+          "miku-pet-shop6.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200
         ]
       },
       "running-right": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
           "frame-4.webp",
-          "mid-04.webp",
           "frame-5.webp",
-          "mid-05.webp",
           "frame-6.webp",
-          "mid-06.webp",
           "frame-7.webp",
-          "mid-07.webp",
-          "frame-8.webp",
-          "mid-08.webp"
+          "frame-8.webp"
         ],
         "frameMs": [
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125
         ],
         "loop": true
       },
       "running-left": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
           "frame-4.webp",
-          "mid-04.webp",
           "frame-5.webp",
-          "mid-05.webp",
           "frame-6.webp",
-          "mid-06.webp",
           "frame-7.webp",
-          "mid-07.webp",
-          "frame-8.webp",
-          "mid-08.webp"
+          "frame-8.webp"
         ],
         "frameMs": [
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63,
-          62,
-          63
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125,
+          125
         ],
         "loop": true
       },
       "waving": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
-          "frame-4.webp",
-          "mid-04.webp"
+          "frame-4.webp"
         ],
         "frameMs": [
-          175,
-          175,
-          175,
-          175,
-          175,
-          175,
-          175,
-          175
+          350,
+          350,
+          350,
+          350
         ],
         "loop": false,
         "fallback": "idle"
@@ -571,23 +367,15 @@
       "jumping": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
-          "frame-4.webp",
-          "mid-04.webp"
+          "frame-4.webp"
         ],
         "frameMs": [
-          110,
-          110,
-          110,
-          110,
-          110,
-          110,
-          110,
-          110
+          220,
+          220,
+          220,
+          220
         ],
         "loop": false,
         "fallback": "idle"
@@ -595,116 +383,72 @@
       "waiting": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
-          "frame-4.webp",
-          "mid-04.webp"
+          "frame-4.webp"
         ],
         "frameMs": [
-          175,
-          175,
-          175,
-          175,
-          175,
-          175,
-          175,
-          175
+          350,
+          350,
+          350,
+          350
         ],
         "loop": true
       },
       "review": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
-          "frame-4.webp",
-          "mid-04.webp"
+          "frame-4.webp"
         ],
         "frameMs": [
-          175,
-          175,
-          175,
-          175,
-          175,
-          175,
-          175,
-          175
+          350,
+          350,
+          350,
+          350
         ],
         "loop": true
       },
       "running": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
           "frame-4.webp",
-          "mid-04.webp",
           "frame-5.webp",
-          "mid-05.webp",
-          "frame-6.webp",
-          "mid-06.webp"
+          "frame-6.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ],
         "loop": true
       },
       "failed": {
         "frames": [
           "frame-1.webp",
-          "mid-01.webp",
           "frame-2.webp",
-          "mid-02.webp",
           "frame-3.webp",
-          "mid-03.webp",
           "frame-4.webp",
-          "mid-04.webp",
           "frame-5.webp",
-          "mid-05.webp",
           "frame-6.webp",
-          "mid-06.webp",
           "frame-7.webp",
-          "mid-07.webp",
-          "frame-8.webp",
-          "mid-08.webp"
+          "frame-8.webp"
         ],
         "frameMs": [
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100,
-          100
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
         ],
         "loop": false,
         "fallback": "idle"
@@ -995,6 +739,6 @@
     "dragState": "drag",
     "dragEndState": "standup"
   },
-  "version": "1.3.0",
-  "frameDensity": 2
+  "version": "1.3.1",
+  "frameDensity": 1
 }

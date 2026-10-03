@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, screen, session } from 'electron'
 import { readFile, writeFile, rename } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SECONDARY_SCALE, artworkRect, findOpenPosition } from './pet-layout.js'
+import { SECONDARY_SCALE, artworkRect, findOpenPosition, petRenderSize } from './pet-layout.js'
 
 const PAGE = 'dsh-app://pet/index.html'
 const DIR = fileURLToPath(new URL('.', import.meta.url))
@@ -107,14 +107,14 @@ export function installDesktopPet({ owner, request, openMain }) {
     return record
   }
   function measure(view) {
-    const size = Number.isFinite(view.display?.size) ? Math.max(20, Math.min(1024, view.display.size)) : 160
+    const size = petRenderSize(view.pet?.id, Number.isFinite(view.display?.size) ? Math.max(20, Math.min(1024, view.display.size)) : 160)
     const pet = petDefinitions.find(p => p.id === view.pet?.id)
     const ratio = pet?.cell?.width / pet?.cell?.height
     const width = size * (Number.isFinite(ratio) && ratio > 0 ? Math.min(8, ratio) : 1)
     const secondary = view.primary === false
     return { artwork: { width, height: size }, dimensions: {
-      width: Math.max(secondary ? 300 : WIDTH, Math.ceil(width + 80)),
-      height: Math.max(secondary ? 300 : HEIGHT, Math.ceil(size + (secondary ? 170 : 220))),
+      width: Math.max(300, secondary ? 300 : petRenderSize(view.pet?.id, WIDTH), Math.ceil(width + 80)),
+      height: Math.max(secondary ? 300 : petRenderSize(view.pet?.id, HEIGHT), Math.ceil(size + (secondary ? 170 : 220))),
     } }
   }
   function fit(bounds, geometry) {

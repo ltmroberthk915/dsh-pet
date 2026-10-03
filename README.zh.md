@@ -1,6 +1,6 @@
 # 多形象会话桌宠 · DSH Session Pet
 
-独立维护的 DSH 插件：`@ltmroberthk915/dsh-pet`。本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，沿用 Apache-2.0 许可证及原素材署名；改动由 ltmroberthk915 维护。
+独立维护的 DSH 插件：`dsh-pet-copilot`。本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，沿用 Apache-2.0 许可证及原素材署名；改动由 ltmroberthk915 维护。
 
 ![五套模型配色](docs/palettes.png)
 
@@ -16,48 +16,41 @@
 
 ## 安装与更新
 
-下载预构建的 [GitHub Release](https://github.com/ltmroberthk915/dsh-pet/releases/latest)，或在 DSH 外部终端运行：
+安装已经下载的预编译包；使用 DSH 官方桌面版携带的 dsh 入口，路径替换为实际下载位置：
 
-```sh
-dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/latest/download/dsh-session-pet.tgz
+```powershell
+dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.2.tgz'
 ```
 
-Web 宿主使用自己的 web profile。安装前备份 DSH 数据，并移除或停用旧 `@linxin666/dsh-pet` 的加载声明；两版共用宠物服务，不能同时启用。升级时只从此仓库的 Release 更新；不要安装原作者同名旧包覆盖本 fork。配置继续使用 `pet` 行及原养成数据。
+**安装或更新后，保存工作并完整退出 DSH，再重新打开。** DSH 0.2.0-rc.2 首次进程内安装会尝试热加载，覆盖已安装版本则要求重启；只关主窗口不一定退出程序。独立窗口在宿主加载插件后自动启用，新机器无需 Agent、补丁脚本或额外安装。首次启用在 $DSH_HOME/cache/pet-desktop 准备 DSH 自带的 Electron 运行库，不下载运行库、不修改宿主 app.asar。
 
-**v1.2.0 起，独立窗口随插件自动启用，新机器无需 Agent、补丁脚本或额外安装。** 首次启用会在当前用户缓存中准备 DSH 自带的 Electron 运行库，通常需等待几秒；不下载运行库，不修改宿主 `app.asar`，也不退出或重启 DSH。窗口运行时直接使用本插件的渲染器，更新插件即可同步更新窗口。旧版宿主桥接自动停用，养成数据保留。
+市场的标准分发身份为 dsh-pet-copilot。**只有 npm 已发布并可查询后**，才能使用下列 registry 目标；本地打包完成不等于已经发布：
 
-设置页显示准备、运行及失败状态，并提供「重试独立窗口」和「宠物窗口归位」。Windows 原生 DSH 0.2.0-rc.2 / Electron 44 已通过隔离实机验证；纯 Web 或其他平台继续使用应用内宠物。详细边界和旧补丁恢复见[Windows 安装说明](docs/install-desktop-windows.md)。
-
-更新时使用插件管理器的更新操作或：
-
-```sh
-dsh plugin --profile desktop update @ltmroberthk915/dsh-pet
+```powershell
+dsh plugin --profile desktop add dsh-pet-copilot@1.3.2
 ```
 
-如果旧依赖固定在旧版下载地址，请改为本次明确的版本地址：
+升级也使用 add 包名@明确版本。旧 Git 依赖需迁移到 registry 目标，市场桌面桥接不支持浮动 Git 的 update 路径。离线安装使用上面的带包名 file: 目标，避免裸 URL 重复安装时 DSH 无法辨认包身份。包内包含完整预编译文件，无须安装构建工具或修改全局构建策略。详见 [v1.3.2 新机修复](docs/fresh-install-v1.3.2.md)。
 
-```sh
-dsh plugin --profile desktop add https://github.com/ltmroberthk915/dsh-pet/releases/download/v1.3.0/dsh-session-pet.tgz
-```
-
-不要用 GUI「安装」反复提交同一个 URL 来重装已存在的依赖；DSH 可能报 `ambiguous-install`。当前使用 GitHub 预编译包分发；Git 分支也带有 `lib/`，无 `prepare` 或消费者构建步骤，不需要 `allowBuilds`、pnpm shim 或修改全局构建策略。
+安装前备份 DSH 数据，停用旧 @linxin666/dsh-pet 的加载声明；两版共用宠物服务。升级保留 pet 行、命名、养成数据及原设置。纯 Web 宿主使用其 web profile。独立窗口的「重试」和「归位」位于设置页，详见 [Windows 安装说明](docs/install-desktop-windows.md)。
 
 ### 安装故障排查
 
-| 原始错误或状态 | 处理 |
+| 状态 | 处理 |
 | --- | --- |
-| `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED` | 正在安装旧 Git 提交。改用本版预编译下载地址；不要为旧提交反复加白名单。 |
-| `pnpm is not recognized` / `ERR_PNPM_IGNORED_BUILDS` / `strictDepBuilds` | 旧 Git 源触发了嵌套构建。安装本版完整包，无须降低全局构建保护。 |
-| `ambiguous-install` / 无法从依赖变更中确定安装了哪一个包 | 使用更新操作；若更换版本，提交新版本的明确下载地址。 |
-| `minimumReleaseAge` | pnpm 的 registry 发布冷却策略可能延后选中刚发布的版本。本项目的明确 Release 文件地址不依赖 registry 自动选版。 |
-| npm 镜像返回 404 | 当前分发入口是上面的 Release 文件；不要将仓库名称当作已发布的 npm 包。 |
-| 独立窗口准备失败 | 查看设置页具体原因，处理磁盘空间或权限后点击重试；应用内宠物仍可使用。 |
+| Git prepare / 缺 pnpm / strictDepBuilds 错误 | 使用完整预编译包，不放宽全局构建保护。 |
+| exit=127（浮动 Git 更新） | 官方市场桥接不支持此路径；发布成功后改用包名@registry 版本。 |
+| ambiguous-install | 使用包名@版本或包名@file:实际路径，避免重复提交裸 URL。 |
+| minimumReleaseAge | 遵守当前发布等待期；本地文件安装不依赖 registry 自动选版。 |
+| npm 返回 404 | 确认版本是否已实际发布；未发布时使用收到的完整离线包。 |
+| 宠物宿主暂不可达 | 刚安装或更新后完整退出 DSH 再打开，页面自动重连，无需编辑 settings.yaml。 |
+| HTTP 401/403 | 连接未获授权，不能直接判断插件未加载；重开 DSH，网页端从 DSH 提供的入口进入。 |
+| 独立窗口准备失败 | 设置页保留具体原因与重试入口；应用内宠物仍可使用。 |
 
 ## 开发
 
 ```sh
 pnpm install --frozen-lockfile --ignore-scripts
-pnpm build:entries
 pnpm typecheck
 pnpm build:local
 ```

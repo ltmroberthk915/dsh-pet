@@ -7,6 +7,7 @@ import { Context } from '@deepseek-ai/cordis'
 import { PetService } from './service.ts'
 import { makePetRoutes } from './routes.ts'
 import { loadPetRegistry, petPackageRoot } from './registry.ts'
+import { loadPetPersist } from './persist.ts'
 
 describe('installed desktop plugin integration', () => {
   const dir = mkdtempSync(join(tmpdir(), 'dsh-pet-upgrade-'))
@@ -39,6 +40,18 @@ describe('installed desktop plugin integration', () => {
     expect(r.status).toBe(200)
     expect((await r.json() as any).display).toMatchObject(patch)
     expect(JSON.parse(readFileSync(join(dir,'pet.json'),'utf8')).display).toMatchObject(patch)
+  })
+  it('defaults hover panels off and persists both switch positions across reload', async () => {
+    expect(service.display().hoverPanelEnabled).toBe(false)
+    for (const enabled of [true, false]) {
+      const response = await fetch(base + '/api/pet/set-config', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ hoverPanelEnabled: enabled }) })
+      expect(response.status).toBe(200)
+      expect((await response.json()).display.hoverPanelEnabled).toBe(enabled)
+      expect(loadPetPersist(dir).display.hoverPanelEnabled).toBe(enabled)
+    }
+    const response = await fetch(base + '/api/pet/set-config', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ hoverPanelEnabled: 'true' }) })
+    expect(response.status).toBe(400)
+    expect(service.display().hoverPanelEnabled).toBe(false)
   })
   it('rejects malformed JSON, non-JSON writes and invalid numeric settings', async () => {
     for(const [body,contentType,status] of [['{','application/json',400],['[]','application/json',400],['{}','text/plain',415],['{"animationFps":"60"}','application/json',400],['{"animationMode":"fast"}','application/json',400],['{"animationFps":1e400}','application/json',400]] as const) {

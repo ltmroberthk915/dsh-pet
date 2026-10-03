@@ -8,7 +8,7 @@
  * contracts/status-decoration-v1.schema.json; this hand-rolled parser is
  * authoritative. Keep this file erasable-syntax-only (scripts/ import it
  * under node's strip-only mode).
- * @module @ltmroberthk915/dsh-pet/decoration
+ * @module dsh-pet-copilot/decoration
  */
 import type { DecorationManifestParse } from './contracts/status-decoration.ts';
 /** Geometry and content caps (the adopted PNG/WebP sprite-strip bounds). */

@@ -24,7 +24,7 @@
  * that only carry 'frames' keep working: geometry, per-row frame counts and
  * per-track rhythm all fall back to the hatch-pet contract defaults, and the
  * whale-girl manifest overrides its own durations.
- * @module @ltmroberthk915/dsh-pet/registry
+ * @module dsh-pet-copilot/registry
  */
 
 import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, statSync } from 'node:fs'
@@ -171,6 +171,8 @@ export interface PetManifest {
 
 /** Per-track rhythm overrides a manifest may carry. */
 export interface PetTrackOverride {
+  /** Explicit atlas columns, in playback order; permits reviewed subsets. */
+  frames?: number[]
   /** Per-frame durations in ms (cycled to the row's frame count). */
   durations?: number[]
   /** Whether the track loops. */
@@ -423,12 +425,19 @@ function buildTracks(
       warn('track ' + animation + ' carries no usable durations')
       return undefined
     }
-    const frameCount = Math.max(1, Math.min(rows[row]!, columns))
+    const rowFrames = Math.max(1, Math.min(rows[row]!, columns))
+    if (override?.frames !== undefined && (!Array.isArray(override.frames) || override.frames.length === 0
+      || override.frames.length > rowFrames || override.frames.some(frame => !Number.isInteger(frame) || frame < 0 || frame >= rowFrames))) {
+      warn('track ' + animation + ' carries invalid atlas frame indices')
+      return undefined
+    }
+    const frames = override?.frames ?? Array.from({ length: rowFrames }, (_, index) => index)
+    const frameCount = frames.length
     const sized = durations.length >= frameCount
       ? durations.slice(0, frameCount)
       : Array.from({ length: frameCount }, (_, index) => durations[index % durations.length]!)
     tracks[animation] = {
-      frames: Array.from({ length: frameCount }, (_, index) => index),
+      frames: [...frames],
       durations: sized,
       loop: typeof override?.loop === 'boolean' ? override.loop : pattern.loop,
       ...(override?.fallback === undefined

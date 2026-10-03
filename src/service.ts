@@ -11,7 +11,7 @@ import { boundAnimation } from './animation-bindings.ts'
  * Concurrent sessions each keep their own machine: the sprite animation
  * follows the most recent meaningful event (the display session) while the
  * state view carries one bubble per active session.
- * @module @ltmroberthk915/dsh-pet/service
+ * @module dsh-pet-copilot/service
  */
 
 import { Context, Service } from '@deepseek-ai/cordis'
@@ -127,6 +127,7 @@ export interface PetSettingsSection {
   animationTickIntercept?: number
   desktopEnabled?: boolean
   multiPetEnabled?: boolean
+  hoverPanelEnabled?: boolean
   /** Master switch for the plugin (browser half + host routes). */
   enabled?: boolean
   /**
@@ -861,7 +862,7 @@ export class PetService extends Service {
       if (['size', 'right', 'bottom', 'bubbleScale', 'animationFps', 'animationTickSlope', 'animationTickIntercept'].includes(key) && (typeof value !== 'number' || !Number.isFinite(value))) throw new Error('invalid-' + key)
       if (key === 'animationTickSlope' && ((value as number) < MIN_TICK_SLOPE || (value as number) > MAX_TICK_SLOPE)) throw new Error('invalid-animationTickSlope')
       if (key === 'animationTickIntercept' && ((value as number) < MIN_TICK_INTERCEPT || (value as number) > MAX_TICK_INTERCEPT)) throw new Error('invalid-animationTickIntercept')
-      if (['visible', 'desktopEnabled', 'multiPetEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
+      if (['visible', 'desktopEnabled', 'multiPetEnabled', 'hoverPanelEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
       if (key === 'animationMode' && !['fixed', 'native', 'tick'].includes(value as string)) throw new Error('invalid-animationMode')
     }
     const next = { ...this.ledger.snapshot.display, ...patch }
@@ -917,6 +918,7 @@ export class PetService extends Service {
     }
     next.desktopEnabled = section.desktopEnabled ?? next.desktopEnabled ?? true
     next.multiPetEnabled = section.multiPetEnabled ?? next.multiPetEnabled ?? false
+    next.hoverPanelEnabled = section.hoverPanelEnabled ?? next.hoverPanelEnabled ?? false
     next.visible = section.visible && (section.enabled ?? true)
     next.size = Math.round(Math.min(DISPLAY_SIZE_MAX, Math.max(DISPLAY_SIZE_MIN, section.size)))
     next.right = Math.round(Math.min(DISPLAY_INSET_MAX, Math.max(0, section.right)))
@@ -945,6 +947,7 @@ export class PetService extends Service {
       animationTickIntercept: snapshot.display.animationTickIntercept,
       desktopEnabled: snapshot.display.desktopEnabled,
       multiPetEnabled: snapshot.display.multiPetEnabled,
+      hoverPanelEnabled: snapshot.display.hoverPanelEnabled,
       petId: snapshot.petId,
     }).catch(() => {
       // A settings write failure must not break the pet's own persistence.

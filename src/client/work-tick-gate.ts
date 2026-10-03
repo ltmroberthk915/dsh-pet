@@ -9,7 +9,7 @@
  * The window is the active pet's own `gameplay.work.tickMs`, not a constant: a
  * pet configured with a shorter cadence must actually adjudicate that often,
  * while a fixed window would downgrade it without saying so (#1494).
- * @module @ltmroberthk915/dsh-pet/client/work-tick-gate
+ * @module dsh-pet-copilot/client/work-tick-gate
  */
 
 /** Window used when the active pet declares no work cadence. */

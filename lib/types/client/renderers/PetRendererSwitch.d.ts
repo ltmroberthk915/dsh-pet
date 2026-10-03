@@ -5,7 +5,7 @@
  * sprite chrome (the dock, bubbles and panel belong to the pet center, not
  * the renderer); a renderer this build cannot serve renders a clear
  * diagnostic card instead of blanking.
- * @module @ltmroberthk915/dsh-pet/client/renderers/PetRendererSwitch
+ * @module dsh-pet-copilot/client/renderers/PetRendererSwitch
  */
 import { type ReactElement, type ReactNode } from 'react';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';

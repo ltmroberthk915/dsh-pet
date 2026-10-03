@@ -1,6 +1,6 @@
 /**
  * dsh-pet locale dictionaries (zh/en).
- * @module @ltmroberthk915/dsh-pet/client/locales
+ * @module dsh-pet-copilot/client/locales
  */
 
 /** Dictionary namespace this package registers. */
@@ -79,7 +79,10 @@ export const zh = {
   'settings.off': '关',
   'settings.overridden': '已覆盖',
   'settings.reset': '恢复默认',
-  'settings.notExposed': '当前 DSH 版本未向设置页暴露本插件的配置命名空间，表单不可用。可编辑 $DSH_HOME/settings.yaml 直接配置，或确认提供该命名空间的插件已挂载其设置域并重启。',
+  'settings.notExposed': '宠物设置尚未就绪，正在重新连接。',
+  'settings.serviceLoading': '正在连接宠物宿主…',
+  'settings.serviceUnavailable': '暂时无法连接宠物宿主。若刚安装或更新，请完整退出 DSH 后重新打开；页面会自动重连，无需手改配置文件。',
+  'settings.serviceAuthorization': '宠物连接未获授权（HTTP 401/403）。请完整退出 DSH 后重新打开；网页端请从 DSH 提供的入口重新进入。页面会自动重连。',
   'settings.readOnly': '当前部署的设置只读。',
   'settings.expand': '展开设置',
   'settings.collapse': '收起设置',
@@ -168,7 +171,10 @@ export const en = {
   'settings.off': 'Off',
   'settings.overridden': 'Overridden',
   'settings.reset': 'Reset to default',
-  'settings.notExposed': 'This DSH version does not expose this plugin\'s settings namespace to the configuration page, so the form is unavailable. Edit $DSH_HOME/settings.yaml directly, or confirm that the plugin owning the namespace is mounted with its settings domain and restart.',
+  'settings.notExposed': 'Pet settings are not ready. Reconnecting automatically.',
+  'settings.serviceLoading': 'Connecting to the pet service…',
+  'settings.serviceUnavailable': 'The pet service cannot be reached. If you just installed or updated it, fully quit and reopen DSH. This page reconnects automatically; no configuration file edits are needed.',
+  'settings.serviceAuthorization': 'The pet connection was not authorized (HTTP 401/403). Fully quit and reopen DSH; for the web client, reopen the entry provided by DSH. This page reconnects automatically.',
   'settings.readOnly': 'This deployment stores settings read-only.',
   'settings.expand': 'Show settings',
   'settings.collapse': 'Hide settings',

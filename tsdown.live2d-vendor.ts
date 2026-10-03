@@ -10,7 +10,7 @@ import type { UserConfig } from 'tsdown'
 
 export function live2dVendorBundle(): UserConfig {
   return {
-    name: '@ltmroberthk915/dsh-pet/live2d-vendor',
+    name: 'dsh-pet-copilot/live2d-vendor',
     entry: { 'live2d-vendor': 'src/client/renderers/live2d/vendor-entry.ts' },
     outDir: 'lib',
     format: 'iife',

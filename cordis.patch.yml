@@ -1,4 +1,4 @@
 # Keep the pet row identity so existing pet settings and shared affinity survive migration.
 - insert:
     - id: pet
-      name: '@ltmroberthk915/dsh-pet'
+      name: 'dsh-pet-copilot'

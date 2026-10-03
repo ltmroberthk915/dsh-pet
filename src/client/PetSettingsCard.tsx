@@ -20,6 +20,7 @@ import { PluginSettingsCard, ValueField, BooleanField, ChoiceField } from './Plu
 import { CardForm, booleanField, choiceField, type CardActions, type CardShell, type FieldState as CardFieldState } from './settings-form.ts'
 import { petNumberField } from './pet-setting-fields.ts'
 import sectionCss from './settings-section.module.css'
+import { petJson, petServiceFailure, type PetServiceStatus } from './pet-api.ts'
 
 /** The pet's settings fields this card edits (the namespace's full schema). */
 export interface PetSettings {
@@ -43,6 +44,7 @@ export interface PetSettings {
 
 /** What the pet settings card renders. */
 export interface PetSettingsCardState extends CardShell {
+  serviceStatus: PetServiceStatus
   /** The aggregate shell has no Host settings form; pet selection uses its own persisted API. */
   petSelectionFallback: boolean
   /** Plugin master switch. */
@@ -81,9 +83,11 @@ interface PetChoice {
 
 /** Fetch the registry list (the same data the sprite renders from). */
 async function fetchPetChoices(): Promise<PetChoice[]> {
-  const response = await fetch('/api/pet/pets')
-  if (!response.ok) throw new Error('pet pets failed: ' + response.status)
-  return (await response.json()) as PetChoice[]
+  const list = await petJson<PetChoice[]>('/api/pet/pets')
+  if (!Array.isArray(list) || !list.length || list.some(pet => typeof pet.id !== 'string' || typeof pet.displayName !== 'string')) {
+    throw new Error('pet registry unavailable')
+  }
+  return list
 }
 
 /** The persisted state the fallback mirrors: the selection and its visibility. */
@@ -96,9 +100,7 @@ interface PetState {
 
 /** Read the selection and visibility from the same persisted state the pet renders. */
 async function fetchPetState(): Promise<PetState> {
-  const response = await fetch('/api/pet/state')
-  if (!response.ok) throw new Error('pet state failed: ' + response.status)
-  const body = (await response.json()) as { pet?: { id?: unknown }; display?: { visible?: unknown } }
+  const body = await petJson<{ pet?: { id?: unknown }; display?: { visible?: unknown } }>('/api/pet/state')
   if (typeof body.pet?.id !== 'string') throw new Error('pet state has no selected pet')
   // A Host without the display block predates the visibility switch; the pet shows.
   return { petId: body.pet.id, visible: body.display?.visible !== false }
@@ -120,7 +122,7 @@ export class PetSettingsCardController {
   private savingPet = false
   private petSaveFailed = false
   private loaded = false
-  private attempts = 0
+  private serviceStatus: PetServiceStatus = 'loading'
   private disposed = false
   /** Pending deferred-load or retry timer; cancelled by dispose(). */
   private pendingTimer: number | undefined
@@ -145,45 +147,34 @@ export class PetSettingsCardController {
     this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = undefined
       if (this.disposed) return
-      void this.loadPets()
-      void this.loadPetState()
+      void this.refreshService()
     }, 0)
   }
 
-  /** Resolve the registry choices once (retried a few times on failure). */
-  private async loadPets(): Promise<void> {
-    if (this.loaded || this.disposed) return
-    try {
-      const list = await fetchPetChoices()
-      if (this.disposed) return
+  /** Retry throughout installation/reload; retain drafts until a verified save. */
+  private async refreshService(): Promise<void> {
+    const [state, choices] = await Promise.allSettled([
+      fetchPetState(), this.loaded ? Promise.resolve(undefined) : fetchPetChoices(),
+    ])
+    if (this.disposed) return
+    if (choices.status === 'fulfilled' && choices.value) {
+      const list = choices.value
       this.petChoices.splice(0, this.petChoices.length, ...list.map(choice => choice.id))
       for (const choice of list) this.petLabels.set(choice.id, choice.displayName)
       this.loaded = true
-      this.store.set(this.projection())
-    } catch {
-      if (this.disposed) return
-      this.attempts += 1
-      if (this.attempts < 3) {
-        this.pendingTimer = window.setTimeout(() => {
-          this.pendingTimer = undefined
-          if (this.disposed) return
-          void this.loadPets()
-        }, 3000)
-      }
     }
-  }
-
-  private async loadPetState(): Promise<void> {
-    try {
-      const state = await fetchPetState()
-      if (this.disposed) return
-      this.selectedPetId = state.petId
-      this.selectedVisible = state.visible
-      this.store.set(this.projection())
-    } catch {
-      // The Host form remains the authority when it is available. An absent
-      // pet API leaves the fallback unavailable rather than inventing state.
+    if (state.status === 'fulfilled') {
+      this.selectedPetId = state.value.petId
+      this.selectedVisible = state.value.visible
+      this.serviceStatus = choices.status === 'rejected' ? petServiceFailure(choices.reason) : 'ready'
+    } else {
+      this.serviceStatus = petServiceFailure(state.reason)
     }
+    this.store.set(this.projection())
+    this.pendingTimer = window.setTimeout(() => {
+      this.pendingTimer = undefined
+      if (!this.disposed) void this.refreshService()
+    }, 3000)
   }
 
   private fallback(): boolean {
@@ -210,7 +201,7 @@ export class PetSettingsCardController {
   private async saveFallback(): Promise<void> {
     const petId = this.stagedPetId
     const visible = this.stagedVisible
-    if (this.savingPet) return
+    if (this.savingPet || this.serviceStatus !== 'ready' || !this.loaded || this.disposed) return
     if (petId === undefined && visible === undefined) return
     if (petId !== undefined && !this.petChoices.includes(petId)) return
     this.savingPet = true
@@ -259,15 +250,16 @@ export class PetSettingsCardController {
       ...shell,
       ...(fallback ? {
         exposed: true,
-        writable: true,
+        writable: this.serviceStatus === 'ready' && this.loaded,
         dirty: this.stagedPetId !== undefined && this.stagedPetId !== this.selectedPetId
           || this.stagedVisible !== undefined && this.stagedVisible !== this.selectedVisible,
-        invalid: this.stagedPetId !== undefined && !this.petChoices.includes(this.stagedPetId),
+        invalid: this.serviceStatus !== 'ready' || !this.loaded || this.stagedPetId !== undefined && !this.petChoices.includes(this.stagedPetId),
         saving: this.savingPet,
         failed: this.petSaveFailed,
         failedReason: undefined,
       } : {}),
       petSelectionFallback: fallback,
+      serviceStatus: this.serviceStatus,
       enabled: this.form.field('enabled'),
       decorationEnabled: this.form.field('decorationEnabled'),
       visible: fallback ? this.fallbackVisible() : this.form.field('visible'),
@@ -348,6 +340,8 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
   const { t } = props
   const state = props.usePetSettingsCard(snapshot => snapshot)
   const disabled = !state.writable
+  const serviceNotice = t(state.serviceStatus === 'authorization' ? 'settings.serviceAuthorization'
+    : state.serviceStatus === 'loading' ? 'settings.serviceLoading' : 'settings.serviceUnavailable')
   const fieldProps = {
     overriddenLabel: t('settings.overridden'),
     resetLabel: t('settings.reset'),
@@ -356,7 +350,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
   }
   return (
     <PluginSettingsCard
-      t={t}
+      t={(key, params) => key === 'settings.notExposed' || key === 'settings.readOnly' && state.petSelectionFallback && state.serviceStatus !== 'ready' ? serviceNotice : t(key, params)}
       titleKey="settings.title"
       descriptionKey="settings.description"
       descriptionNode={state.petSelectionFallback ? t('settings.petHint') : undefined}
@@ -365,7 +359,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
       onDiscard={props.discard}
       alwaysOpen
     >
-      {state.invalid && <p role="status" style={{ color: '#c58b2a', lineHeight: 1.6 }}>{t('settings.invalidDraft')}</p>}
+      {state.invalid && (!state.petSelectionFallback || state.serviceStatus === 'ready') && <p role="status" style={{ color: '#c58b2a', lineHeight: 1.6 }}>{t('settings.invalidDraft')}</p>}
       {state.petSelectionFallback ? null : <BooleanField
         id="settings-pet-enabled"
         label={t('settings.enabled')}

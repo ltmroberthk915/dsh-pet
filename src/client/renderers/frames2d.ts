@@ -21,7 +21,7 @@
  *   historical behavior - cache-warm Image elements plus guarded src swaps,
  *   so environments without modern decoding keep working unchanged.
  *
- * @module @ltmroberthk915/dsh-pet/client/renderers/frames2d
+ * @module dsh-pet-copilot/client/renderers/frames2d
  */
 
 import { PET_RENDERER_API_VERSION, type PetRenderer, type PetRendererContext, type PetRendererHandle } from '../../contracts/renderer.ts'
@@ -341,7 +341,7 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       : activityTrack === config.phases.idle ? baseIdle : activityTrack
 
     const frameDuration = (): number => playbackFps !== undefined && (track === 'running-right' || track === 'running-left')
-      ? 1000 / (playbackFps * (config.frameDensity ?? 1)) : config.tracks[track]?.durations[frameIndex] ?? 200
+      ? 1000 / Math.min(60, playbackFps * (config.frameDensity ?? 1)) : config.tracks[track]?.durations[frameIndex] ?? 200
 
     /** Canvas path: paints the newest requested frame; stale draws drop out. */
     const paintCanvas = (url: string): void => {
