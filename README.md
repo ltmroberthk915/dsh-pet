@@ -1,5 +1,9 @@
 # DSH Session Pet · dsh-pet-copilot
 
+**See what your AI is doing at a glance.**
+
+A whale-girl, MIKU or business blue whale accompanies each active conversation. Model colors help distinguish sessions, running speed follows generation speed, and finished companions wait for you to check their results.
+
 **The npm package is `dsh-pet-copilot`; the repository is `ltmroberthk915/dsh-pet`.** Get the matching precompiled archive from [Releases](https://github.com/ltmroberthk915/dsh-pet/releases). `dsh-session-pet.tgz` remains an identical compatibility filename.
 
 This independent fork of [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet) is maintained by ltmroberthk915 under Apache-2.0, with artwork attribution preserved. [中文说明](README.zh.md)
@@ -14,7 +18,9 @@ Left/right running uses fixed FPS, original timings, or `FPS = max(1, k × foote
 
 Waiting for another agent uses the waiting pose. Opening a subagent gives the main pet that session's own generation state and footer token rate; returning to the parent restores its independent state.
 
-Enter `dsh-pet-copilot` in DSH's plugin manager when npm has a resolvable version accepted by the local policy. A tag, Release or archive does not prove npm publication. Market discovery also depends on catalog review and synchronization.
+In **Settings → Plugins → Add plugin**, enter **`dsh-pet-copilot`**. npm's default version is **1.3.3**; fresh and same-version installs have been verified with the official Desktop installer. Enter the package name instead of the GitHub repository URL to use the precompiled npm package and avoid downloading the source archive from GitHub.
+
+The [market submission](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/6359) is awaiting maintainer review. Once merged and synchronized, search **dsh-pet-copilot** in dsh-market, select the entry from **ltmroberthk915**, and use its Install / Update buttons. A passing submission check does not itself make a plugin visible in the catalog. Installation remains subject to the host's release-age policy described below.
 
 Use the Desktop installation's exact CLI, rather than an older global dsh:
 

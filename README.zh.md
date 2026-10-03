@@ -1,5 +1,9 @@
 # 多形象会话桌宠 · dsh-pet-copilot
 
+**看一眼桌宠，就知道 AI 忙到哪了。**
+
+鲸鱼娘、MIKU、商务小蓝鲸，给每个活跃会话一个看得见的伙伴。用配色区分模型，用跑动看生成速度，做完的任务等你查看。
+
 **npm 包名是 `dsh-pet-copilot`，GitHub 仓库是 `ltmroberthk915/dsh-pet`。** 从本仓库 [Release](https://github.com/ltmroberthk915/dsh-pet/releases) 下载同名预编译包。`dsh-session-pet.tgz` 仅作为同一包的兼容文件名保留。
 
 本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，由 ltmroberthk915 独立维护，沿用 Apache-2.0 与原素材署名。
@@ -17,7 +21,9 @@
 
 ## 安装与更新
 
-在插件管理页面填 `dsh-pet-copilot`；只有 npm 已有可解析的版本且满足本机安装策略时，该路径才可用。GitHub tag、Release 或本地打包成功均不能证明 npm 已发布；市场目录另有审核和同步过程。
+在 **设置 → 插件 → 添加插件** 输入 **`dsh-pet-copilot`**，默认安装 **1.3.3**。已使用 DSH 官方桌面安装器验证全新安装和同版本重复安装。填包名即可；填写 GitHub 仓库网址会走源码压缩包下载，可能遇到 GitHub 超时。
+
+[市场收录申请](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/6359) 正等待维护者审核。合并并同步后，在 dsh-market 搜索 **dsh-pet-copilot**，选择作者 **ltmroberthk915** 的条目，再点安装或更新。收录检查通过不等于已经上架；严格新版本策略仍按下文执行。
 
 终端诊断应使用**桌面安装目录中的 CLI**，不要依赖 PATH 上的旧全局 dsh：
 
