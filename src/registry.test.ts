@@ -334,6 +334,7 @@ describe('loadPetRegistry', () => {
     // the other atlas pets.
     expect(registry.entries.map(entry => entry.id)).toEqual([
       'blue-throated-bee-eater',
+      'blue-whale-business',
       'doro',
       'jyn',
       'miku',
@@ -374,14 +375,14 @@ describe('loadPetRegistry', () => {
       readFileSync(petAtlasFile(registry.byId('whale-girl-refined')!)),
     )).toBe(false)
     expect(registry.defaultEntry().id).toBe('whale-girl')
-    // Both built-in whales and every override-free pet share the one slow
-    // global rhythm (user request: all pets were too fast at the legacy
-    // hatch-pet contract pace).
+    // The original whale uses contract timing; the refined whale declares
+    // calm action tracks with its own pauses and blink durations.
+    const refinedManifest = JSON.parse(readFileSync(join(petPackageRoot(import.meta.url), 'assets/whale-refined/pet.json'), 'utf8'))
     for (const track of PET_ROW_ORDER) {
       expect(registry.byId('whale-girl')!.tracks[track].durations)
         .toEqual(DEFAULT_TRACK_PATTERNS[track].durations)
       expect(registry.byId('whale-girl-refined')!.tracks[track].durations)
-        .toEqual(DEFAULT_TRACK_PATTERNS[track].durations)
+        .toEqual(refinedManifest.sprite2d.tracks?.[track]?.durations ?? DEFAULT_TRACK_PATTERNS[track].durations)
     }
     expect(DEFAULT_TRACK_PATTERNS.idle.durations[0]!).toBeGreaterThanOrEqual(500)
     expect(DEFAULT_TRACK_PATTERNS['running-right'].durations[0]!).toBeGreaterThanOrEqual(300)

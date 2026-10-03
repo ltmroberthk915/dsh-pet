@@ -111,7 +111,9 @@ describe('PetSettingsCardController timer cleanup', () => {
     const setSpy = setSpyOf(controller)
     await vi.advanceTimersByTimeAsync(0)
     const publishedBeforeDispose = setSpy.mock.calls.length
-    expect(publishedBeforeDispose).toBeGreaterThan(0)
+    // The current controller waits for both requests before publishing a
+    // coherent snapshot. Prove the pending request started before disposal.
+    expect(fetchMock).toHaveBeenCalledWith('/api/pet/pets', expect.objectContaining({ signal: expect.anything() }))
 
     controller.dispose()
     resolvePets(new Response(JSON.stringify([

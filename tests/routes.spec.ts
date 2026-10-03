@@ -217,10 +217,13 @@ describe('pet routes', () => {
     const probe = () => {
       let status = 0
       let body = ''
+      let finish: () => void = () => {}
+      const finished = new Promise<void>(resolve => { finish = resolve })
       return {
+        finished,
         res: {
           writeHead: (code: number) => { status = code },
-          end: (chunk?: string | Buffer) => { body = typeof chunk === 'string' ? chunk : chunk === undefined ? '' : 'ok' },
+          end: (chunk?: string | Buffer) => { body = typeof chunk === 'string' ? chunk : chunk === undefined ? '' : 'ok'; finish() },
         },
         status: () => status,
         body: () => body,
@@ -236,11 +239,13 @@ describe('pet routes', () => {
     const api = probe()
     const apiRoute = pairedRoutes.find(route => route.kind === 'exact' && route.path === '/api/pet/state')
     await apiRoute!.handler(lanRequest as never, api.res as never)
+    await api.finished
     expect(api.status()).toBe(200)
 
     const asset = probe()
     const assetRoute = pairedRoutes.find(route => route.kind === 'prefix' && route.path === '/pet')
     await assetRoute!.handler({ ...lanRequest, url: '/pet/whale-girl/pet.json' } as never, asset.res as never)
+    await asset.finished
     expect(asset.status()).toBe(200)
   })
 })

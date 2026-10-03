@@ -122,7 +122,7 @@ describe('PetSettingsSection', () => {
     const controller = new PetSettingsCardController(new FakeScope({}))
 
     expect(fetch).not.toHaveBeenCalled()
-    await waitFor(() => { expect(fetch).toHaveBeenCalledWith('/api/pet/pets') })
+    await waitFor(() => { expect(fetch).toHaveBeenCalledWith('/api/pet/pets', expect.objectContaining({ signal: expect.anything() })) })
     controller.dispose()
   })
 
