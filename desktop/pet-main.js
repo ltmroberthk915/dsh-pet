@@ -107,6 +107,11 @@ export function installDesktopPet({ owner, request, openMain }) {
     return record
   }
   function measure(view) {
+    if (view.display?.bubbleOnly) {
+      const scale = Math.min(2, Math.max(10 / 12, (view.display.size / 160) * (view.display.bubbleScale ?? 1)))
+      const width = 280 * scale, height = 32 * scale
+      return { artwork: { width, height }, dimensions: { width: Math.max(340, Math.ceil(width + 64)), height: 380 } }
+    }
     const size = petRenderSize(view.pet?.id, Number.isFinite(view.display?.size) ? Math.max(20, Math.min(1024, view.display.size)) : 160)
     const pet = petDefinitions.find(p => p.id === view.pet?.id)
     const ratio = pet?.cell?.width / pet?.cell?.height
@@ -367,7 +372,7 @@ export function installDesktopPet({ owner, request, openMain }) {
       const record = assertPet(event)
       if (typeof interactive !== 'boolean' || record.retiring) return
       if (regions !== undefined) {
-        if (!Array.isArray(regions) || regions.length > 64 || regions.some(rect =>
+        if (!Array.isArray(regions) || regions.length > 256 || regions.some(rect =>
           !Array.isArray(rect) || rect.length !== 4 || rect.some(n => !Number.isFinite(n) || Math.abs(n) > 32768)
           || rect[2] < 0 || rect[3] < 0)) return
         record.hitRegions = regions
@@ -402,7 +407,7 @@ export function installDesktopPet({ owner, request, openMain }) {
   })
   ipcMain.handle(PREFIX + 'open-main', (event, id) => {
     const record = assertPet(event)
-    if (id !== undefined && (typeof id !== 'string' || id.length > 200 || (id !== record.view.sessionId && !record.view.sessions?.some(s => s.sessionId === id)))) throw new Error('Invalid session')
+    if (id !== undefined && (typeof id !== 'string' || id.length > 200 || (id !== record.view.sessionId && id !== record.view.currentSessionId && !record.view.sessions?.some(s => s.sessionId === id)))) throw new Error('Invalid session')
     openMain(id)
     if (id) owner()?.webContents.send(PREFIX + 'open-session', id)
   })

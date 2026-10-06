@@ -1,7 +1,7 @@
 {
   "name": "dsh-pet-copilot",
   "description": "DSH 多会话桌宠：鲸鱼娘、MIKU 与商务小蓝鲸，模型配色、tok/s 调速及共享亲密度。",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "publishConfig": {
     "access": "public"
   },
@@ -58,7 +58,7 @@
     "docs/install-desktop-windows.md",
     "docs/palettes.png",
     "docs/fresh-install-v1.3.3.md",
-    "docs/release-notes/v1.3.3.md"
+    "docs/release-notes/v1.4.0.md"
   ],
   "license": "Apache-2.0",
   "dsh": {

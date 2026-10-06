@@ -22,7 +22,7 @@ export interface PetInjected {
     store: PetStoreInstance;
     /** Ensure the first snapshot (and registry list) is fetched (called on mount). */
     ensure: () => void;
-    /** Pet the sprite (click). */
+    /** Pet the sprite (right click). */
     pet: () => void;
     /** Feed the sprite. */
     feed: () => void;

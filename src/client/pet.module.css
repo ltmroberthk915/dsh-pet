@@ -1,6 +1,6 @@
 .float {
   position: fixed;
-  pointer-events: auto;
+  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
   display: flex;
@@ -11,6 +11,7 @@
 }
 
 .sprite {
+  pointer-events: auto;
   image-rendering: auto;
   touch-action: none;
   contain: paint;
@@ -19,6 +20,24 @@
 .spriteWrap {
   position: relative;
   flex: 0 0 auto;
+}
+
+/* Only the visible bubble occupies space when the character is disabled. */
+.floatBubbleOnly > .bubbleStack {
+  position: relative;
+  bottom: auto;
+}
+
+.floatBubbleOnly > .bubble {
+  position: relative;
+  bottom: auto;
+  margin-bottom: 0;
+  pointer-events: auto;
+}
+
+.floatBubbleOnly [data-pet-status-entry] {
+  cursor: grab;
+  touch-action: none;
 }
 
 .bubble {
@@ -229,6 +248,7 @@
    显示并保持可点击，不必在 hover 时让位给面板。仅当视口底部空间
    不足时，面板才回退到精灵上方。 */
 .panel {
+  pointer-events: auto;
   position: absolute;
   top: 100%;
   margin-top: 8px;
@@ -444,6 +464,7 @@
 }
 
 .gameplayCard {
+  pointer-events: auto;
   position: absolute;
   left: 0;
   bottom: 0;

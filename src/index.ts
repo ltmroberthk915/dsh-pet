@@ -140,6 +140,7 @@ export const PET_FORM_DEFAULTS = {
   animationTickIntercept: DEFAULT_TICK_INTERCEPT,
   desktopEnabled: true,
   multiPetEnabled: false,
+  bubbleOnly: false,
   hoverPanelEnabled: false,
   petId: DEFAULT_PET_ID,
   enabled: true,
@@ -178,6 +179,7 @@ export interface PetFormConfig {
   animationTickIntercept?: LiveField<number>
   desktopEnabled?: LiveField<boolean>
   multiPetEnabled?: LiveField<boolean>
+  bubbleOnly?: LiveField<boolean>
   hoverPanelEnabled?: LiveField<boolean>
   /** Selected pet id (a registry entry; the service clamps stale values). */
   petId?: LiveField<string | undefined>
@@ -212,6 +214,7 @@ export const Config = z.object({
   animationTickIntercept: z.number().min(MIN_TICK_INTERCEPT).max(MAX_TICK_INTERCEPT).default(DEFAULT_TICK_INTERCEPT).volatile(),
   desktopEnabled: z.boolean().default(true).volatile(),
   multiPetEnabled: z.boolean().default(false).volatile(),
+  bubbleOnly: z.boolean().default(false).volatile(),
   hoverPanelEnabled: z.boolean().default(false).volatile(),
   // An absent profile choice must leave the selection persisted in pet.json
   // intact across restarts (aggregate rows have no served Host pet form).
@@ -301,6 +304,7 @@ export function petSettingsSection(
     animationTickIntercept: displayField('animationTickIntercept', config.animationTickIntercept, persisted, committed),
     desktopEnabled: displayField('desktopEnabled', config.desktopEnabled, persisted, committed),
     multiPetEnabled: displayField('multiPetEnabled', config.multiPetEnabled, persisted, committed),
+    bubbleOnly: displayField('bubbleOnly', config.bubbleOnly, persisted, committed),
     hoverPanelEnabled: displayField('hoverPanelEnabled', config.hoverPanelEnabled, persisted, committed),
     petId: readLive(config.petId, fallbackPetId),
     enabled: readLive(config.enabled, PET_FORM_DEFAULTS.enabled),

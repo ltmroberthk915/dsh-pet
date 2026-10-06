@@ -1,14 +1,18 @@
+param(
+  [string]$EntryPoint = 'scripts/companion-smoke/smoke.mjs',
+  [string]$OutputName = 'companion-verification'
+)
 $ErrorActionPreference = 'Stop'
 $taskRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $fixtureRoot = [IO.Path]::GetFullPath((Join-Path $taskRoot '../electron-smoke'))
 $fixturePackage = Join-Path $fixtureRoot 'resources/app/package.json'
-$outputDir = Join-Path $taskRoot 'output/companion-verification'
+$outputDir = Join-Path $taskRoot ('output/' + $OutputName)
 $previousPackage = [IO.File]::ReadAllText($fixturePackage)
 $fixtureProcess = $null
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 try {
   $fixtureManifest = $previousPackage | ConvertFrom-Json
-  $fixtureManifest.main = '../../../dsh-pet/scripts/companion-smoke/smoke.mjs'
+  $fixtureManifest.main = '../../../dsh-pet/' + $EntryPoint
   [IO.File]::WriteAllText($fixturePackage, ($fixtureManifest | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
   $fixtureProcess = Start-Process -FilePath (Join-Path $fixtureRoot 'DeepSeek Harness.exe') -WorkingDirectory $fixtureRoot -WindowStyle Hidden -PassThru -ArgumentList '--enable-logging' -RedirectStandardOutput (Join-Path $outputDir 'native-stdout.txt') -RedirectStandardError (Join-Path $outputDir 'native-stderr.txt')
   if (-not $fixtureProcess.WaitForExit(60000)) {

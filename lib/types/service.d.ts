@@ -70,6 +70,7 @@ export interface PetSettingsSection {
     animationTickIntercept?: number;
     desktopEnabled?: boolean;
     multiPetEnabled?: boolean;
+    bubbleOnly?: boolean;
     hoverPanelEnabled?: boolean;
     /** Master switch for the plugin (browser half + host routes). */
     enabled?: boolean;

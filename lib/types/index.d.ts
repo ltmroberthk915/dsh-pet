@@ -52,6 +52,7 @@ export declare const PET_FORM_DEFAULTS: {
     readonly animationTickIntercept: 6;
     readonly desktopEnabled: true;
     readonly multiPetEnabled: false;
+    readonly bubbleOnly: false;
     readonly hoverPanelEnabled: false;
     readonly petId: "whale-girl";
     readonly enabled: true;
@@ -88,6 +89,7 @@ export interface PetFormConfig {
     animationTickIntercept?: LiveField<number>;
     desktopEnabled?: LiveField<boolean>;
     multiPetEnabled?: LiveField<boolean>;
+    bubbleOnly?: LiveField<boolean>;
     hoverPanelEnabled?: LiveField<boolean>;
     /** Selected pet id (a registry entry; the service clamps stale values). */
     petId?: LiveField<string | undefined>;
@@ -121,6 +123,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     animationTickIntercept: z<number, number, "volatile-defined">;
     desktopEnabled: z<boolean, boolean, "volatile-defined">;
     multiPetEnabled: z<boolean, boolean, "volatile-defined">;
+    bubbleOnly: z<boolean, boolean, "volatile-defined">;
     hoverPanelEnabled: z<boolean, boolean, "volatile-defined">;
     petId: z<string, string, "volatile">;
     enabled: z<boolean, boolean, "volatile-defined">;
@@ -139,6 +142,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     animationTickIntercept: z<number, number, "volatile-defined">;
     desktopEnabled: z<boolean, boolean, "volatile-defined">;
     multiPetEnabled: z<boolean, boolean, "volatile-defined">;
+    bubbleOnly: z<boolean, boolean, "volatile-defined">;
     hoverPanelEnabled: z<boolean, boolean, "volatile-defined">;
     petId: z<string, string, "volatile">;
     enabled: z<boolean, boolean, "volatile-defined">;

@@ -25,6 +25,26 @@ function mockHost(desktop?: DesktopStatus, tokensPerSecond = 264) {
 }
 
 describe('Tick settings', () => {
+  it('persists bubble-only mode across remounts and lets the user restore the image', async () => {
+    const host = mockHost()
+    const view = render(<PlaybackSettings />)
+    await screen.findByLabelText('斜率 k')
+    const checkbox = screen.getByLabelText('仅显示状态气泡（无宠物图）') as HTMLInputElement
+    expect(checkbox.checked).toBe(false)
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByText('保存动画设置'))
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).toMatchObject({ bubbleOnly: true })
+    view.unmount()
+    render(<PlaybackSettings />)
+    await screen.findByLabelText('斜率 k')
+    const restored = screen.getByLabelText('仅显示状态气泡（无宠物图）') as HTMLInputElement
+    expect(restored.checked).toBe(true)
+    fireEvent.click(restored)
+    fireEvent.click(screen.getByText('保存动画设置'))
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).toMatchObject({ bubbleOnly: false })
+  })
   it('previews uncapped running and saves an independent other-action rate across remounts', async () => {
     const host = mockHost(undefined, 293)
     const view = render(<PlaybackSettings />)
@@ -128,7 +148,7 @@ describe('Tick settings', () => {
     fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes).toEqual([{ petId: 'whale-girl-refined', animationMode: 'tick', animationFps: 20, animationRunFpsLimit: 0, animationActionFps: 0,
-      desktopEnabled: true, multiPetEnabled: false, hoverPanelEnabled: false, animationTickSlope: 0.2, animationTickIntercept: 5 }])
+      desktopEnabled: true, multiPetEnabled: false, bubbleOnly: false, hoverPanelEnabled: false, animationTickSlope: 0.2, animationTickIntercept: 5 }])
   })
 
   it('blocks a nonpositive slope and displays output limits in the preview', async () => {

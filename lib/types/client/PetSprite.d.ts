@@ -16,7 +16,7 @@ export interface PetSpriteProps {
     display: PetDisplayConfig;
     /** Active reaction bubble, if any. */
     feedback: PetFeedback | null;
-    /** Pet the sprite (click). */
+    /** Pet the sprite (right click). */
     onPet: () => void;
     /** Feed the sprite (panel button). */
     onFeed: () => void;

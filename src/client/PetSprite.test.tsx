@@ -112,6 +112,75 @@ function petProps(overrides: Partial<PetSpriteProps> = {}): PetSpriteProps {
   }
 }
 
+describe('bubble-only status and mouse actions', () => {
+  it('keeps a ready bubble without loading an image or reserving the sprite box, then restores the image', () => {
+    const image = vi.spyOn(window, 'Image')
+    const props = petProps({ display: { ...snapshot.display, bubbleOnly: true },
+      visual: <canvas data-testid="hidden-renderer" />, hud: <span data-testid="hidden-hud" /> })
+    const view = render(<PetSprite {...props} />)
+    expect(screen.getByText('随时就绪')).toBeTruthy()
+    expect(document.querySelector('[data-dsh-pet-animation]')).toBeNull()
+    expect(screen.queryByTestId('hidden-renderer')).toBeNull()
+    expect(screen.queryByTestId('hidden-hud')).toBeNull()
+    expect(image).not.toHaveBeenCalled()
+    view.rerender(<PetSprite {...props} display={{ ...props.display, bubbleOnly: false }} />)
+    expect(screen.queryByText('随时就绪')).toBeNull()
+    expect(document.querySelector('[data-dsh-pet-animation]')).toBeTruthy()
+    expect(screen.getByTestId('hidden-renderer')).toBeTruthy()
+  })
+
+  it('preserves actual tool status and displays background-session bubbles without a pet image', () => {
+    const props = petProps({ display: { ...snapshot.display, bubbleOnly: true },
+      snapshot: { ...snapshot, primary: false, sessionId: 'shell', phase: 'tool',
+        sessions: [{ sessionId: 'shell', animation: 'running', phase: 'tool', bubble: '等待 pwsh-8 响应', whisper: '闲聊' }] } })
+    render(<PetSprite {...props} />)
+    const bubble = screen.getByText('等待 pwsh-8 响应')
+    expect(screen.queryByText('随时就绪')).toBeNull()
+    expect(screen.queryByText('闲聊')).toBeNull()
+    fireEvent.click(bubble)
+    expect(props.onOpenSession).toHaveBeenCalledWith('shell')
+    expect(props.onPet).not.toHaveBeenCalled()
+  })
+
+  it('uses one left click to restore DSH and one right click to pet and open the care panel', () => {
+    const openMain = vi.fn().mockResolvedValue(undefined)
+    window.dshPetOverlay = { drag: vi.fn(), call: vi.fn(), interactive: vi.fn(), openMain, subscribe: () => () => {} }
+    const props = petProps({ display: { ...snapshot.display, hoverPanelEnabled: false },
+      snapshot: { ...snapshot, currentSessionId: 'main' }, onGameplayTap: vi.fn() })
+    render(<PetSprite {...props} />)
+    const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
+    vi.spyOn(sprite, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 100, 100))
+    fireEvent.click(sprite)
+    expect(openMain).toHaveBeenCalledWith('main')
+    expect(props.onPet).not.toHaveBeenCalled()
+    expect(props.onGameplayTap).not.toHaveBeenCalled()
+    fireEvent.contextMenu(sprite, { clientX: 25, clientY: 20 })
+    expect(props.onPet).toHaveBeenCalledOnce()
+    expect(props.onGameplayTap).toHaveBeenCalledWith(.25, .2)
+    expect(screen.getByText('改名')).toBeTruthy()
+    expect(openMain).toHaveBeenCalledOnce()
+  })
+
+  it('drags the bubble, skips the trailing click, and still opens the care panel by right click', () => {
+    const openMain = vi.fn().mockResolvedValue(undefined), drag = vi.fn()
+    window.dshPetOverlay = { drag, call: vi.fn(), interactive: vi.fn(), openMain, subscribe: () => () => {} }
+    const props = petProps({ display: { ...snapshot.display, bubbleOnly: true, hoverPanelEnabled: false } })
+    render(<PetSprite {...props} />)
+    const bubble = screen.getByText('随时就绪')
+    fireEvent.pointerDown(bubble, { button: 0, pointerId: 1, screenX: 100, screenY: 100 })
+    fireEvent.pointerMove(bubble, { pointerId: 1, screenX: 140, screenY: 120 })
+    fireEvent.pointerUp(bubble, { pointerId: 1 })
+    fireEvent.click(bubble)
+    expect(drag.mock.calls.map(args => args[0])).toEqual(['start', 'move', 'end'])
+    expect(openMain).not.toHaveBeenCalled()
+    fireEvent.contextMenu(bubble)
+    expect(props.onPet).toHaveBeenCalledOnce()
+    expect(screen.getByText('隐藏')).toBeTruthy()
+    fireEvent.click(screen.getByText('隐藏'))
+    expect(props.onHide).toHaveBeenCalledOnce()
+  })
+})
+
 describe('refined whale token playback', () => {
   it('holds a shared leg frame across stationary actions and releases it for running and jumping', () => {
     const definition = { ...petDefinition(), id: 'whale-girl-refined', columns: 16 }
@@ -135,7 +204,7 @@ describe('refined whale token playback', () => {
     expect(legs.style.display).toBe('block')
     expect(legs.style.backgroundPosition).toBe('0px 0px')
     expect(legs.style.backgroundSize).toBe('6144px 3744px')
-    fireEvent.click(screen.getByRole('button', { name: '鲸鱼娘' }))
+    fireEvent.contextMenu(screen.getByRole('button', { name: '鲸鱼娘' }))
     expect(props.onPet).toHaveBeenCalledOnce()
   })
 
@@ -203,7 +272,7 @@ describe('small companion bubble permissions', () => {
     expect(screen.getByText('whisper copy')).toBeTruthy()
     view.rerender(<PetSprite {...props} snapshot={small} feedback={null} />)
     expect(screen.queryByText('whisper copy')).toBeNull()
-    fireEvent.doubleClick(screen.getByRole('button', { name: '鲸鱼娘' }))
+    fireEvent.click(screen.getByRole('button', { name: '鲸鱼娘' }))
     expect(props.onOpenSession).toHaveBeenCalledWith('secondary')
   })
 })
@@ -223,7 +292,7 @@ function renderPet(overrides: Partial<PetSpriteProps> = {}): {
 describe('desktop pointer lifecycle', () => {
   function desktop() {
     const drag = vi.fn()
-    window.dshPetOverlay = { drag, call: vi.fn(), interactive: vi.fn(), openMain: vi.fn(), subscribe: () => () => {} }
+    window.dshPetOverlay = { drag, call: vi.fn(), interactive: vi.fn(), openMain: vi.fn().mockResolvedValue(undefined), subscribe: () => () => {} }
     return drag
   }
   it('owns a stationary hold immediately and ignores unrelated pointers', () => {
@@ -239,7 +308,8 @@ describe('desktop pointer lifecycle', () => {
     fireEvent.pointerUp(sprite, { button: 0, pointerId: 1 })
     expect(onDraggingChange.mock.calls.map(args => args[0])).toEqual([true, false])
     fireEvent.click(sprite)
-    expect(onPet).toHaveBeenCalledOnce()
+    expect(onPet).not.toHaveBeenCalled()
+    expect(window.dshPetOverlay?.openMain).toHaveBeenCalledOnce()
   })
   it('detects a native window drag when local coordinates stay fixed', () => {
     const drag = desktop(), onPet = vi.fn(), onDraggingChange = vi.fn()
@@ -252,6 +322,7 @@ describe('desktop pointer lifecycle', () => {
     expect(drag.mock.calls.map(args => args[0])).toEqual(['start', 'move', 'end'])
     expect(onDraggingChange.mock.calls.map(args => args[0])).toEqual([true, false])
     expect(onPet).not.toHaveBeenCalled()
+    expect(window.dshPetOverlay?.openMain).not.toHaveBeenCalled()
   })
   it.each(['lostpointercapture', 'pointercancel'])('ends a drag on %s once', event => {
     const drag = desktop()

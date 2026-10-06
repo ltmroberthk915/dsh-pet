@@ -30,6 +30,8 @@ export interface PetDisplayConfig {
     animationTickIntercept?: number;
     desktopEnabled?: boolean;
     multiPetEnabled?: boolean;
+    /** Show a persistent status bubble without loading or reserving a pet image. */
+    bubbleOnly?: boolean;
     /** Open the care panel on pointer hover; off by default to avoid interruptions. */
     hoverPanelEnabled?: boolean;
 }

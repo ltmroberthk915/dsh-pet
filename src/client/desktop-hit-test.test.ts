@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { installDesktopHitTesting } from './desktop-hit-test.ts'
+import { petEnvelopes, envelopeRegions } from './pet-hit-envelope.ts'
 import './desktop-bridge.d.ts'
 
 let dispose: (() => void) | undefined
@@ -19,6 +20,24 @@ function setup() {
   return interactive
 }
 describe('desktop pet hit regions', () => {
+  it('passes through transparent corners while retaining the pet contour and newly opened controls', async () => {
+    const sprite = target(100, 80, 192, 128)
+    sprite.dataset.dshPetHit = 'blue-whale-business'
+    const send = setup()
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 101, clientY: 81 }))
+    expect(send.mock.lastCall?.[0]).toBe(false)
+    const regions = envelopeRegions(petEnvelopes['blue-whale-business']!, new DOMRect(100, 80, 192, 128))
+    const [x, y, w, h] = regions[Math.floor(regions.length / 2)]!
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + w / 2, clientY: y + h / 2 }))
+    expect(send.mock.lastCall?.[0]).toBe(true)
+    const panelButton = target(400, 200, 50, 25)
+    await Promise.resolve(); vi.advanceTimersByTime(20)
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 420, clientY: 210 }))
+    expect(send.mock.lastCall?.[0]).toBe(true)
+    panelButton.remove()
+    await Promise.resolve(); vi.advanceTimersByTime(20)
+    expect(send.mock.lastCall?.[0]).toBe(false)
+  })
   it('keeps geometry available across false mouseleave and blur events', () => {
     target()
     const send = setup()
@@ -37,6 +56,16 @@ describe('desktop pet hit regions', () => {
     document.dispatchEvent(new MouseEvent('mousemove', { clientX: 120, clientY: 90 }))
     expect(send.mock.lastCall?.[0]).toBe(true)
     document.dispatchEvent(new MouseEvent('mousemove', { clientX: 20, clientY: 20 }))
+    expect(send.mock.lastCall?.[0]).toBe(false)
+  })
+  it('resynchronizes native input on a new outside position after a synthetic leave', () => {
+    target()
+    const send = setup()
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 120, clientY: 90 }))
+    document.dispatchEvent(new MouseEvent('mouseleave'))
+    const calls = send.mock.calls.length
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 20, clientY: 20 }))
+    expect(send).toHaveBeenCalledTimes(calls + 1)
     expect(send.mock.lastCall?.[0]).toBe(false)
   })
   it('includes newly opened controls and drops removed controls', async () => {
@@ -60,7 +89,7 @@ describe('desktop pet hit regions', () => {
     const calls = send.mock.calls.length
     for (let i = 0; i < 12; i++) {
       button.style.backgroundPosition = `${i}px 0px`
-      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 121, clientY: 90 }))
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 120, clientY: 90 }))
     }
     await Promise.resolve(); vi.advanceTimersByTime(200)
     expect(send).toHaveBeenCalledTimes(calls)

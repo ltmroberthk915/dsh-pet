@@ -13,7 +13,7 @@ describe('pet settings section css', () => {
 
 describe('pet bubble typography (#1549)', () => {
   it('scales the bubble text and padding from the sprite-supplied variable', () => {
-    const bubble = css.match(/\.bubble\s*\{([^}]*)\}/)?.[1] ?? ''
+    const bubble = css.match(/^\.bubble\s*\{([^}]*)\}/m)?.[1] ?? ''
     expect(bubble).toContain('font-size: calc(12px * var(--pet-bubble-scale, 1))')
     expect(bubble).toContain('padding: calc(4px * var(--pet-bubble-scale, 1)) calc(10px * var(--pet-bubble-scale, 1))')
     expect(bubble).not.toContain('font-size: 12px')

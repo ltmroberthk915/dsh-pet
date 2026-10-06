@@ -74,6 +74,7 @@ describe('pet configuration schema', () => {
       animationTickIntercept: true,
       desktopEnabled: true,
       multiPetEnabled: true,
+      bubbleOnly: true,
       hoverPanelEnabled: true,
       petId: true,
       enabled: true,
@@ -110,6 +111,7 @@ describe('petSettingsSection', () => {
       animationTickIntercept: 6,
       desktopEnabled: true,
       multiPetEnabled: false,
+      bubbleOnly: false,
       hoverPanelEnabled: false,
     })
   })

@@ -14,6 +14,8 @@ Choose the whale-girl, MIKU or business blue whale. Each active top-level conver
 
 Left/right running uses fixed FPS, original timings, or `FPS = max(1, k × footer tok/s + b)`, without an automatic upper cap. Users may enable a running cap and separately set other-action FPS. Disabling that second control retains original action timings. Hover expansion is off by default; a settings switch and manual right-click panel are available.
 
+The [1.4.0 downloadable release](https://github.com/ltmroberthk915/dsh-pet/releases/tag/v1.4.0) adds a draggable status-only bubble with persistent “Ready when you are” text while idle. Click a pet to open DSH; right-click to pet it and open its care panel. Built-in pets use measured alpha envelopes for each pose so transparent corners pass clicks through. See the [release notes](docs/release-notes/v1.4.0.md).
+
 ## Installation
 
 Waiting for another agent uses the waiting pose. Opening a subagent gives the main pet that session's own generation state and footer token rate; returning to the parent restores its independent state.
@@ -29,17 +31,17 @@ $dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/ds
 & $dsh plugin --profile desktop why dsh-pet-copilot
 ```
 
-For a custom installation, point $dsh to its resources/runtime/cli/bin/dsh.cmd. Do not add resources/runtime/bin to the global PATH. Download `dsh-pet-copilot-1.3.3.tgz`, verify SHA256SUMS.txt, then install a named local target, replacing the example path:
+For a custom installation, point $dsh to its resources/runtime/cli/bin/dsh.cmd. Do not add resources/runtime/bin to the global PATH. Download `dsh-pet-copilot-1.4.0.tgz`, verify SHA256SUMS.txt, then install a named local target, replacing the example path:
 
 ```powershell
-& $dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.3.tgz'
+& $dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.4.0.tgz'
 ```
 
 Users need not pack the repository or install pnpm. Use web for a web host. First-time bundle additions can hot-load. Fully quit and reopen DSH for a loaded-version replacement, restart-required receipt or stale client UI; successful hot-loading does not itself need a restart. Native companions use the existing Desktop runtime without patching app.asar or installing another Node/Electron/PowerShell runtime.
 
 ## Rename migration
 
-Back up DSH, remove the old `@ltmroberthk915/dsh-pet` or `@linxin666/dsh-pet` bundle from the selected profile, and install the new name. Run the launcher from the Release's `dsh-pet-profile-migration-1.3.3.zip` or the installed scripts directory. DSH matches overrides by both row ID and package name.
+Back up DSH, remove the old `@ltmroberthk915/dsh-pet` or `@linxin666/dsh-pet` bundle from the selected profile, and install the new name. Run the launcher from the Release's `dsh-pet-profile-migration-1.4.0.zip` or the installed scripts directory. DSH matches overrides by both row ID and package name.
 
 The tool validates real Host composition, backs up the patch, and changes only matching name scalars in one profile. Config, disabled state, comments and other plugins survive. The shared home patch is never rewritten. Conflicts with newer settings, aliases or concurrent edits stop the operation. Care data remains in the original pet.json. See the [migration guide](docs/fresh-install-v1.3.3.md).
 

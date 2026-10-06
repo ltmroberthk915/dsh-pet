@@ -24,6 +24,7 @@ export function PlaybackSettings() {
   const [intercept, setIntercept] = useState(String(DEFAULT_TICK_INTERCEPT))
   const [desktop, setDesktop] = useState(true)
   const [multi, setMulti] = useState(false)
+  const [bubbleOnly, setBubbleOnly] = useState(false)
   const [hoverPanel, setHoverPanel] = useState(false)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
@@ -47,6 +48,7 @@ export function PlaybackSettings() {
         setIntercept(String(tickIntercept(state.display.animationTickIntercept)))
         setDesktop(state.display.desktopEnabled !== false)
         setMulti(state.display.multiPetEnabled === true)
+        setBubbleOnly(state.display.bubbleOnly === true)
         setHoverPanel(state.display.hoverPanelEnabled === true)
       }
     }).catch((error) => {
@@ -72,9 +74,9 @@ export function PlaybackSettings() {
     setBusy(true); setMessage('')
     try {
       const linear = validLinear ? { animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) } : {}
-      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), animationRunFpsLimit: savedLimit, animationActionFps: savedActions, desktopEnabled: desktop, multiPetEnabled: multi, hoverPanelEnabled: hoverPanel, ...linear })
+      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), animationRunFpsLimit: savedLimit, animationActionFps: savedActions, desktopEnabled: desktop, multiPetEnabled: multi, bubbleOnly, hoverPanelEnabled: hoverPanel, ...linear })
       if (result.ok !== true || result.display?.animationMode !== mode || result.display?.animationFps !== Number(fps)
-        || result.display?.desktopEnabled !== desktop || result.display?.multiPetEnabled !== multi || result.display?.hoverPanelEnabled !== hoverPanel
+        || result.display?.desktopEnabled !== desktop || result.display?.multiPetEnabled !== multi || result.display?.bubbleOnly !== bubbleOnly || result.display?.hoverPanelEnabled !== hoverPanel
         || result.display?.animationRunFpsLimit !== savedLimit || result.display?.animationActionFps !== savedActions
         || (validLinear && (result.display?.animationTickSlope !== Number(slope) || result.display?.animationTickIntercept !== Number(intercept)))) throw new Error('设置未保存')
       setSlope(String(tickSlope(result.display.animationTickSlope)))
@@ -109,8 +111,10 @@ export function PlaybackSettings() {
     {serviceStatus !== 'ready' && <p role="status">{t(serviceStatus === 'authorization' ? 'settings.serviceAuthorization'
       : serviceStatus === 'loading' ? 'settings.serviceLoading' : 'settings.serviceUnavailable')}</p>}
     <fieldset disabled={!connected || busy} style={{ display: 'grid', gap: 10, border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+    <label><input aria-label="仅显示状态气泡（无宠物图）" type="checkbox" checked={bubbleOnly} onChange={e => setBubbleOnly(e.target.checked)} /> 仅显示状态气泡（无宠物图）</label>
+    <div style={{ opacity: .8 }}>隐藏形象，仅保留可拖动的任务状态气泡；空闲时常驻「随时就绪」。左键唤出 DSH，右键抚摸并展开看板。</div>
     <label><input aria-label="悬停展开看板" type="checkbox" checked={hoverPanel} onChange={e => setHoverPanel(e.target.checked)} /> 悬停展开看板</label>
-    <div style={{ opacity: .8 }}>默认关闭，鼠标经过宠物时不展开补充能量、命名和隐藏面板。需要时仍可右键宠物打开；开启后恢复悬停展开。</div>
+    <div style={{ opacity: .8 }}>默认关闭，鼠标经过时不展开补充能量、命名和隐藏面板。右键抚摸并打开看板；开启后也可悬停展开。</div>
     <label>左右跑动模式 <select aria-label="播放模式" value={mode} onChange={e => setMode(e.target.value as AnimationMode)}>
       <option value="fixed">固定 FPS</option><option value="native">素材原速</option><option value="tick">Tick · 跟随底部 tok/s</option>
     </select></label>
@@ -135,7 +139,7 @@ export function PlaybackSettings() {
     {!validActions && <div role="alert">其他动作帧率需为不小于 1 的有效数字。</div>}
     <label><input aria-label="多宠物模式" type="checkbox" checked={multi} onChange={e => setMulti(e.target.checked)} /> 多宠物模式</label>
     <div style={{ opacity: .8, lineHeight: 1.6 }}>{multi
-      ? '活跃对话各一只，分别跟随自己的 tok/s；主对话保持原大小，其余为 52.7% 且不弹气泡。新建、尺寸切换或拖动结束时自动避让。后台对话结束后，小宠物保留等待查看；点开对话或双击小宠物即可查看并变为主宠物，不需要输入文字。查看后切到其他对话时回收。'
+      ? bubbleOnly ? '活跃对话各显示一个状态气泡，分别跟随所属任务。左键点气泡唤出 DSH 并查看对应对话；查看后切到其他对话时回收。' : '活跃对话各一只，分别跟随自己的 tok/s；主对话保持原大小，其余为 52.7% 且不弹气泡。新建、尺寸切换或拖动结束时自动避让。后台对话结束后，小宠物保留等待查看；点开对话或单击小宠物即可查看并变为主宠物，不需要输入文字。查看后切到其他对话时回收。'
       : '仅一只默认 DS 蓝色宠物，动作、气泡和 tok/s 随主窗口当前对话切换。'}</div>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>{[['#c7edcc','GPT · 豆沙绿'],['#d97941','Claude · 橙'],['#24262d','Kimi · 黑'],['#570763','GLM · 暗清华紫'],['#6c9cda','DS · 原色']].map(([color,label]) => <span key={label}><i style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: color, border: '1px solid #888', marginRight: 4 }} />{label}</span>)}</div>
     <div style={{ opacity: .8 }}>优先使用模型对应色；已占用时先分配空闲色，第六只起随机分配并尽量拉开色差。关闭多宠物模式不会清除已分配颜色。</div>

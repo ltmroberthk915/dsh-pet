@@ -43,6 +43,7 @@ export function PetRendererSwitch(props: {
     dragRef.current = { id: props.definition.id, stream: createDragStream() }
   }
   const drag = props.drag ?? dragRef.current.stream
+  if (isValidElement<PetSpriteProps>(props.children) && props.children.props.display?.bubbleOnly === true) return <>{props.children}</>
   if (renderer === 'sprite2d') return <>{props.children}</>
   if (renderer === 'frames2d' && defaultPetRendererRegistry.has('frames2d') && isValidElement<PetSpriteProps>(props.children)) {
     const visual = (

@@ -27,6 +27,7 @@
 import { PET_RENDERER_API_VERSION, type PetRenderer, type PetRendererContext, type PetRendererHandle } from '../../contracts/renderer.ts'
 import type { ActivityPhase } from '../../state.ts'
 import { animationFps, optionalFps, playbackFrameDuration } from '../../animation.ts'
+import { applyEnvelopeTrack } from '../pet-hit-envelope.ts'
 
 /** One track as served inside the pet definition (browser URLs). */
 export interface Frames2dTrackConfig {
@@ -369,6 +370,8 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       if (url === undefined) return
       const element = canvas ?? img
       if (element !== null && element.dataset.dshPetTrack !== trackId) element.dataset.dshPetTrack = trackId
+      const sprite = ctx.container.closest<HTMLElement>('[data-dsh-pet-hit]')
+      if (sprite) applyEnvelopeTrack(sprite, trackId)
       prefetchAhead(trackId, index)
       if (img !== null) {
         if (img.getAttribute('src') !== url) img.src = url

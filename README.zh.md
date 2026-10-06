@@ -16,7 +16,8 @@
 - 模型配色在会话首次分配后保持稳定；后台会话完成后等待查看，查看后切走时收回。
 - 等待智能体时保持等待动作；打开子会话后主宠物跟随它自己的生成状态和底栏 tok/s，切回父会话后恢复父会话状态。
 - 左右跑动采用固定 FPS、素材原速或 `FPS = max(1, k × 底栏 tok/s + b)`，默认没有上限，可由用户自行限制。非左右跑动动作可独立设置 FPS；关闭时保留素材原始时长。所有形象规则相同。
-- 共享喂食与亲密度，支持拖动、大小和命名。悬停展开看板默认关闭，可在设置中开启；右键仍可打开看板。
+- 共享喂食与亲密度，支持拖动、大小和命名。左键唤出 DSH，右键抚摸并展开看板；悬停展开默认关闭，可在设置中开启。
+- [1.4.0 GitHub 安装包](https://github.com/ltmroberthk915/dsh-pet/releases/tag/v1.4.0)支持无宠物图的纯状态气泡模式，空闲时常驻「随时就绪」。三种内置形象按各动作的透明轮廓收紧点击包络，让图片外的界面继续接收点击。见 [更新说明](docs/release-notes/v1.4.0.md)。
 - 官方 Windows DSH 自动启动独立桌宠，无需修改 app.asar 或另装 Node、Electron、PowerShell 7。
 
 ## 安装与更新
@@ -34,10 +35,10 @@ $dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/ds
 
 自定义安装位置时，把 $dsh 改为那个安装目录下 resources/runtime/cli/bin/dsh.cmd 的完整路径。不要把 resources/runtime/bin 加入全局 PATH。
 
-离线包从对应 Release 下载 `dsh-pet-copilot-1.3.3.tgz`，按 `SHA256SUMS.txt` 核对后，用带包名的本地目标安装：
+离线包从对应 Release 下载 `dsh-pet-copilot-1.4.0.tgz`，按 `SHA256SUMS.txt` 核对后，用带包名的本地目标安装：
 
 ```powershell
-& $dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.3.3.tgz'
+& $dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.4.0.tgz'
 ```
 
 替换示例路径为实际下载位置。无需自行 pack 或安装 pnpm。Web 宿主使用 web profile。
@@ -46,7 +47,7 @@ $dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/ds
 
 ## 旧包名迁移
 
-先备份 DSH，在目标 profile 移除 `@ltmroberthk915/dsh-pet` 或 `@linxin666/dsh-pet` 并安装新包，再运行 Release 的 `dsh-pet-profile-migration-1.3.3.zip` 内迁移启动器，也可使用已安装包的 scripts 目录。**只保留 pet 行 ID 不足以迁移配置，DSH 还匹配 name。**
+先备份 DSH，在目标 profile 移除 `@ltmroberthk915/dsh-pet` 或 `@linxin666/dsh-pet` 并安装新包，再运行 Release 的 `dsh-pet-profile-migration-1.4.0.zip` 内迁移启动器，也可使用已安装包的 scripts 目录。**只保留 pet 行 ID 不足以迁移配置，DSH 还匹配 name。**
 
 迁移器用真实宿主合成配置，备份后只修改该 profile 中 pet 覆盖项的旧名称。配置、禁用状态、注释、其他插件及共享 home 补丁保持不变。旧项与后来保存的新设置冲突，或存在别名、并发编辑时会停止说明原因。名字和养成数据仍保存在原 pet.json 中。详见 [新机与迁移说明](docs/fresh-install-v1.3.3.md)。
 

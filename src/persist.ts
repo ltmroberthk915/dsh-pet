@@ -43,6 +43,8 @@ export interface PetDisplayConfig {
   animationTickIntercept?: number
   desktopEnabled?: boolean
   multiPetEnabled?: boolean
+  /** Show a persistent status bubble without loading or reserving a pet image. */
+  bubbleOnly?: boolean
   /** Open the care panel on pointer hover; off by default to avoid interruptions. */
   hoverPanelEnabled?: boolean
 }
@@ -61,6 +63,7 @@ export const defaultDisplayConfig: PetDisplayConfig = {
   animationTickIntercept: DEFAULT_TICK_INTERCEPT,
   desktopEnabled: true,
   multiPetEnabled: false,
+  bubbleOnly: false,
   hoverPanelEnabled: false,
 }
 
@@ -280,6 +283,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       animationTickIntercept: tickIntercept(rawDisplay.animationTickIntercept),
       desktopEnabled: rawDisplay.desktopEnabled !== false,
       multiPetEnabled: rawDisplay.multiPetEnabled === true,
+      bubbleOnly: rawDisplay.bubbleOnly === true,
       hoverPanelEnabled: rawDisplay.hoverPanelEnabled === true,
       bubbleScale: Math.min(BUBBLE_SCALE_MAX, Math.max(BUBBLE_SCALE_MIN, finiteNum(rawDisplay.bubbleScale, base.display.bubbleScale))),
     }

@@ -129,6 +129,7 @@ export interface PetSettingsSection {
   animationTickIntercept?: number
   desktopEnabled?: boolean
   multiPetEnabled?: boolean
+  bubbleOnly?: boolean
   hoverPanelEnabled?: boolean
   /** Master switch for the plugin (browser half + host routes). */
   enabled?: boolean
@@ -864,7 +865,7 @@ export class PetService extends Service {
       if (['animationRunFpsLimit', 'animationActionFps'].includes(key) && value !== 0 && (value as number) < 1) throw new Error('invalid-' + key)
       if (key === 'animationTickSlope' && ((value as number) < MIN_TICK_SLOPE || (value as number) > MAX_TICK_SLOPE)) throw new Error('invalid-animationTickSlope')
       if (key === 'animationTickIntercept' && ((value as number) < MIN_TICK_INTERCEPT || (value as number) > MAX_TICK_INTERCEPT)) throw new Error('invalid-animationTickIntercept')
-      if (['visible', 'desktopEnabled', 'multiPetEnabled', 'hoverPanelEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
+      if (['visible', 'desktopEnabled', 'multiPetEnabled', 'bubbleOnly', 'hoverPanelEnabled'].includes(key) && typeof value !== 'boolean') throw new Error('invalid-' + key)
       if (key === 'animationMode' && !['fixed', 'native', 'tick'].includes(value as string)) throw new Error('invalid-animationMode')
     }
     const next = { ...this.ledger.snapshot.display, ...patch }
@@ -924,6 +925,7 @@ export class PetService extends Service {
     }
     next.desktopEnabled = section.desktopEnabled ?? next.desktopEnabled ?? true
     next.multiPetEnabled = section.multiPetEnabled ?? next.multiPetEnabled ?? false
+    next.bubbleOnly = section.bubbleOnly ?? next.bubbleOnly ?? false
     next.hoverPanelEnabled = section.hoverPanelEnabled ?? next.hoverPanelEnabled ?? false
     // Preserve the pet's own hide/show choice when the plugin master switch
     // is disabled. The effective visibility is computed only in the view.
@@ -957,6 +959,7 @@ export class PetService extends Service {
       animationTickIntercept: snapshot.display.animationTickIntercept,
       desktopEnabled: snapshot.display.desktopEnabled,
       multiPetEnabled: snapshot.display.multiPetEnabled,
+      bubbleOnly: snapshot.display.bubbleOnly,
       hoverPanelEnabled: snapshot.display.hoverPanelEnabled,
       petId: snapshot.petId,
     }).catch(() => {

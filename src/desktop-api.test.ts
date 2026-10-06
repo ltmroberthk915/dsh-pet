@@ -28,6 +28,18 @@ const post = (name: string, value: unknown, headers = {}) => fetch(base + '/api/
 it('includes native readiness in the ordinary state response', async () => {
   expect((await (await fetch(base + '/api/pet/state')).json()).desktop).toEqual(status)
 })
+it('persists bubble-only mode through the real configuration route and rejects non-boolean values', async () => {
+  const save = (bubbleOnly: unknown) => fetch(base + '/api/pet/set-config', { method: 'POST',
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bubbleOnly }) })
+  const enabled = await save(true)
+  expect(enabled.status).toBe(200)
+  expect((await enabled.json()).display.bubbleOnly).toBe(true)
+  expect((await (await fetch(base + '/api/pet/state')).json()).display.bubbleOnly).toBe(true)
+  expect((await save('true')).status).toBe(400)
+  const disabled = await save(false)
+  expect(disabled.status).toBe(200)
+  expect((await disabled.json()).display.bubbleOnly).toBe(false)
+})
 it('configures and resets the window through narrow endpoints', async () => {
   expect((await post('configure', { enabled: true })).status).toBe(200)
   expect((await post('reset', {})).status).toBe(200)
