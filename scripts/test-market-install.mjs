@@ -8,8 +8,9 @@ import assert from 'node:assert/strict'
 
 const root = path.resolve(import.meta.dirname, '..')
 const [runtime, support, previous, current, marketBridge] = process.argv.slice(2)
+const uninstallOnly = process.argv.includes('--uninstall-only')
 if (![runtime, support, previous, current, marketBridge].every(Boolean)) {
-  throw Error('Usage: node scripts/test-market-install.mjs <prepared-dsh-runtime> <desktop-runtime-support> <old.tgz> <new.tgz> <dshmarket/lib/official-desktop.js>')
+  throw Error('Usage: node scripts/test-market-install.mjs <prepared-dsh-runtime> <desktop-runtime-support> <old.tgz> <new.tgz> <dshmarket/lib/official-desktop.js> [--uninstall-only]')
 }
 const output = path.join(root, 'output/market-install-verification')
 fs.mkdirSync(output, { recursive: true })
@@ -39,8 +40,21 @@ assert.equal(packed.status, 0, packed.stderr)
 const dependency = { pkg: JSON.parse(fs.readFileSync(path.join(dependencyDir, 'package/package.json'))), archive: dependencyArchive,
   integrity: 'sha512-' + createHash('sha512').update(fs.readFileSync(dependencyArchive)).digest('base64') }
 let registry
+let registryOffline = false
+let offlineRequests = 0
 const server = createServer((req, res) => {
   const requestPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname)
+  if (requestPath === '/__offline' || requestPath === '/__online') {
+    const rejectedRequests = offlineRequests
+    registryOffline = requestPath === '/__offline'
+    offlineRequests = 0
+    res.writeHead(200, { 'content-type': 'application/json' })
+    res.end(JSON.stringify({ rejectedRequests })); return
+  }
+  if (registryOffline) {
+    offlineRequests++
+    res.writeHead(503); res.end('Registry disconnected for uninstall regression'); return
+  }
   if (requestPath === '/clsx') {
     const version = dependency.pkg.version
     res.writeHead(200, { 'content-type': 'application/json' })
@@ -70,16 +84,18 @@ const server = createServer((req, res) => {
 })
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
 registry = `http://127.0.0.1:${server.address().port}/`
-const config = { runtime: path.resolve(runtime), support: path.resolve(support), home, name, names, versions, registry, currentArchive: path.resolve(current), marketBridge: path.resolve(marketBridge), dir }
+const config = { runtime: path.resolve(runtime), support: path.resolve(support), home, name, names, versions, registry,
+  retainedDependency: { name: dependency.pkg.name, version: dependency.pkg.version },
+  currentArchive: path.resolve(current), marketBridge: path.resolve(marketBridge), dir }
 fs.writeFileSync(path.join(dir, 'config.json'), JSON.stringify(config))
 async function worker(mode) {
-  const settings = mode === 'fresh-current' ? { ...config, home: path.join(dir, 'fresh-current-home') } : config
+  const settings = ['fresh-current', 'uninstall'].includes(mode) ? { ...config, home: path.join(dir, mode + '-home') } : config
   const configFile = path.join(dir, mode + '-config.json')
   fs.writeFileSync(configFile, JSON.stringify(settings))
   const log = fs.createWriteStream(path.join(dir, mode + '.log'))
   const child = spawn(process.execPath, [path.join(root, 'scripts/test-market-install-worker.mjs'), configFile, mode], {
     cwd: root, windowsHide: true,
-    env: { ...process.env, DSH_HOME: settings.home, DSH_TELEMETRY_DISABLED: '1' },
+    env: { ...process.env, DSH_HOME: settings.home, DSH_TELEMETRY_DISABLED: '1', npm_config_registry: registry },
   })
   child.stdout.pipe(log, { end: false }); child.stderr.pipe(log, { end: false })
   const timeout = setTimeout(() => child.kill(), 240000)
@@ -89,12 +105,17 @@ async function worker(mode) {
   } finally { clearTimeout(timeout); log.end() }
 }
 try {
-  await worker('install')
-  await worker('restart')
-  await worker('fresh-current')
-  const result = { status: 'passed', fixtureRegistry: true, freshHome: home, names, versions,
-    install: JSON.parse(fs.readFileSync(path.join(dir, 'install.json'))), restart: JSON.parse(fs.readFileSync(path.join(dir, 'restart.json'))),
-    freshCurrent: JSON.parse(fs.readFileSync(path.join(dir, 'fresh-current.json'))) }
+  if (!uninstallOnly) {
+    await worker('install')
+    await worker('restart')
+    await worker('fresh-current')
+  }
+  await worker('uninstall')
+  const result = { status: 'passed', fixtureRegistry: true, freshHome: uninstallOnly ? path.join(dir, 'uninstall-home') : home, names, versions,
+    install: uninstallOnly ? undefined : JSON.parse(fs.readFileSync(path.join(dir, 'install.json'))),
+    restart: uninstallOnly ? undefined : JSON.parse(fs.readFileSync(path.join(dir, 'restart.json'))),
+    freshCurrent: uninstallOnly ? undefined : JSON.parse(fs.readFileSync(path.join(dir, 'fresh-current.json'))),
+    uninstall: JSON.parse(fs.readFileSync(path.join(dir, 'uninstall.json'))) }
   fs.writeFileSync(path.join(output, 'result.json'), JSON.stringify(result, null, 2) + '\n')
   console.log(JSON.stringify(result, null, 2))
 } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) }

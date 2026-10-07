@@ -58,6 +58,7 @@
     "docs/install-desktop-windows.md",
     "docs/palettes.png",
     "docs/fresh-install-v1.3.3.md",
+    "docs/uninstall.md",
     "docs/release-notes/v1.4.0.md"
   ],
   "license": "Apache-2.0",

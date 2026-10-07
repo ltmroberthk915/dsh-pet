@@ -14,13 +14,23 @@ if (mode !== 'restart') {
 }
 const profile = prepareProfile('desktop')
 if (mode !== 'restart') {
-  fs.writeFileSync(path.join(profile.dir, 'pnpm-workspace.yaml'), 'strictDepBuilds: true\nminimumReleaseAge: 1440\n')
+  fs.writeFileSync(path.join(profile.dir, 'pnpm-workspace.yaml'), 'strictDepBuilds: true\nminimumReleaseAge: 1440\n' + (mode === 'uninstall'
+    ? 'preferOffline: true\nstoreDir: ' + JSON.stringify(path.join(config.dir, 'uninstall-store'))
+      + '\ncacheDir: ' + JSON.stringify(path.join(config.dir, 'uninstall-cache')) + '\n'
+    : ''))
+}
+if (mode === 'uninstall') {
+  fs.writeFileSync(path.join(profile.dir, '.npmrc'), 'registry=' + config.registry + '\n')
+  const manifestFile = path.join(profile.dir, 'package.json')
+  const manifest = JSON.parse(fs.readFileSync(manifestFile))
+  manifest.dependencies[config.retainedDependency.name] = config.retainedDependency.version
+  fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n')
 }
 const app = await runProfile({
   environment: loadLayeredEnv('dsh'), profile: 'desktop', patchFiles: [], args: ['--no-open', '--port', '0'],
   packageManager: {
     command: process.execPath, args: ['--expose-internals', path.join(config.support, 'pnpm/bin/pnpm.mjs')],
-    env: { DSH_HOME: config.home, DSH_TELEMETRY_DISABLED: '1' },
+    env: { DSH_HOME: config.home, DSH_TELEMETRY_DISABLED: '1', npm_config_registry: config.registry },
   },
 })
 const result = { checks: [] }
@@ -71,13 +81,73 @@ try {
           check('fresh host can persist care data without a settings-file edit', save.ok)
         }
       }
+      if (mode === 'uninstall') {
+        result.removals = []
+        const controlRegistry = async action => {
+          const response = await fetch(config.registry + '__' + action)
+          check('fixture registry switches ' + action, response.ok)
+          return response.json()
+        }
+        for (const entrance of ['official manager', 'market bridge']) {
+          await state()
+          const before = JSON.parse(fs.readFileSync(path.join(profile.dir, 'package.json')))
+          const otherDependencies = { ...before.dependencies }; delete otherDependencies[firstName]
+          await controlRegistry('offline')
+          const start = Date.now()
+          let removed
+          let rejectedRequests
+          try {
+            removed = entrance === 'official manager'
+              ? await manager.removeBundle(firstName)
+              : await runtime.runPlugin('desktop', ['remove', firstName])
+          } finally { ({ rejectedRequests } = await controlRegistry('online')) }
+          const durationMs = Date.now() - start
+          if (entrance === 'official manager') {
+            if (removed.application === 'failed') console.error(JSON.stringify(removed))
+            check(entrance + ' uninstalls with a disconnected registry', removed.application !== 'failed' && removed.packageResult?.exitCode === 0)
+          } else {
+            if (removed.exitCode) console.error(JSON.stringify(removed))
+            check(entrance + ' uninstalls with a disconnected registry', removed.exitCode === 0)
+          }
+          check(entrance + ' sends no registry request during uninstall', rejectedRequests === 0)
+          const after = JSON.parse(fs.readFileSync(path.join(profile.dir, 'package.json')))
+          check(entrance + ' removes the dependency', !after.dependencies?.[firstName])
+          check(entrance + ' preserves other dependency specifications', JSON.stringify(otherDependencies) === JSON.stringify(after.dependencies ?? {}))
+          const retainedPackage = JSON.parse(fs.readFileSync(path.join(profile.dir, 'node_modules', config.retainedDependency.name, 'package.json')))
+          check(entrance + ' preserves the other installed package', retainedPackage.version === config.retainedDependency.version)
+          check(entrance + ' clears the bundle selection', !after.dsh.profile.bundles.includes(firstName))
+          check(entrance + ' removes the installed package', !fs.existsSync(path.join(profile.dir, 'node_modules', firstName)))
+          check(entrance + ' releases the writer lock', !fs.existsSync(path.join(profile.dir, 'package.json.lock')))
+          check(entrance + ' clears the package operation record', !fs.existsSync(path.join(profile.dir, '.plugin-manager/run.json')))
+          check(entrance + ' disposes the pet service', app.ctx.get('pet', false) === undefined)
+          const baseUrl = `http://127.0.0.1:${app.ctx.webServer.port}`
+          // Acquire an isolated browser session for the unmatched-route probe.
+          const signIn = await fetch(app.ctx.connection.authenticatedUrl(baseUrl + '/'), { redirect: 'manual' })
+          const cookies = signIn.headers.getSetCookie().map(value => value.split(';')[0]).join('; ')
+          check(entrance + ' obtains a browser session for the route probe', signIn.status === 303 && cookies.length > 0)
+          await signIn.body?.cancel()
+          const response = await fetch(baseUrl + '/api/pet/state', { headers: { cookie: cookies } })
+          // The web app serves its HTML entry point for unmatched paths.
+          const contentType = response.headers.get('content-type') ?? ''
+          console.log(JSON.stringify({ entrance, routeStatus: response.status, contentType }))
+          check(entrance + ' unmounts the pet route', response.status === 404 || (response.status === 200 && contentType.includes('text/html')))
+          await response.body?.cancel()
+          result.removals.push({ entrance, version: firstVersion, durationMs, registryRequests: rejectedRequests })
+          const reinstalled = await runtime.runPlugin('desktop', ['add', firstName + '@' + firstVersion])
+          check('reinstall after ' + entrance + ' succeeds', reinstalled.exitCode === 0)
+          const restored = await state()
+          check('care data survives ' + entrance + ' uninstall and reinstall', restored.name === '安装回归鲸鱼' || restored.pet.name === '安装回归鲸鱼')
+        }
+      }
       if (mode === 'install' && firstName === config.name) check('upgrade reports restart-required rather than pretending it hot-reloaded', applications.at(-1) === 'restart-required')
-      const fileSpec = config.name + '@file:' + config.currentArchive.replaceAll('\\', '/')
-      for (const [label, spec] of [['named offline package', fileSpec], ['repeat named offline package', fileSpec], ['return to registry version', config.name + '@' + config.versions[1]]]) {
-        console.log('Checking ' + label)
-        const installed = await runtime.runPlugin('desktop', ['add', spec])
-        if (installed.exitCode) console.error(JSON.stringify(installed))
-        check(label + ' succeeds without ambiguous-install', installed.exitCode === 0)
+      if (mode !== 'uninstall') {
+        const fileSpec = config.name + '@file:' + config.currentArchive.replaceAll('\\', '/')
+        for (const [label, spec] of [['named offline package', fileSpec], ['repeat named offline package', fileSpec], ['return to registry version', config.name + '@' + config.versions[1]]]) {
+          console.log('Checking ' + label)
+          const installed = await runtime.runPlugin('desktop', ['add', spec])
+          if (installed.exitCode) console.error(JSON.stringify(installed))
+          check(label + ' succeeds without ambiguous-install', installed.exitCode === 0)
+        }
       }
       result.applications = applications
     } finally { await runtime.dispose() }
