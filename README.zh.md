@@ -22,7 +22,7 @@
 
 ## 安装与更新
 
-在 **设置 → 插件 → 添加插件** 输入 **`dsh-pet-copilot`**，默认安装 **1.3.3**。已使用 DSH 官方桌面安装器验证全新安装和同版本重复安装。填包名即可；填写 GitHub 仓库网址会走源码压缩包下载，可能遇到 GitHub 超时。
+在 **设置 → 插件 → 添加插件** 输入 **`dsh-pet-copilot`**，默认安装 **1.4.0**。已使用 DSH 官方桌面插件管理流程，在严格 24 小时冷却且无例外的配置下验证官方 npm 源全新安装、从 1.3.3 升级和同版本重复安装，见[验收记录](docs/release-verification/v1.4.0-npm-latest.json)。填包名即可；填写 GitHub 仓库网址会走源码压缩包下载，可能遇到 GitHub 超时。
 
 [市场收录申请](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/6359) 正等待维护者审核。合并并同步后，在 dsh-market 搜索 **dsh-pet-copilot**，选择作者 **ltmroberthk915** 的条目，再点安装或更新。收录检查通过不等于已经上架；严格新版本策略仍按下文执行。
 
@@ -61,7 +61,7 @@ DSH 0.2.0-rc.2 / pnpm 11.7.0 的**默认非严格配置**可能安装刚发布�
 
 已定位到 pnpm 11.7.0 只采用同一包的第一条匹配规则：把两个版本分别写成两条例外，可能忽略后面的版本。若两个精确版本本来就已获准，可将原有两条合并为一条，例如 `dsh-pet-copilot@1.3.2 || 1.3.3`，并保留其他规则。CU 的同类隔离复现已验证这种修复，不增加获准版本。Pet 1.3.3 从空环境安装及立即重复安装均通过；这不能代替每一种旧版本升级历史的验证。
 
-维护者运行 `node scripts/release-channel.mjs check 1.3.3`。仅检查时可设置 `DSH_PET_REGISTRY=https://registry.npmmirror.com`，输出会标明 registry 与 authoritative。网络失败会注明查询源，不会误判成未发布。promote 始终忽略镜像设置，重新查询 npm 官方源，并要求成熟后的严格安装回执。
+维护者运行 `node scripts/release-channel.mjs check 1.4.0`。仅检查时可设置 `DSH_PET_REGISTRY=https://registry.npmmirror.com`，输出会标明 registry 与 authoritative。网络失败会注明查询源，不会误判成未发布。promote 始终忽略镜像设置，重新查询 npm 官方源，并要求成熟后的严格安装回执。
 
 ## 构建与验证
 

@@ -1,0 +1,65 @@
+{
+  "name": "dsh-pet-copilot",
+  "version": "1.4.0",
+  "promotionDate": "2026-10-09",
+  "verifiedAt": "2026-10-09T15:09:25.362Z",
+  "publishedAt": "2026-10-07T03:43:20.649Z",
+  "registry": "https://registry.npmjs.org",
+  "tags": {
+    "latest": "1.4.0",
+    "next": "1.4.0"
+  },
+  "integrity": "sha512-4w7oEqyrPANh+WsKvwg/oK8rhX5V5zuoiVSrOr8ZbvFav3Fr4L41Zruwp5PZ0lMEFk264f1PQxGxlJcb+28Vlw==",
+  "githubArchiveSha256": "d58af0dc571c68c1feceac1bea2c28760c3d47a3a3e882ee5a1b56d457d356a2",
+  "environment": {
+    "dshPluginManagerVersion": "0.2.0-rc.2",
+    "pnpmVersion": "11.7.0",
+    "isolatedProfiles": true,
+    "freshCachesAndStores": true,
+    "minimumReleaseAge": 1440,
+    "minimumReleaseAgeStrict": true,
+    "minimumReleaseAgeExclude": []
+  },
+  "checks": [
+    {
+      "kind": "fresh-exact-version",
+      "checkedAt": "2026-10-09T14:58:20.801Z",
+      "spec": "dsh-pet-copilot@1.4.0",
+      "installedVersion": "1.4.0",
+      "status": "passed",
+      "repeat": {
+        "status": "passed",
+        "installedVersionPreserved": true,
+        "bundleSelectionPreserved": true,
+        "dependencyPreserved": true
+      }
+    },
+    {
+      "kind": "upgrade-from-1.3.3",
+      "checkedAt": "2026-10-09T15:01:09.987Z",
+      "spec": "dsh-pet-copilot@1.4.0",
+      "fromVersion": "1.3.3",
+      "installedVersion": "1.4.0",
+      "status": "passed",
+      "repeat": {
+        "status": "passed",
+        "installedVersionPreserved": true,
+        "bundleSelectionPreserved": true,
+        "dependencyPreserved": true
+      }
+    },
+    {
+      "kind": "fresh-default-package-name",
+      "checkedAt": "2026-10-09T15:06:29.488Z",
+      "spec": "dsh-pet-copilot",
+      "installedVersion": "1.4.0",
+      "status": "passed",
+      "repeat": {
+        "status": "passed",
+        "installedVersionPreserved": true,
+        "bundleSelectionPreserved": true,
+        "dependencyPreserved": true
+      }
+    }
+  ]
+}

@@ -20,7 +20,7 @@ The [1.4.0 downloadable release](https://github.com/ltmroberthk915/dsh-pet/relea
 
 Waiting for another agent uses the waiting pose. Opening a subagent gives the main pet that session's own generation state and footer token rate; returning to the parent restores its independent state.
 
-In **Settings → Plugins → Add plugin**, enter **`dsh-pet-copilot`**. npm's default version is **1.3.3**; fresh and same-version installs have been verified with the official Desktop installer. Enter the package name instead of the GitHub repository URL to use the precompiled npm package and avoid downloading the source archive from GitHub.
+In **Settings → Plugins → Add plugin**, enter **`dsh-pet-copilot`**. npm's default version is **1.4.0**. Fresh installs, upgrades from 1.3.3 and same-version reinstalls passed against official npm through the Desktop plugin-manager pipeline under a strict 24-hour release-age policy and no exclusions; see the [verification receipt](docs/release-verification/v1.4.0-npm-latest.json). Enter the package name instead of the GitHub repository URL to use the precompiled npm package and avoid downloading the source archive from GitHub.
 
 The [market submission](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/6359) is awaiting maintainer review. Once merged and synchronized, search **dsh-pet-copilot** in dsh-market, select the entry from **ltmroberthk915**, and use its Install / Update buttons. A passing submission check does not itself make a plugin visible in the catalog. Installation remains subject to the host's release-age policy described below.
 
@@ -55,7 +55,7 @@ Identical-version reinstalls have a separate lockfile check. With real pnpm 11.7
 
 The bundled pnpm 11.7.0 evaluator uses the first matching package rule. Two separate exclusions for the same package can therefore ignore the later version. If both exact versions have already been approved, consolidate those existing entries into one exact-version union, for example `dsh-pet-copilot@1.3.2 || 1.3.3`, preserving unrelated rules. The equivalent CU reproduction passed after this change without adding an allowed version. Pet 1.3.3 fresh installation and immediate reinstallation with a single exclusion both pass; this does not establish a pass for every earlier upgrade history.
 
-Maintainers run `node scripts/release-channel.mjs check 1.3.3`. Checks accept DSH_PET_REGISTRY, such as https://registry.npmmirror.com, and report registry and authoritative. Network errors identify the queried source instead of claiming the package is unpublished. Promotion ignores mirrors and rechecks identity, time and tags against official npm.
+Maintainers run `node scripts/release-channel.mjs check 1.4.0`. Checks accept DSH_PET_REGISTRY, such as https://registry.npmmirror.com, and report registry and authoritative. Network errors identify the queried source instead of claiming the package is unpublished. Promotion ignores mirrors and rechecks identity, time and tags against official npm.
 
 ## Development
 
