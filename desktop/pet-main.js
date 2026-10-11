@@ -27,6 +27,8 @@ export function installDesktopPet({ owner, request, openMain }) {
   let enabled = false, closing = false, currentSessionId, revision = 0
   let stateFlight, reconcileFlight, cache, cacheAt = 0, pollTimer, saveTimer, savedBounds
   let petDefinitions = [], definitionsFlight
+  let pointerTimer
+  const recovery = new Map()
   const watchedOwners = new WeakSet()
   const positionFile = join(app.getPath('userData'), 'dsh-pet-window.json')
   const petSession = session.fromPartition('dsh-pet-v1')
@@ -181,8 +183,18 @@ export function installDesktopPet({ owner, request, openMain }) {
   }
   function destroyAll() {
     clearTimeout(pollTimer)
+    clearInterval(pointerTimer); pointerTimer = undefined
+    recovery.clear()
     for (const record of windows.values()) { clearInterval(record.returnTimer); if (live(record)) record.win.destroy() }
     windows.clear()
+  }
+  function recoverWindow(record) {
+    if (!live(record) || record.retiring || !enabled || closing) return
+    const previous = recovery.get(record.view.key)
+    const failures = Date.now() - record.createdAt >= 30000 ? 0 : previous?.failures ?? 0
+    recovery.set(record.view.key, { failures: failures + 1, retryAt: Date.now() + Math.min(30000, 1000 * 2 ** Math.min(failures, 5)) })
+    if (record.view.primary) savedBounds = record.win.getBounds()
+    record.win.destroy()
   }
   function publish(record) {
     const serialized = JSON.stringify(record.view)
@@ -248,15 +260,21 @@ export function installDesktopPet({ owner, request, openMain }) {
       hasShadow: false, show: false, autoHideMenuBar: true,
       webPreferences: { preload: join(DIR, 'pet-preload.cjs'), session: petSession, nodeIntegration: false, contextIsolation: true,
         sandbox: true, webSecurity: true, backgroundThrottling: false, spellcheck: false, devTools: false } })
-    const record = { win, view, geometry, wantsInteractive: false, ignoreMouse: true, lastMove: 0 }
+    const record = { win, view, geometry, wantsInteractive: false, ignoreMouse: true, lastMove: 0, createdAt: Date.now() }
     windows.set(view.key, record)
+    // Forwarded mouse moves may stop arriving over a maximized Chromium
+    // window. Native cursor checks keep the pet's hit area clickable anyway.
+    pointerTimer ??= setInterval(() => { for (const item of windows.values()) syncPointer(item) }, 50)
     win.setAlwaysOnTop(true, TOP_LEVEL)
     win.setIgnoreMouseEvents(true, { forward: true })
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
     win.webContents.on('will-navigate', (event, url) => { if (url !== PAGE) event.preventDefault() })
     win.webContents.on('will-redirect', event => event.preventDefault())
     win.webContents.on('will-attach-webview', event => event.preventDefault())
-    win.on('closed', () => { clearInterval(record.returnTimer); clearTimeout(record.topRepair); if (windows.get(view.key) === record) windows.delete(view.key) })
+    win.on('closed', () => { clearInterval(record.returnTimer); clearTimeout(record.topRepair); clearTimeout(record.unresponsiveTimer); if (windows.get(view.key) === record) windows.delete(view.key); if (!windows.size) { clearInterval(pointerTimer); pointerTimer = undefined } })
+    win.webContents.on('render-process-gone', () => recoverWindow(record))
+    win.on('unresponsive', () => { record.unresponsiveTimer ??= setTimeout(() => recoverWindow(record), 5000) })
+    win.on('responsive', () => { clearTimeout(record.unresponsiveTimer); record.unresponsiveTimer = undefined })
     win.on('move', () => savePosition(record))
     win.on('focus', () => scheduleTopRepair(record))
     win.on('blur', () => { endDrag(record); syncPointer(record); scheduleTopRepair(record) })
@@ -285,7 +303,10 @@ export function installDesktopPet({ owner, request, openMain }) {
       const viewIndex = index++
       let record = windows.get(view.key)
       if (record?.retiring) { clearInterval(record.returnTimer); record.win.destroy(); record = undefined }
-      if (!live(record)) { await create(view, anchor, viewIndex); layoutNeeded = true; continue }
+      if (!live(record)) {
+        if (Date.now() < (recovery.get(view.key)?.retryAt ?? 0)) continue
+        await create(view, anchor, viewIndex); layoutNeeded = true; continue
+      }
       const previous = record.geometry, geometry = measure(view), bounds = record.win.getBounds()
       record.view = view; record.geometry = geometry
       if (previous.dimensions.width !== geometry.dimensions.width || previous.dimensions.height !== geometry.dimensions.height) {
@@ -294,6 +315,7 @@ export function installDesktopPet({ owner, request, openMain }) {
       }
       if (previous.artwork.width !== geometry.artwork.width || previous.artwork.height !== geometry.artwork.height) layoutNeeded = true
       keepOnTop(record)
+      if (!record.win.isVisible() && !record.showPending) record.win.showInactive()
       publish(record)
     }
     const destination = primary()
@@ -397,6 +419,8 @@ export function installDesktopPet({ owner, request, openMain }) {
       if (phase !== 'move' || !record.drag || Date.now() - record.lastMove < 8) return
       record.lastMove = Date.now()
       const cursor = screen.getCursorScreenPoint(), drag = record.drag
+      if (!record.drag.moved && Math.abs(cursor.x - drag.cursor.x) <= 4 && Math.abs(cursor.y - drag.cursor.y) <= 4) return
+      record.drag.moved = true
       const x = Math.round(drag.bounds.x + cursor.x - drag.cursor.x)
       const y = Math.round(drag.bounds.y + cursor.y - drag.cursor.y)
       const current = win.getBounds()

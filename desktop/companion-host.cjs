@@ -19,17 +19,35 @@ function createCompanion(options) {
   const appExecutable = options.appExecutable ?? nativeDesktopExecutable();
   const version = JSON.parse(readFileSync(join(options.pluginDir, 'package.json'), 'utf8')).version;
   let state = appExecutable ? 'idle' : 'unavailable', message, active = false, disposed = false;
-  let child, server, flight, generation = 0, resetRevision = 0, pendingOpen, openRevision = 0, lastOpenAt = 0;
+  let child, server, flight, stopping, retryTimer, watchdog, startupTimer, failures = 0, heartbeatAt = 0, healthySince = 0;
+  let generation = 0, resetRevision = 0, pendingOpen, openRevision = 0, lastOpenAt = 0;
   let requested = { enabled: false };
   const status = () => ({ supported: !!appExecutable, state, active, version,
     ...(message ? { message } : {}), ...(pendingOpen ? { pendingOpen } : {}) });
   const effective = () => ({ ...requested, enabled: requested.enabled && options.enabled() });
+  function scheduleRetry() {
+    if (disposed || !appExecutable || !effective().enabled || retryTimer) return;
+    const delay = Math.min(30000, 1000 * 2 ** Math.min(failures++, 5));
+    retryTimer = setTimeout(() => {
+      retryTimer = undefined;
+      if (!disposed && effective().enabled) { state = 'idle'; void start(); }
+    }, delay);
+    retryTimer.unref();
+  }
   const stopChild = () => {
+    clearTimeout(startupTimer); clearInterval(watchdog);
+    startupTimer = watchdog = undefined;
     active = false;
     const running = child; child = undefined;
     if (running) {
-      const timeout = setTimeout(() => { if (running.exitCode === null) running.kill(); }, 3000);
-      timeout.unref(); running.once('exit', () => clearTimeout(timeout));
+      // Wait for the old process to release its single-instance lock before
+      // a retry starts. Closing the private server asks it to quit normally.
+      stopping = new Promise(resolve => {
+        if (running.exitCode !== null || running.signalCode) { resolve(); return; }
+        const timeout = setTimeout(() => { running.kill(); }, 3000);
+        const done = () => { clearTimeout(timeout); resolve(); };
+        timeout.unref(); running.once('exit', done); running.once('close', done);
+      });
     }
     const connection = server; server = undefined;
     connection?.closeAllConnections(); connection?.close();
@@ -41,6 +59,8 @@ function createCompanion(options) {
     state = 'starting'; message = undefined;
     flight = (async () => {
       try {
+        await stopping;
+        if (disposed || run !== generation || !effective().enabled) return;
         require('./archive-support.cjs').loadPayload(options.pluginDir);
         const executable = await (options.prepareRuntime ?? prepareRuntime)(appExecutable, join(options.cacheDir, 'runtime'));
         if (disposed || run !== generation || !effective().enabled) return;
@@ -54,14 +74,18 @@ function createCompanion(options) {
             if (req.method === 'GET' && url.pathname === '/control') { json(res, 200, { options: effective(), resetRevision }); return; }
             if (req.method === 'POST' && url.pathname === '/event') {
               const event = await body(req);
+              if (disposed || server !== privateServer || run !== generation) { json(res, 409, { error: 'retired-connection' }); return; }
               if (event.type === 'status' && typeof event.active === 'boolean' && event.version === version) {
                 active = event.active && effective().enabled; state = 'ready';
+                message = undefined; heartbeatAt = Date.now();
+                healthySince ||= heartbeatAt;
+                if (heartbeatAt - healthySince >= 30000) failures = 0;
               } else if (event.type === 'open' && (event.sessionId === undefined || typeof event.sessionId === 'string' && event.sessionId.length <= 200)) {
                 if (event.sessionId) pendingOpen = { revision: ++openRevision, sessionId: event.sessionId };
                 if (Date.now() - lastOpenAt > 1000) {
                   lastOpenAt = Date.now();
                   if (options.openMain) options.openMain();
-                  else {
+                  else if (event.activated !== true) {
                     // DSH's existing single-instance handler restores its main
                     // window. No process is killed and no restart is requested.
                     const focus = spawn(appExecutable, [], { cwd: dirname(appExecutable), env: childEnvironment(), stdio: 'ignore', windowsHide: true });
@@ -86,19 +110,22 @@ function createCompanion(options) {
         if (disposed || run !== generation) { stopChild(); return; }
         const port = privateServer.address().port;
         const bootstrap = { module: options.entry ?? join(options.pluginDir, 'desktop/companion-main.cjs'), port, token,
-          dataDir: join(options.cacheDir, 'window-data'), version };
+          dataDir: join(options.cacheDir, 'window-data'), version, appExecutable };
         const running = spawn(executable, [], { cwd: dirname(executable), env: { ...childEnvironment(), DSH_PET_BOOTSTRAP: JSON.stringify(bootstrap) }, windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
         child = running;
+        heartbeatAt = Date.now(); healthySince = 0;
         running.stderr.on('data', chunk => options.diagnostic?.(chunk.toString()));
         const failed = (error, signal) => {
           options.diagnostic?.('Companion ended: ' + (error?.code ?? error ?? 'timeout') + ' ' + (signal ?? '') + '\n');
           if (child !== running || disposed) return;
           stopChild(); state = effective().enabled ? 'error' : 'idle';
-          if (state === 'error') message = '独立窗口启动中断，请点击“重试独立窗口”。';
+          if (state === 'error') { message = '独立窗口连接中断，正在自动恢复；也可点击“重试独立窗口”。'; scheduleRetry(); }
         };
         running.on('error', failed); running.on('exit', failed);
-        const timeout = setTimeout(() => { if (child === running && state === 'starting') failed(); }, 20000);
-        timeout.unref(); running.once('exit', () => clearTimeout(timeout));
+        startupTimer = setTimeout(() => { if (child === running && state === 'starting') failed(); }, 20000);
+        startupTimer.unref();
+        watchdog = setInterval(() => { if (child === running && Date.now() - heartbeatAt > 20000) failed('heartbeat timeout'); }, 2000);
+        watchdog.unref();
       } catch (error) {
         if (!disposed && run === generation) {
           stopChild(); state = 'error';
@@ -106,6 +133,7 @@ function createCompanion(options) {
             : ['EACCES', 'EPERM'].includes(error.code) ? '无法准备独立窗口，请检查插件缓存目录的写入权限。'
             : error.code === 'ENOENT' ? '独立窗口所需文件缺失，请重新安装完整插件包后重试。'
             : '独立窗口准备失败：' + String(error.message).slice(0, 250);
+          scheduleRetry();
         }
       } finally { flight = undefined; }
     })();
@@ -115,18 +143,20 @@ function createCompanion(options) {
     status,
     configure(value) {
       if (!value || typeof value.enabled !== 'boolean' || value.currentSessionId !== undefined && (typeof value.currentSessionId !== 'string' || value.currentSessionId.length > 200)) throw Error('Invalid desktop configuration');
+      if (!requested.enabled && value.enabled) failures = 0;
       requested = { ...requested, enabled: value.enabled,
         ...(Object.hasOwn(value, 'currentSessionId') ? { currentSessionId: value.currentSessionId || undefined } : {}) };
-      if (requested.enabled) void start();
+      if (requested.enabled) { if (state === 'error') scheduleRetry(); else void start(); }
       // Keep an initialized companion dormant while hidden. Its private
       // control poll notices visibility changes without the main window.
       if (!requested.enabled) active = false;
+      if (!requested.enabled) { clearTimeout(retryTimer); retryTimer = undefined; }
       return status();
     },
     resetPosition() { resetRevision++; return status(); },
-    retry() { if (state === 'error') { state = 'idle'; message = undefined; } void start(); return status(); },
+    retry() { clearTimeout(retryTimer); retryTimer = undefined; failures = 0; if (state === 'error') { state = 'idle'; message = undefined; } void start(); return status(); },
     acknowledge(revision) { if (pendingOpen?.revision === revision) pendingOpen = undefined; return { ok: true }; },
-    dispose() { disposed = true; generation++; stopChild(); state = 'idle'; },
+    dispose() { disposed = true; generation++; clearTimeout(retryTimer); retryTimer = undefined; stopChild(); state = 'idle'; },
   };
 }
 module.exports = { createCompanion };

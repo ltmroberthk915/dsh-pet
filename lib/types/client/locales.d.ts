@@ -6,6 +6,8 @@
 export declare const NS = "pet";
 /** Chinese copy. */
 export declare const zh: {
+    readonly 'settings.autoSave': "自动保存 · 修改即生效";
+    readonly 'settings.autoSaveFailed': "自动保存失败，输入已保留，稍后自动重试。";
     readonly 'pet.feed': "喂食";
     readonly 'pet.hide': "隐藏";
     readonly 'pet.rename': "改名";
@@ -103,6 +105,8 @@ export declare const zh: {
 };
 /** English copy. */
 export declare const en: {
+    readonly 'settings.autoSave': "Auto-save · changes apply automatically";
+    readonly 'settings.autoSaveFailed': "Auto-save failed. Your input is retained and will be retried automatically.";
     readonly 'pet.feed': "Feed";
     readonly 'pet.hide': "Hide";
     readonly 'pet.rename': "Rename";

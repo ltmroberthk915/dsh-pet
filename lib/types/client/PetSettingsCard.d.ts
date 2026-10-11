@@ -84,6 +84,10 @@ export declare class PetSettingsCardController {
     private disposed;
     /** Pending deferred-load or retry timer; cancelled by dispose(). */
     private pendingTimer;
+    private saveTimer;
+    private autoSaving;
+    private queueSave;
+    private save;
     /** @param scope - the bound configuration form for the 'pet' entry. */
     constructor(scope: ConfigForm<PetSettings>);
     /** Retry throughout installation/reload; retain drafts until a verified save. */

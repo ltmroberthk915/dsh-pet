@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { animationFps, animationMode, optionalFps, tickSlope, tickIntercept, effectiveFps, DEFAULT_TICK_SLOPE, DEFAULT_TICK_INTERCEPT, MIN_TICK_SLOPE, MAX_TICK_SLOPE, MIN_TICK_INTERCEPT, MAX_TICK_INTERCEPT, type AnimationMode } from '../animation.ts'
 import type { PetStateView } from '../service.ts'
 import { desktopConnection, desktopRequest } from './desktop-connection.ts'
@@ -28,6 +28,14 @@ export function PlaybackSettings() {
   const [hoverPanel, setHoverPanel] = useState(false)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [editRevision, setEditRevision] = useState(0)
+  const mounted = useRef(true)
+  const epoch = useRef(0)
+  const saveTimer = useRef<number | undefined>(undefined)
+  const saveFlight = useRef(false)
+  const pendingSave = useRef<{ payload: Record<string, unknown>; revision: number; epoch: number } | undefined>(undefined)
+  const runSave = useRef<() => Promise<void>>(async () => {})
   const [serviceStatus, setServiceStatus] = useState<PetServiceStatus>('loading')
   useEffect(() => {
     let alive = true
@@ -39,6 +47,7 @@ export function PlaybackSettings() {
       setSnapshot(state)
       setServiceStatus('ready')
       if (selected !== state.pet.id) {
+        epoch.current++; pendingSave.current = undefined; window.clearTimeout(saveTimer.current); setEditRevision(0); setMessage('')
         selected = state.pet.id
         setMode(animationMode(state.display.animationMode)); setFps(String(animationFps(state.display.animationFps)))
         const limit = optionalFps(state.display.animationRunFpsLimit), actions = optionalFps(state.display.animationActionFps)
@@ -69,29 +78,46 @@ export function PlaybackSettings() {
   const savedLimit = limitRunning ? Number(runLimit) : 0
   const savedActions = customActions ? Number(actionFps) : 0
   const valid = validFps && validLimit && validActions && (mode !== 'tick' || validLinear)
-  async function save() {
-    if (!valid || busy || !connected) return
-    setBusy(true); setMessage('')
+  runSave.current = async () => {
+    const pending = pendingSave.current
+    if (!pending || saveFlight.current || !connected || !mounted.current) return
+    saveFlight.current = true; setSaving(true); setMessage('')
+    let failed = false
     try {
-      const linear = validLinear ? { animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) } : {}
-      const result = await request('config', { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), animationRunFpsLimit: savedLimit, animationActionFps: savedActions, desktopEnabled: desktop, multiPetEnabled: multi, bubbleOnly, hoverPanelEnabled: hoverPanel, ...linear })
-      if (result.ok !== true || result.display?.animationMode !== mode || result.display?.animationFps !== Number(fps)
-        || result.display?.desktopEnabled !== desktop || result.display?.multiPetEnabled !== multi || result.display?.bubbleOnly !== bubbleOnly || result.display?.hoverPanelEnabled !== hoverPanel
-        || result.display?.animationRunFpsLimit !== savedLimit || result.display?.animationActionFps !== savedActions
-        || (validLinear && (result.display?.animationTickSlope !== Number(slope) || result.display?.animationTickIntercept !== Number(intercept)))) throw new Error('设置未保存')
-      setSlope(String(tickSlope(result.display.animationTickSlope)))
-      setIntercept(String(tickIntercept(result.display.animationTickIntercept)))
-      setMessage('已保存')
-    } catch { setMessage('保存失败，设置保留，请重试。') }
-    finally { setBusy(false) }
+      const result = await request('config', pending.payload)
+      if (result.ok !== true || Object.entries(pending.payload).some(([key, value]) => key !== 'petId' && result.display?.[key] !== value)) throw new Error('设置未保存')
+      if (pendingSave.current === pending) { pendingSave.current = undefined; if (mounted.current && pending.epoch === epoch.current) setMessage('已保存') }
+    } catch {
+      failed = true
+      if (mounted.current && pending.epoch === epoch.current) setMessage('自动保存失败，设置保留，稍后自动重试。')
+    } finally {
+      saveFlight.current = false
+      if (mounted.current) {
+        setSaving(false)
+        if (pendingSave.current) { window.clearTimeout(saveTimer.current); saveTimer.current = window.setTimeout(() => void runSave.current(), failed ? 3000 : 0) }
+      }
+    }
   }
+  useEffect(() => {
+    if (!editRevision) return
+    window.clearTimeout(saveTimer.current)
+    if (!valid) { pendingSave.current = undefined; setMessage('输入有效后自动保存'); return }
+    const linear = validLinear ? { animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) } : {}
+    pendingSave.current = { revision: editRevision, epoch: epoch.current, payload: { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), animationRunFpsLimit: savedLimit, animationActionFps: savedActions, desktopEnabled: desktop, multiPetEnabled: multi, bubbleOnly, hoverPanelEnabled: hoverPanel, ...linear } }
+    setMessage('待自动保存…')
+    saveTimer.current = window.setTimeout(() => void runSave.current(), 0)
+  }, [editRevision])
+  useEffect(() => {
+    if (connected && pendingSave.current && !saveFlight.current) { window.clearTimeout(saveTimer.current); saveTimer.current = window.setTimeout(() => void runSave.current(), 0) }
+  }, [connected])
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; window.clearTimeout(saveTimer.current) } }, [])
   async function resetPosition() {
     const bridge = desktopConnection(snapshot?.desktop)
     if (!bridge || busy || !connected) return
     setBusy(true)
     try {
       const result = await bridge.resetPosition()
-      setMessage(result.active ? '宠物窗口已归位' : '请先保存并启用独立桌面宠物。')
+      setMessage(result.active ? '宠物窗口已归位' : '请先启用独立桌面宠物。')
     } catch { setMessage('归位失败，请重试。') }
     finally { setBusy(false) }
   }
@@ -110,7 +136,7 @@ export function PlaybackSettings() {
     <strong>{snapshot?.pet.displayName ?? '当前形象'} · 生成速度动画</strong>
     {serviceStatus !== 'ready' && <p role="status">{t(serviceStatus === 'authorization' ? 'settings.serviceAuthorization'
       : serviceStatus === 'loading' ? 'settings.serviceLoading' : 'settings.serviceUnavailable')}</p>}
-    <fieldset disabled={!connected || busy} style={{ display: 'grid', gap: 10, border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+    <fieldset disabled={!connected || busy} onChange={() => setEditRevision(value => value + 1)} style={{ display: 'grid', gap: 10, border: 0, padding: 0, margin: 0, minWidth: 0 }}>
     <label><input aria-label="仅显示状态气泡（无宠物图）" type="checkbox" checked={bubbleOnly} onChange={e => setBubbleOnly(e.target.checked)} /> 仅显示状态气泡（无宠物图）</label>
     <div style={{ opacity: .8 }}>隐藏形象，仅保留可拖动的任务状态气泡；空闲时常驻「随时就绪」。左键唤出 DSH，右键抚摸并展开看板。</div>
     <label><input aria-label="悬停展开看板" type="checkbox" checked={hoverPanel} onChange={e => setHoverPanel(e.target.checked)} /> 悬停展开看板</label>
@@ -145,7 +171,7 @@ export function PlaybackSettings() {
     <div style={{ opacity: .8 }}>优先使用模型对应色；已占用时先分配空闲色，第六只起随机分配并尽量拉开色差。关闭多宠物模式不会清除已分配颜色。</div>
     <div style={{ opacity: .8, lineHeight: 1.6 }}>所有宠物共享累计：喂食次数、亲密度和小鱼干统一记录。各对话的完成奖励汇入同一份记录，切换对话、开关多宠物或重启都不会拆分或重置。</div>
     <label><input type="checkbox" checked={desktop} onChange={e => setDesktop(e.target.checked)} /> 独立桌面宠物</label>
-    <div style={{ opacity: .8 }}>主窗口隐藏或最小化后继续显示；退出 DSH 后关闭。</div>
+    <div style={{ opacity: .8 }}>主窗口隐藏或最小化后继续显示；退出 DSH 后关闭。独立窗口异常时自动重试恢复，仍可手动重试或归位。</div>
     {desktopStatus?.supported && <div data-pet-desktop-status={desktopStatus.state}>
       {desktopStatus.state === 'starting' ? '正在首次准备独立窗口，请稍候…'
         : desktopStatus.state === 'error' ? desktopStatus.message ?? '独立窗口暂不可用，请重试。'
@@ -154,7 +180,7 @@ export function PlaybackSettings() {
     </div>}
     {(desktopStatus?.supported || window.dshPetDesktop) && <div><button type="button" onClick={() => void resetPosition()} disabled={busy}>宠物窗口归位</button></div>}
     {desktopStatus && !desktopStatus.supported && !window.dshPetDesktop && <div>独立窗口支持 Windows 原生 DSH；当前环境使用应用内宠物。</div>}
-    <div><button type="button" onClick={() => void save()} disabled={busy || !valid || !connected}>{busy ? '保存中…' : '保存动画设置'}</button> <span role="status">{message}</span></div>
+    <div role="status">{saving ? '正在自动保存…' : message || '自动保存 · 修改即生效'}</div>
     </fieldset>
   </section>
 }

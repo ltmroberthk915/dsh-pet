@@ -54,6 +54,29 @@ afterEach(() => {
 })
 
 describe('pet settings input validation', () => {
+  it('automatically saves valid edits and serializes a newer change during a slow mutation', async () => {
+    vi.useFakeTimers()
+    let values: Record<string, unknown> = { size: 160, visible: true }
+    let release: (() => void) | undefined
+    const mutate = vi.fn(async (ops: any[]) => {
+      if (mutate.mock.calls.length === 1) await new Promise<void>(resolve => { release = resolve })
+      for (const op of ops) values = { ...values, [op.path[0]]: op.value }
+      return true
+    })
+    const scope = { getSnapshot: () => ({ status: 'ready', writable: true, value: values, base: values, user: values }), subscribe: () => () => {}, mutate } as unknown as ConfigForm<PetSettings>
+    vi.stubGlobal('fetch', vi.fn(async () => response([])))
+    const controller = new PetSettingsCardController(scope), face = controller.inject()
+    face.edit('size', '200'); await vi.advanceTimersByTimeAsync(250)
+    expect(mutate).toHaveBeenCalledOnce()
+    face.edit('size', '320'); face.edit('visible', 'false')
+    await vi.advanceTimersByTimeAsync(250)
+    expect(mutate).toHaveBeenCalledOnce()
+    release?.(); await vi.advanceTimersByTimeAsync(1)
+    expect(mutate).toHaveBeenCalledTimes(2)
+    expect(values).toMatchObject({ size: 320, visible: false })
+    expect(face.hooks.petSettingsCard.getSnapshot()).toMatchObject({ dirty: false, failed: false })
+    controller.dispose()
+  })
   it('accepts the same numeric bounds and steps as the real Host schema', () => {
     const cases = {
       size: [-1, 0, 31, 32, 160, 160.5, 1024, 1025, Infinity, NaN],
@@ -85,14 +108,12 @@ describe('pet settings input validation', () => {
     fireEvent.change(screen.getByLabelText(t('settings.bubbleScale')), { target: { value: '0.3' } })
     expect(screen.getByText(t('settings.invalidBubbleScale'))).toBeTruthy()
     expect(screen.getByText(t('settings.invalidDraft'))).toBeTruthy()
-    expect((screen.getByText(t('settings.save')) as HTMLButtonElement).disabled).toBe(true)
-    fireEvent.click(screen.getByText(t('settings.save')))
+    expect(screen.queryByText(t('settings.save'))).toBeNull()
     expect(mutate).not.toHaveBeenCalled()
-    expect(screen.queryByText(t('settings.saveFailed'))).toBeNull()
+    expect(screen.queryByText(t('settings.autoSaveFailed'))).toBeNull()
     fireEvent.change(screen.getByLabelText(t('settings.bubbleScale')), { target: { value: '0.75' } })
     expect(screen.queryByText(t('settings.invalidDraft'))).toBeNull()
-    fireEvent.click(screen.getByText(t('settings.save')))
-    await screen.findByText(t('settings.saveFailed'))
+    await screen.findByText(t('settings.autoSaveFailed'))
     expect(mutate).toHaveBeenCalledOnce()
     expect((screen.getByLabelText(t('settings.bubbleScale')) as HTMLInputElement).value).toBe('0.75')
     controller.dispose()
@@ -126,8 +147,9 @@ describe('pet selection without a Host settings form', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
     expect(screen.getByText(t('settings.serviceAuthorization'))).toBeTruthy()
     expect(store.getSnapshot()).toMatchObject({ writable: false, dirty: true, petId: { text: 'jyn' } })
+    const attempts = fetch.mock.calls.filter(([url]) => String(url).includes('/set-')).length
     act(() => face.save())
-    expect(fetch.mock.calls.every(([url]) => !String(url).includes('/set-'))).toBe(true)
+    expect(fetch.mock.calls.filter(([url]) => String(url).includes('/set-')).length).toBe(attempts)
     expect(mutate).not.toHaveBeenCalled()
     status = 200
     await act(async () => { await vi.advanceTimersByTimeAsync(3000) })

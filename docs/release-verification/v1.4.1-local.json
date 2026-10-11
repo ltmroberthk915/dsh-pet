@@ -1,0 +1,13 @@
+{
+  "version": "1.4.1",
+  "unit": { "success": true, "passed": 573, "skipped": 1 },
+  "native": { "success": true, "checks": 145 },
+  "automaticDesktop": { "success": true, "checks": 31, "hostArchiveUnchanged": true },
+  "packageSha256": "72980426338e5bfbc640270ff5dfb1359cf853d4c20b7d601697d9d9bb09cbcd",
+  "cleanTarballInstall": { "success": true, "version": "1.4.1", "consumerBuildHooks": false },
+  "installedProfiles": ["desktop", "web"],
+  "runtimeChecksums": true,
+  "limitation": "The intermittent failure over maximized Edge was not reproducible on demand; activation and native hit-testing paths were corrected and covered by regression tests.",
+  "restartRequired": true,
+  "npmPublished": false
+}

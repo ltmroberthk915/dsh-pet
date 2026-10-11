@@ -126,6 +126,28 @@ export class PetSettingsCardController {
   private disposed = false
   /** Pending deferred-load or retry timer; cancelled by dispose(). */
   private pendingTimer: number | undefined
+  private saveTimer: number | undefined
+  private autoSaving = false
+
+  private queueSave(delay = 0): void {
+    window.clearTimeout(this.saveTimer)
+    if (this.disposed) return
+    this.saveTimer = window.setTimeout(() => { this.saveTimer = undefined; void this.save() }, delay)
+  }
+
+  private async save(): Promise<void> {
+    window.clearTimeout(this.saveTimer); this.saveTimer = undefined
+    const state = this.projection()
+    if (this.disposed || this.autoSaving || !state.writable || !state.exposed || !state.dirty || state.invalid) return
+    this.autoSaving = true
+    try { if (this.fallback()) await this.saveFallback(); else await this.form.save() }
+    finally {
+      this.autoSaving = false
+      // Edits made during a write remain staged; serialize the next write.
+      const current = this.projection()
+      if (current.dirty && !current.invalid) this.queueSave(current.failed ? 3000 : 0)
+    }
+  }
 
   /** @param scope - the bound configuration form for the 'pet' entry. */
   constructor(scope: ConfigForm<PetSettings>) {
@@ -171,6 +193,7 @@ export class PetSettingsCardController {
       this.serviceStatus = petServiceFailure(state.reason)
     }
     this.store.set(this.projection())
+    if (this.projection().dirty && this.serviceStatus === 'ready' && !this.autoSaving) this.queueSave()
     this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = undefined
       if (!this.disposed) void this.refreshService()
@@ -209,23 +232,21 @@ export class PetSettingsCardController {
     this.store.set(this.projection())
     try {
       if (petId !== undefined) {
-        const response = await fetch('/api/pet/set-pet', {
+        const result = await petJson<{ ok?: boolean; petId?: string }>('/api/pet/set-pet', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ petId }),
         })
-        const result = (await response.json()) as { ok?: boolean; petId?: string }
-        if (!response.ok || result.ok !== true || result.petId !== petId) {
+        if (result.ok !== true || result.petId !== petId) {
           throw new Error('pet selection was not persisted')
         }
       }
       if (visible !== undefined) {
-        const response = await fetch('/api/pet/set-visible', {
+        await petJson('/api/pet/set-visible', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ visible }),
         })
-        if (!response.ok) throw new Error('pet visibility was not persisted')
       }
       const persisted = await fetchPetState()
       if (petId !== undefined && persisted.petId !== petId) throw new Error('pet selection was not persisted')
@@ -285,22 +306,24 @@ export class PetSettingsCardController {
     return {
       hooks: { petSettingsCard: this.store },
       edit: (field, value) => {
-        if (!this.fallback()) return actions.edit(field, value)
+        if (!this.fallback()) { actions.edit(field, value); this.queueSave(['size', 'right', 'bottom', 'bubbleScale'].includes(field) ? 250 : 0); return }
         if (field === 'petId') this.stagedPetId = value === '' ? undefined : value
         else if (field === 'visible') this.stagedVisible = value === '' ? undefined : value === 'true'
         else return
         this.petSaveFailed = false
         this.store.set(this.projection())
+        this.queueSave()
       },
       resetField: (field) => {
-        if (!this.fallback()) return actions.resetField(field)
+        if (!this.fallback()) { actions.resetField(field); this.queueSave(); return }
         if (field === 'petId') this.stagedPetId = undefined
         else if (field === 'visible') this.stagedVisible = undefined
         else return
         this.petSaveFailed = false
         this.store.set(this.projection())
+        this.queueSave()
       },
-      save: () => { if (this.fallback()) void this.saveFallback(); else actions.save() },
+      save: () => { void this.save() },
       discard: () => {
         if (!this.fallback()) return actions.discard()
         this.stagedPetId = undefined
@@ -318,6 +341,7 @@ export class PetSettingsCardController {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
+    window.clearTimeout(this.saveTimer)
     if (this.pendingTimer !== undefined) {
       window.clearTimeout(this.pendingTimer)
       this.pendingTimer = undefined
@@ -358,6 +382,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
       onSave={props.save}
       onDiscard={props.discard}
       alwaysOpen
+      hideFooter
     >
       {state.invalid && (!state.petSelectionFallback || state.serviceStatus === 'ready') && <p role="status" style={{ color: '#c58b2a', lineHeight: 1.6 }}>{t('settings.invalidDraft')}</p>}
       {state.petSelectionFallback ? null : <BooleanField
@@ -452,6 +477,7 @@ export function PetSettingsCard(props: PetSettingsCardProps) {
         onEdit={(text) => { props.edit('bubbleScale', text) }}
         onReset={() => { props.resetField('bubbleScale') }}
       />}
+      <p role="status">{state.failed ? t('settings.autoSaveFailed') : state.saving ? t('settings.saving') : state.dirty ? t('settings.unsaved') : t('settings.autoSave')}{state.failedReason ? ' · ' + state.failedReason : ''}</p>
     </PluginSettingsCard>
   )
 }

@@ -14,6 +14,8 @@ Precompute alpha envelopes from shipped frames for each built-in character and a
 
 Left click and keyboard activation focus DSH and the represented session. Right click pets the character, triggers its existing touch interaction and toggles the care panel. Dragging captures the actual bubble or image target and suppresses the trailing click, so moving a companion cannot unexpectedly focus DSH.
 
+The native window also checks the cursor every 50 ms while companions exist, so interrupted forwarded mouse events cannot leave a pet permanently transparent to clicks. Native dragging ignores initial movement within 4 px, preserving activation when a click jitters. Desktop activation and recovery decisions are recorded in the 2026-10-11 desktop recovery note.
+
 ## Alternatives considered
 
 - Keeping an invisible sprite placeholder wastes desktop space in status-only mode.

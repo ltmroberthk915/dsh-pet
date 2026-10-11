@@ -133,9 +133,16 @@ try {
   extra.configure({ enabled: true })
   await wait(() => extra.status().state === 'error')
   check('preparation failure is visible and preserves the host', extra.status().message.includes('磁盘空间不足') && hash(hostArchive) === before)
-  extra.retry()
   await wait(() => extra.status().active || extra.status().state === 'error')
-  check('retry recovers without installing another patch', extra.status().active)
+  await wait(() => extra.status().active)
+  check('preparation failure recovers automatically without a manual button', extra.status().active)
+  await wait(() => readObserved().pid && readObserved().pid !== pid && readObserved().pid !== orphanPid && readObserved().windows?.length === 1)
+  const crashedPid = readObserved().pid
+  process.kill(crashedPid) // Only this test's isolated companion.
+  await wait(() => extra.status().state === 'error')
+  await wait(() => extra.status().active && readObserved().pid !== crashedPid)
+  check('abrupt companion termination recovers automatically with a new process', true)
+  check('manual retry remains available after automatic recovery', extra.retry().active)
   extra.dispose()
   check('original host archive is byte-for-byte unchanged', hash(hostArchive) === before)
   fs.writeFileSync(path.join(output, 'results.json'), JSON.stringify({ success: true, checks, hostArchiveUnchanged: true }, null, 2))

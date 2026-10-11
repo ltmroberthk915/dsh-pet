@@ -25,6 +25,33 @@ function mockHost(desktop?: DesktopStatus, tokensPerSecond = 264) {
 }
 
 describe('Tick settings', () => {
+  it('serializes edits during a slow save and persists the latest switches without a save button', async () => {
+    const host = mockHost()
+    const fetchNow = fetch
+    let release: (() => void) | undefined
+    let first = true
+    const bodies: any[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.body) {
+        bodies.push(JSON.parse(String(init.body)))
+        if (first) { first = false; await new Promise<void>(resolve => { release = resolve }) }
+      }
+      return fetchNow(url, init)
+    }))
+    render(<PlaybackSettings />)
+    await screen.findByLabelText('斜率 k')
+    expect(screen.queryByText('保存动画设置')).toBeNull()
+    fireEvent.click(screen.getByLabelText('多宠物模式'))
+    await screen.findByText('正在自动保存…')
+    await vi.waitFor(() => expect(bodies).toHaveLength(1))
+    fireEvent.click(screen.getByLabelText('多宠物模式'))
+    fireEvent.click(screen.getByLabelText('悬停展开看板'))
+    expect(bodies).toHaveLength(1)
+    await act(async () => release?.())
+    await screen.findByText('已保存')
+    expect(bodies).toHaveLength(2)
+    expect(host.writes.at(-1)).toMatchObject({ multiPetEnabled: false, hoverPanelEnabled: true })
+  })
   it('persists bubble-only mode across remounts and lets the user restore the image', async () => {
     const host = mockHost()
     const view = render(<PlaybackSettings />)
@@ -32,7 +59,6 @@ describe('Tick settings', () => {
     const checkbox = screen.getByLabelText('仅显示状态气泡（无宠物图）') as HTMLInputElement
     expect(checkbox.checked).toBe(false)
     fireEvent.click(checkbox)
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes.at(-1)).toMatchObject({ bubbleOnly: true })
     view.unmount()
@@ -41,7 +67,6 @@ describe('Tick settings', () => {
     const restored = screen.getByLabelText('仅显示状态气泡（无宠物图）') as HTMLInputElement
     expect(restored.checked).toBe(true)
     fireEvent.click(restored)
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes.at(-1)).toMatchObject({ bubbleOnly: false })
   })
@@ -57,7 +82,6 @@ describe('Tick settings', () => {
     fireEvent.click(screen.getByLabelText('自设其他动作速率'))
     fireEvent.change(screen.getByLabelText('其他动作 FPS'), { target: { value: '144' } })
     expect(screen.getByText('预览：293 tok/s → 30.0 FPS')).toBeTruthy()
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes.at(-1)).toMatchObject({ animationRunFpsLimit: 30, animationActionFps: 144 })
     view.unmount()
@@ -66,7 +90,6 @@ describe('Tick settings', () => {
     expect((screen.getByLabelText('左右跑动最高 FPS') as HTMLInputElement).value).toBe('30')
     fireEvent.click(screen.getByLabelText('限制左右跑动帧率'))
     expect(screen.getByText('预览：293 tok/s → 294.0 FPS')).toBeTruthy()
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes.at(-1)).toMatchObject({ animationRunFpsLimit: 0, animationActionFps: 144 })
   })
@@ -82,7 +105,7 @@ describe('Tick settings', () => {
     render(<PlaybackSettings />)
     await act(async () => { await vi.advanceTimersByTimeAsync(8000) })
     expect(screen.getByText(t('settings.serviceUnavailable'))).toBeTruthy()
-    expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByLabelText('动画 FPS').closest('fieldset')?.disabled).toBe(true)
     status = 200
     await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
     expect(screen.queryByText(t('settings.serviceUnavailable'))).toBeNull()
@@ -90,13 +113,12 @@ describe('Tick settings', () => {
     status = 401
     await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
     expect(screen.getByText(t('settings.serviceAuthorization'))).toBeTruthy()
-    fireEvent.click(screen.getByText('保存动画设置'))
-    expect(writes).toBe(0)
+    expect(writes).toBe(1)
     status = 200
     await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
     expect(screen.queryByText(t('settings.serviceAuthorization'))).toBeNull()
     expect((screen.getByLabelText('斜率 k') as HTMLInputElement).value).toBe('0.15')
-    expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(false)
+    expect((screen.getByLabelText('动画 FPS') as HTMLInputElement).disabled).toBe(false)
   })
   it('shows the automatically started window version without asking for a patch', async () => {
     mockHost({ supported: true, state: 'ready', active: true, version: '1.2.0' })
@@ -119,7 +141,6 @@ describe('Tick settings', () => {
     expect(checkbox.checked).toBe(false)
     fireEvent.click(checkbox)
     expect(checkbox.checked).toBe(true)
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes).toEqual([expect.objectContaining({ multiPetEnabled: true, hoverPanelEnabled: false, animationTickSlope: 0.1, animationTickIntercept: 4 })])
   })
@@ -130,11 +151,9 @@ describe('Tick settings', () => {
     const checkbox = screen.getByLabelText('悬停展开看板') as HTMLInputElement
     expect(checkbox.checked).toBe(false)
     fireEvent.click(checkbox)
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes.at(-1)).toMatchObject({ hoverPanelEnabled: true })
     fireEvent.click(checkbox)
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes.at(-1)).toMatchObject({ hoverPanelEnabled: false })
   })
@@ -145,7 +164,6 @@ describe('Tick settings', () => {
     fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '0.2' } })
     fireEvent.change(screen.getByLabelText('截距 b'), { target: { value: '5' } })
     expect(screen.getByText('预览：264 tok/s → 57.8 FPS')).toBeTruthy()
-    fireEvent.click(screen.getByText('保存动画设置'))
     await screen.findByText('已保存')
     expect(host.writes).toEqual([{ petId: 'whale-girl-refined', animationMode: 'tick', animationFps: 20, animationRunFpsLimit: 0, animationActionFps: 0,
       desktopEnabled: true, multiPetEnabled: false, bubbleOnly: false, hoverPanelEnabled: false, animationTickSlope: 0.2, animationTickIntercept: 5 }])
@@ -156,15 +174,14 @@ describe('Tick settings', () => {
     render(<PlaybackSettings />)
     await screen.findByLabelText('斜率 k')
     fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '0' } })
-    expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.queryByText('保存动画设置')).toBeNull()
     expect(screen.getByRole('alert')).toBeTruthy()
-    fireEvent.click(screen.getByText('保存动画设置'))
     expect(host.writes).toEqual([])
     fireEvent.change(screen.getByLabelText('斜率 k'), { target: { value: '1' } })
     expect(screen.getByText('预览：264 tok/s → 268.0 FPS')).toBeTruthy()
     fireEvent.change(screen.getByLabelText('动画 FPS'), { target: { value: '0' } })
     expect(screen.getByText('帧率需为不小于 1 的有效数字；当前输入尚未提交保存。')).toBeTruthy()
-    expect((screen.getByText('保存动画设置') as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.queryByText('保存动画设置')).toBeNull()
   })
 
   it('keeps a draft during polling and loads separate values on a character change', async () => {

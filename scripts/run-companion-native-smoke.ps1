@@ -15,7 +15,7 @@ try {
   $fixtureManifest.main = '../../../dsh-pet/' + $EntryPoint
   [IO.File]::WriteAllText($fixturePackage, ($fixtureManifest | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
   $fixtureProcess = Start-Process -FilePath (Join-Path $fixtureRoot 'DeepSeek Harness.exe') -WorkingDirectory $fixtureRoot -WindowStyle Hidden -PassThru -ArgumentList '--enable-logging' -RedirectStandardOutput (Join-Path $outputDir 'native-stdout.txt') -RedirectStandardError (Join-Path $outputDir 'native-stderr.txt')
-  if (-not $fixtureProcess.WaitForExit(60000)) {
+  if (-not $fixtureProcess.WaitForExit(90000)) {
     $fixtureProcess.Kill()
     throw 'Isolated companion fixture timed out.'
   }

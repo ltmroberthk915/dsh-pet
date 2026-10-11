@@ -266,6 +266,35 @@ app.whenReady().then(async()=> {
     })`)
     check(id+' '+scenario.label,timings.length>=scenario.min&&timings.length<=scenario.max,timings)
   }
+  // Lose forwarded mouse events altogether, then move the native cursor into
+  // a stable bubble hit area. The independent native check must restore input.
+  current=makeState('blue-whale-business','idle')
+  current.display.bubbleOnly=true
+  win=await refresh()
+  const region=await win.webContents.executeJavaScript(`(() => {const r=document.querySelector('[data-pet-status-entry]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`)
+  const pointerModes=[]
+  const originalIgnore=win.setIgnoreMouseEvents.bind(win)
+  win.setIgnoreMouseEvents=(ignore,options)=>{pointerModes.push(ignore);originalIgnore(ignore,options)}
+  const nativeBounds=win.getBounds()
+  cursor={x:nativeBounds.x-100,y:nativeBounds.y-100}
+  screen.getCursorScreenPoint=()=>cursor
+  await pause(120)
+  cursor={x:nativeBounds.x+region.x,y:nativeBounds.y+region.y}
+  await pause(120)
+  check('native cursor restores pet clicks without forwarded mouse events',pointerModes.at(-1)===false,pointerModes)
+  win.setIgnoreMouseEvents=originalIgnore
+  screen.getCursorScreenPoint=realCursor
+  const crashBounds=win.getBounds(), crashedId=win.id
+  win.webContents.forcefullyCrashRenderer()
+  await pause(2500)
+  win=BrowserWindow.getAllWindows().find(item=>item.webContents.getURL()==='dsh-app://pet/index.html')
+  check('renderer crash recreates exactly one pet automatically',!!win&&win.id!==crashedId&&BrowserWindow.getAllWindows().filter(item=>item.webContents.getURL()==='dsh-app://pet/index.html').length===1)
+  check('renderer recovery preserves the primary pet position',win.getBounds().x===crashBounds.x&&win.getBounds().y===crashBounds.y,{before:crashBounds,after:win.getBounds()})
+  check('recovered renderer reconnects to the service',await win.webContents.executeJavaScript("document.body.dataset.connected==='true'"))
+  // Transient unresponsiveness can clear without recreating the window.
+  const responsiveId=win.id
+  win.emit('unresponsive'); await pause(100); win.emit('responsive'); await pause(5100)
+  check('brief unresponsiveness does not restart a recovered renderer',!win.isDestroyed()&&win.id===responsiveId)
   check('no renderer, preload or missing-asset errors',report.errors.length===0,report.errors)
   report.success=true
 }).catch(error=> { report.success=false; report.error=error.stack; process.exitCode=1 }).finally(()=> {
@@ -274,4 +303,4 @@ app.whenReady().then(async()=> {
   unlinkSync(fixtureMain)
   app.quit()
 })
-setTimeout(()=> { report.success=false; report.error='Companion fixture timeout'; writeFileSync(join(output,'native-results.json'),JSON.stringify(report,null,2)); app.exit(1) },60000).unref()
+setTimeout(()=> { report.success=false; report.error='Companion fixture timeout'; writeFileSync(join(output,'native-results.json'),JSON.stringify(report,null,2)); app.exit(1) },90000).unref()
