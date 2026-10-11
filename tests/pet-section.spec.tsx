@@ -27,6 +27,7 @@ vi.mock('@deepseek-ai/dsh-client-store', () => ({
 }))
 import { PetSettingsSection, PetSettingsCardController, type PetSettingsSectionProps, type PetSettings } from '../src/client/PetSettingsCard.tsx'
 import { en } from '../src/client/locales.ts'
+const controllers: PetSettingsCardController[] = []
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn(async (url: string) => new Response(JSON.stringify(url === '/api/pet/state' ? {
@@ -43,6 +44,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
+  for (const controller of controllers.splice(0)) controller.dispose()
   vi.unstubAllGlobals()
 })
 
@@ -107,6 +109,7 @@ class FakeScope implements ConfigForm<PetSettings> {
 /** Bind the controller's face into the section's prop shape (mirrors the slot renderer). */
 function sectionProps(scope: ConfigForm<PetSettings>) {
   const controller = new PetSettingsCardController(scope)
+  controllers.push(controller)
   const face = controller.inject()
   const { hooks, ...actions } = face
   const usePetSettingsCard = <S,>(selector: (snapshot: ReturnType<typeof hooks.petSettingsCard.getSnapshot>) => S) =>
@@ -167,15 +170,16 @@ describe('PetSettingsSection', () => {
     scope.accepted = false
     render(<PetSettingsSection {...sectionProps(scope)} />)
 
-    // When the user stages a new size and saves
+    // When the user edits a size, it saves automatically.
     fireEvent.change(screen.getByLabelText('Size (px)'), { target: { value: '240' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
 
     // Then the card reports the failure instead of a landed save
-    const failure = await screen.findByText(en['settings.saveFailed'])
+    const failure = await screen.findByText(en['settings.autoSaveFailed'])
     expect(failure.getAttribute('role')).toBe('status')
     // And the refused draft is still staged for the user to correct
     expect(scope.value.size).toBe(160)
+    expect((screen.getByLabelText('Size (px)') as HTMLInputElement).value).toBe('240')
   })
 
   it('user saves a new size and the card reports the write as landed', async () => {
@@ -183,15 +187,16 @@ describe('PetSettingsSection', () => {
     const scope = new FakeScope({ size: 160 })
     render(<PetSettingsSection {...sectionProps(scope)} />)
 
-    // When the user stages a new size and saves
+    // When the user edits a size, it saves automatically.
     fireEvent.change(screen.getByLabelText('Size (px)'), { target: { value: '240' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
 
     // Then the staged size reaches the namespace and no failure is reported
     await waitFor(() => {
+      expect(scope.value.size).toBe(240)
       expect((screen.getByLabelText('Size (px)') as HTMLInputElement).value).toBe('240')
     })
-    expect(screen.queryByText(en['settings.saveFailed'])).toBeNull()
+    expect(screen.queryByText(en['settings.autoSaveFailed'])).toBeNull()
   })
 })
 

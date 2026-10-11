@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { EventEmitter } from 'node:events'
 import { runInNewContext } from 'node:vm'
 import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 
 const require = createRequire(import.meta.url)
 afterEach(() => vi.useRealTimers())
@@ -35,11 +36,12 @@ it('activates directly from the pet process, coalesces double clicks, and keeps 
       : name === 'node:child_process' ? { spawn }
       : name === './companion-runtime.cjs' ? { childEnvironment: () => ({ SystemRoot: 'C:/Windows' }) } : require(name),
   })
-  await module.exports.start({ port: 12345, token: 'a'.repeat(64), dataDir: 'C:/fixture/data', version: '1.4.1', appExecutable: 'C:/fixture/DeepSeek Harness.exe' })
+  const appExecutable = resolve('fixture', 'DeepSeek Harness.exe')
+  await module.exports.start({ port: 12345, token: 'a'.repeat(64), dataDir: resolve('fixture', 'data'), version: '1.4.1', appExecutable })
   bridge.openMain('first'); bridge.openMain('second')
   await vi.advanceTimersByTimeAsync(0)
   expect(spawn).toHaveBeenCalledOnce()
-  expect(spawn).toHaveBeenCalledWith('C:/fixture/DeepSeek Harness.exe', [], expect.objectContaining({ windowsHide: true, stdio: 'ignore', env: { SystemRoot: 'C:/Windows' } }))
+  expect(spawn).toHaveBeenCalledWith(appExecutable, [], expect.objectContaining({ windowsHide: true, stdio: 'ignore', env: { SystemRoot: 'C:/Windows' } }))
   expect(events.filter(event => event.type === 'open')).toEqual([
     { type: 'open', sessionId: 'first', activated: true }, { type: 'open', sessionId: 'second', activated: true },
   ])
