@@ -344,6 +344,33 @@ describe('frames2dRenderer canvas bitmap path', () => {
     for (const bmp of bitmaps) expect(bmp.close).toHaveBeenCalled()
   })
 
+  it('bounds decoded memory across actions, reloads evicted frames and releases each bitmap once', async () => {
+    vi.stubGlobal('createImageBitmap', vi.fn(async () => {
+      const bitmap = { width: 1024, height: 1024, close: vi.fn() }
+      bitmaps.push(bitmap)
+      return bitmap
+    }))
+    const track = (name: string) => ({ frames: Array.from({ length: 8 }, (_, i) => `/${name}/${i}.webp`), durations: Array(8).fill(100), loop: true })
+    const { ctx } = canvasSetup()
+    const handle = frames2dRenderer.mount(ctx, frames2dRenderer.validateConfig({
+      tracks: { idle: track('idle'), work: track('work') }, phases: { idle: 'idle', thinking: 'work' },
+    })) as Frames2dRendererHandle
+    await flush(40)
+    expect(bitmaps).toHaveLength(8)
+    handle.setState('work')
+    await flush(40)
+    expect(bitmaps).toHaveLength(16)
+    expect(bitmaps.filter(bitmap => !bitmap.close.mock.calls.length)).toHaveLength(8)
+    handle.setState('idle')
+    await flush(40)
+    expect(bitmaps).toHaveLength(24)
+    expect(bitmaps.filter(bitmap => !bitmap.close.mock.calls.length)).toHaveLength(8)
+    expect(draws).toBeGreaterThanOrEqual(3)
+    handle.dispose()
+    await flush(40)
+    for (const bitmap of bitmaps) expect(bitmap.close).toHaveBeenCalledOnce()
+  })
+
   it('keeps painting through a phase switch without touching the DOM tree', async () => {
     const { container } = canvasSetup()
     const stream = createPhaseStream('idle')

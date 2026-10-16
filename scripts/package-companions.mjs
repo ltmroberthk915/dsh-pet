@@ -10,7 +10,7 @@ const root = resolve(import.meta.dirname,'..')
 const require = createRequire(import.meta.url)
 // Packaging must fail if a build changed the renderer after manifest sealing.
 require('../desktop/archive-support.cjs').loadPayload(root)
-const output = resolve(root,'output')
+const output = resolve(root,process.argv[2] ?? 'output')
 mkdirSync(output,{recursive:true})
 const stage = mkdtempSync(join(output,'companion-package-stage-'))
 const unpack = mkdtempSync(join(output,'companion-package-unpack-'))

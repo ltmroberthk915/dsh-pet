@@ -97,4 +97,35 @@ describe('desktop pet hit regions', () => {
     document.dispatchEvent(new MouseEvent('mouseleave'))
     expect(send).toHaveBeenCalledTimes(calls)
   })
+  it('reuses measured geometry during mouse movement and refreshes it after resize', () => {
+    const button = target()
+    const send = setup()
+    const measure = vi.mocked(button.getBoundingClientRect)
+    const before = measure.mock.calls.length
+    for (let i = 0; i < 100; i++) {
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 110 + i, clientY: 90 }))
+    }
+    expect(measure).toHaveBeenCalledTimes(before)
+    expect(send.mock.lastCall?.[0]).toBe(false)
+    measure.mockReturnValue(new DOMRect(200, 80, 60, 70))
+    window.dispatchEvent(new Event('resize'))
+    vi.advanceTimersByTime(20)
+    expect(send.mock.lastCall).toEqual([true, [[200, 80, 60, 70]]])
+    expect(measure.mock.calls.length).toBeGreaterThan(before)
+  })
+  it('refreshes a moved float without observing every animation frame style', async () => {
+    const button = target()
+    const float = document.createElement('div')
+    float.dataset.dshPetDisplay = 'pet'
+    document.body.append(float); float.append(button)
+    const send = setup()
+    vi.mocked(button.getBoundingClientRect).mockReturnValue(new DOMRect(200, 80, 60, 70))
+    float.style.right = '30px'
+    await Promise.resolve(); vi.advanceTimersByTime(20)
+    expect(send.mock.lastCall?.[1]).toEqual([[200, 80, 60, 70]])
+    const calls = send.mock.calls.length
+    button.style.backgroundPosition = '10px 0px'
+    await Promise.resolve(); vi.advanceTimersByTime(20)
+    expect(send).toHaveBeenCalledTimes(calls)
+  })
 })

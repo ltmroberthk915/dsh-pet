@@ -7,10 +7,25 @@ const TARGETS = '[role="button"],button,input,select,textarea'
 export function installDesktopHitTesting(bridge: Bridge): () => void {
   let last = '', frame: number | undefined, disposed = false
   let mouseX = -1, mouseY = -1
-  function publish(force = false, leave = false) {
-    if (disposed) return
+  let regions: HitRegion[] = [], dirty = true, geometryVersion = 0
+  const observed = new Set<Element>()
+  let floats: Element[] = []
+  function measure() {
+    dirty = false
+    geometryVersion++
+    const currentFloats = [...document.querySelectorAll('[data-dsh-pet-display]')]
+    if (floats.length !== currentFloats.length || currentFloats.some((element, i) => element !== floats[i])) {
+      layoutMutation.disconnect()
+      floats = currentFloats
+      // Position/scale changes live on the float. Observe that style only;
+      // sprite background-position changes every animation frame.
+      for (const element of floats) layoutMutation.observe(element, { attributes: true, attributeFilter: ['style'] })
+    }
     const regions: HitRegion[] = []
+    const current = new Set<Element>()
     targets: for (const element of document.querySelectorAll<HTMLElement>(TARGETS)) {
+      current.add(element)
+      if (!observed.has(element)) { resize?.observe(element); observed.add(element) }
       const style = getComputedStyle(element)
       if (style.visibility === 'hidden' || style.display === 'none' || style.pointerEvents === 'none') continue
       const rect = element.getBoundingClientRect()
@@ -24,15 +39,22 @@ export function installDesktopHitTesting(bridge: Bridge): () => void {
         if (regions.length >= 256) break targets
       }
     }
+    for (const element of observed) if (!current.has(element)) { resize?.unobserve(element); observed.delete(element) }
+    return regions
+  }
+  function publish(force = false, leave = false) {
+    if (disposed) return
+    if (dirty) regions = measure()
     const hit = !leave && regions.some(([left, top, width, height]) =>
       mouseX >= left && mouseY >= top && mouseX < left + width && mouseY < top + height)
     // The native cursor can disagree with stale DOM coordinates after a
     // resize or synthetic leave. Every changed position must reach native
     // hit testing, even when the DOM's inside/outside answer is unchanged.
-    const key = JSON.stringify([mouseX, mouseY, hit, regions])
+    const key = `${mouseX},${mouseY},${hit},${geometryVersion}`
     if (force || key !== last) { last = key; bridge.interactive(hit, regions) }
   }
   function schedule() {
+    dirty = true
     if (disposed || frame !== undefined) return
     frame = requestAnimationFrame(() => { frame = undefined; publish(true) })
   }
@@ -41,21 +63,27 @@ export function installDesktopHitTesting(bridge: Bridge): () => void {
   // have remained over the pet for the first event and actually left later.
   const leave = () => publish(true, true)
   const mutation = new MutationObserver(schedule)
-  mutation.observe(document.body, { childList: true, subtree: true, attributes: true,
-    attributeFilter: ['data-dsh-pet-hit', 'data-dsh-pet-hit-flip'] })
+  const layoutMutation = new MutationObserver(schedule)
+  mutation.observe(document.body, { childList: true, characterData: true, subtree: true, attributes: true,
+    attributeFilter: ['data-dsh-pet-hit', 'data-dsh-pet-hit-flip', 'class', 'hidden'] })
+  // Observe the controls themselves: bubble text/scale and care panels can
+  // change size without changing the fixed-size document body.
   const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : undefined
-  resize?.observe(document.body)
   document.addEventListener('mousemove', move)
   document.addEventListener('mouseleave', leave)
+  document.addEventListener('animationend', schedule)
+  document.addEventListener('transitionend', schedule)
   window.addEventListener('blur', leave)
   window.addEventListener('resize', schedule)
   schedule()
   return () => {
     disposed = true
     if (frame !== undefined) cancelAnimationFrame(frame)
-    mutation.disconnect(); resize?.disconnect()
+    mutation.disconnect(); layoutMutation.disconnect(); resize?.disconnect()
     document.removeEventListener('mousemove', move)
     document.removeEventListener('mouseleave', leave)
+    document.removeEventListener('animationend', schedule)
+    document.removeEventListener('transitionend', schedule)
     window.removeEventListener('blur', leave)
     window.removeEventListener('resize', schedule)
   }

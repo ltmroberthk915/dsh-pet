@@ -18,7 +18,7 @@ const ignored = new Map(), regions = new Map()
 const setIgnore = BrowserWindow.prototype.setIgnoreMouseEvents
 BrowserWindow.prototype.setIgnoreMouseEvents = function (value, options) { ignored.set(this.id, value); return setIgnore.call(this, value, options) }
 ipcMain.on('dsh-pet-v1:interactive', (event, _hit, value) => regions.set(event.sender.id, value))
-const report = { checks: [], errors: [], opens: [], interactions: 0 }
+const report = { checks: [], errors: [], opens: [], interactions: 0, scales: [] }
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
 const check = (name, pass, detail) => {
   report.checks.push({ name, pass, detail })
@@ -31,6 +31,7 @@ app.on('web-contents-created', (_event, wc) => {
 let current, owner, originalCursor, cursor = { x: 0, y: 0 }
 
 app.whenReady().then(async () => {
+  report.runtime = { electron: process.versions.electron, displays: screen.getAllDisplays().map(({ id, scaleFactor }) => ({ id, scaleFactor })) }
   originalCursor = screen.getCursorScreenPoint
   screen.getCursorScreenPoint = () => cursor
   const registry = loadPetRegistry({ packageRoot: root, singlePet: true, petsDir: '', dshPetsDir: '' })
@@ -103,13 +104,36 @@ app.whenReady().then(async () => {
 
   current = state('miku', true)
   win = await refresh()
-  const inspectBubble = () => win.webContents.executeJavaScript(`(() => { const el=document.querySelector('[data-pet-status-entry]'),r=el?.getBoundingClientRect(); return {text:el?.textContent,images:document.querySelectorAll('[data-dsh-pet-animation],canvas,img,[data-dsh-pet-decoration]').length,left:r?.left,top:r?.top,width:r?.width,height:r?.height}; })()`)
+  const inspectBubble = () => win.webContents.executeJavaScript(`(() => { const el=document.querySelector('[data-pet-status-entry]'),r=el?.getBoundingClientRect(); return {text:el?.textContent,font:parseFloat(getComputedStyle(el).fontSize),dpr:devicePixelRatio,images:document.querySelectorAll('[data-dsh-pet-animation],canvas,img,[data-dsh-pet-decoration]').length,left:r?.left,top:r?.top,width:r?.width,height:r?.height}; })()`)
   let bubble = await inspectBubble()
   check('bubble-only mode displays ready text and loads no character renderer', bubble.text === '随时就绪' && bubble.images === 0, bubble)
   await pause(1200)
   check('ready text remains visible through subsequent host polls', (await inspectBubble()).text === '随时就绪')
   writeFileSync(join(output, 'bubble-only-ready.png'), (await win.webContents.capturePage()).toPNG())
   check('bubble-only native hit regions contain only the visible bubble', regions.get(win.webContents.id).length === 1, regions.get(win.webContents.id))
+  const baselineBubble = bubble
+  for (const scale of [0.5, 1.75, 2, 1]) {
+    current.display.bubbleScale = scale
+    win = await refresh()
+    bubble = await inspectBubble()
+    const expected = Math.round(Math.min(2, Math.max(10 / 12, scale)) * 100) / 100 * 12
+    check('bubble-only text and box follow size multiplier ' + scale, Math.abs(bubble.font - expected) < 0.1
+      && (scale <= 1 || bubble.width > baselineBubble.width && bubble.height > baselineBubble.height), bubble)
+    report.scales.push({ scale, ...bubble })
+  }
+
+  const oldDpiWindow = win, beforeDpi = win.getBounds()
+  const display = screen.getDisplayNearestPoint(beforeDpi)
+  // Exercise the native recovery event without changing the user's Windows
+  // settings. Separate forced-scale runs cover real HWND/CSS/DIP conversion.
+  screen.emit('display-metrics-changed', {}, display, ['scaleFactor'])
+  await pause(450)
+  win = BrowserWindow.getAllWindows().find(w => w.webContents.getURL() === 'dsh-app://pet/index.html')
+  check('DPI change replaces the native surface and preserves placement', !!win && win !== oldDpiWindow && oldDpiWindow.isDestroyed()
+    && Math.abs(win.getBounds().x - beforeDpi.x) <= 1 && Math.abs(win.getBounds().y - beforeDpi.y) <= 1,
+    { before: beforeDpi, after: win?.getBounds() })
+  bubble = await inspectBubble()
+  check('DPI replacement restores bubble rendering and native hit regions', bubble.font === 12 && regions.get(win.webContents.id)?.length === 1, bubble)
 
   current.phase = 'tool'; current.animation = 'running'; current.bubble = '等待 pwsh-8 响应'
   current.sessions = [{ sessionId: 'fixture', phase: 'tool', animation: 'running', bubble: current.bubble, whisper: '不应覆盖任务状态' }]
@@ -129,6 +153,24 @@ app.whenReady().then(async () => {
   await pause(40)
   const after = win.getBounds()
   check('bubble drag moves the real native window by the held-pointer delta', after.x === before.x + 30 && after.y === before.y + 20, { before, after })
+  const heldCursor = { ...cursor }, heldBounds = win.getBounds()
+  for (let i = 1; i <= 16; i++) {
+    cursor = { x: heldCursor.x + i * 7, y: heldCursor.y - i * 3 }
+    await win.webContents.executeJavaScript(`document.querySelector('[data-pet-status-entry]').dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:1,screenX:${30 + i * 7},screenY:${20 - i * 3}}))`)
+    await pause(15)
+    const moved = win.getBounds()
+    check('continuous native drag preserves the grabbed offset at step ' + i,
+      Math.abs(moved.x - heldBounds.x - i * 7) <= 1 && Math.abs(moved.y - heldBounds.y + i * 3) <= 1, moved)
+    check('continuous native drag preserves the window size at step ' + i,
+      Math.abs(moved.width - heldBounds.width) <= 1 && Math.abs(moved.height - heldBounds.height) <= 1, moved)
+  }
+  const heldStill = win.getBounds()
+  for (let i = 0; i < 8; i++) {
+    await win.webContents.executeJavaScript(`document.querySelector('[data-pet-status-entry]').dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:1,screenX:999,screenY:999}))`)
+    await pause(10)
+  }
+  const heldAfter = win.getBounds()
+  check('stationary native cursor does not drift on repeated renderer events', heldAfter.x === heldStill.x && heldAfter.y === heldStill.y, { before: heldStill, after: heldAfter })
   win.webContents.sendInputEvent({ type: 'mouseUp', x, y, button: 'left', clickCount: 1 })
   await win.webContents.executeJavaScript(`document.querySelector('[data-pet-status-entry]').dispatchEvent(new MouseEvent('click',{bubbles:true}))`)
   await pause(70)

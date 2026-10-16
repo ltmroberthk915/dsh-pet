@@ -56,8 +56,10 @@ describe('pet configuration schema', () => {
   it('operator edits every page field through a Host-served config path', () => {
     // Given the Host serves only the volatile fields of a plugin's Config
     // When the pet's schema is inspected field by field
+    expect(Config.dict).toBeDefined()
+    const fields = Config.dict as Record<string, { meta: { volatile?: boolean } }>
     const volatile = Object.fromEntries(
-      Object.entries(Config.dict ?? {}).map(([field, fieldSchema]) => [field, fieldSchema.meta.volatile === true]),
+      Object.entries(fields).map(([field, fieldSchema]) => [field, fieldSchema.meta.volatile === true]),
     )
     // Then every field the settings card renders is a volatile one
     expect(volatile).toEqual({

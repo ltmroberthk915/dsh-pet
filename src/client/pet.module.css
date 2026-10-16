@@ -170,7 +170,7 @@
 
 .bubbleClickable {
   cursor: pointer;
-  font: inherit;
+  font-family: inherit;
   text-align: center;
   appearance: none;
   transition: filter 120ms ease, box-shadow 120ms ease;

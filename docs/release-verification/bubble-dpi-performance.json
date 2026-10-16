@@ -1,0 +1,23 @@
+{
+  "scope": "Bubble-only sizing, fractional-DPI dragging and companion resource use",
+  "validation": {
+    "unitTestsPassed": 587,
+    "unitTestsSkipped": 1,
+    "typecheck": "passed",
+    "nativeChecksAt175Percent": 73,
+    "nativeChecksAt200Percent": 73,
+    "nativeRenderingChecksAt100Percent": 145,
+    "consumerArchive": "passed"
+  },
+  "claims": {
+    "bubbleSizing": "Text, padding and width follow the saved bubble multiplier",
+    "dragging": "Window dimensions remain stable during continuous drag; repeated events at a stationary cursor do not accumulate movement",
+    "dpiChange": "A display scale-factor event replaces native surfaces and discards old pointer captures",
+    "performance": "Shared cursor sampling, cached hit geometry and a 32 MiB decoded-frame budget; no CPU percentage reduction claimed"
+  },
+  "limits": [
+    "Native scaling checks use isolated runtime scale settings and a simulated display-metrics event; Windows system settings are unchanged",
+    "The frame budget excludes in-flight decoding and permits the currently requested and newest frame to remain available for painting",
+    "This change does not publish a new npm version"
+  ]
+}

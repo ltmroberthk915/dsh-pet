@@ -218,11 +218,28 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       ctx.container.appendChild(img)
     }
 
-    // Decode cache: one concurrent decode per URL, memoized forever (frames
-    // are tiny same-origin webp files; failures resolve undefined and keep
-    // the last painted frame instead of breaking playback).
+    // Keep recent decoded frames within a byte budget. A compressed webp can
+    // occupy megabytes once decoded; retaining every visited action/skin
+    // otherwise grows each companion's memory for the lifetime of its window.
     const decoding = new Map<string, Promise<DecodedFrame | undefined>>()
-    const decodedAll: Promise<void>[] = []
+    const decodedFrames = new Map<string, DecodedFrame>()
+    const pendingFrames = new Set<Promise<DecodedFrame | undefined>>()
+    const MAX_DECODED_BYTES = 32 * 1024 * 1024
+    let decodedBytes = 0, requestedUrl: string | undefined
+    const closeFrame = (frame: DecodedFrame): void => {
+      try { (frame.source as { close?: () => void }).close?.() } catch { /* already released */ }
+    }
+    const trimFrames = (newest: string): void => {
+      for (const [url, frame] of decodedFrames) {
+        if (decodedBytes <= MAX_DECODED_BYTES) break
+        // Do not close a frame before a queued canvas paint can consume it.
+        // A single oversized source is allowed, as is the newest decode.
+        if (url === requestedUrl || url === newest) continue
+        decodedFrames.delete(url); decoding.delete(url)
+        decodedBytes -= frame.width * frame.height * 4
+        closeFrame(frame)
+      }
+    }
     // All frame fetches funnel through a small pool. Full-library warm passes
     // on large pets fire 1100+ requests at once, which trips the browser's
     // in-flight request limit (net::ERR_INSUFFICIENT_RESOURCES) and fails
@@ -268,24 +285,36 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       // playback demand must reorder the unstarted entry before the cache
       // lookup short-circuits.
       if (jump) {
+        requestedUrl = url
         const index = frameQueue.findIndex((queued) => queued.url === url)
         if (index > 0) frameQueue.unshift(frameQueue.splice(index, 1)[0]!)
       }
       const cached = decoding.get(url)
-      if (cached !== undefined) return cached
+      if (cached !== undefined) {
+        const frame = decodedFrames.get(url)
+        if (frame !== undefined) { decodedFrames.delete(url); decodedFrames.set(url, frame) }
+        return cached
+      }
       let release!: () => void
       const gate = new Promise<void>((resolve) => { release = resolve })
       const job: Promise<DecodedFrame | undefined> = gate.then(() => (disposed ? undefined : decodeFrame(url)))
       job.then(
-        (frame) => { if (frame === undefined) decoding.delete(url) },
+        (frame) => {
+          if (frame === undefined) { decoding.delete(url); return }
+          if (disposed) { closeFrame(frame); return }
+          decodedFrames.set(url, frame)
+          decodedBytes += frame.width * frame.height * 4
+          trimFrames(url)
+        },
         () => decoding.delete(url),
       )
       void job.finally(() => {
+        pendingFrames.delete(job)
         activeFrames -= 1
         pumpFrames()
       })
       decoding.set(url, job)
-      decodedAll.push(job.then(() => undefined, () => undefined))
+      pendingFrames.add(job)
       const entry = { url, release }
       if (jump) frameQueue.unshift(entry)
       else frameQueue.push(entry)
@@ -470,16 +499,9 @@ export const frames2dRenderer: PetRenderer<PetFrames2dConfig> = {
       // browser-only, so guard it for exotic hosts. Queued-but-unstarted
       // frames release immediately as no-ops so the settle barrier drains.
       for (const queued of frameQueue.splice(0)) queued.release()
-      void Promise.allSettled(decodedAll).then(() => {
-        for (const job of decoding.values()) {
-          void job.then((frame) => {
-            try {
-              const maybeClose = (frame?.source as { close?: () => void } | undefined)?.close
-              if (typeof maybeClose === 'function' && frame !== undefined) maybeClose.call(frame.source)
-            } catch { /* already released */ }
-          }).catch(() => { /* never rejects anyway */ })
-        }
-        decoding.clear()
+      void Promise.allSettled([...pendingFrames]).then(() => {
+        for (const frame of decodedFrames.values()) closeFrame(frame)
+        decodedFrames.clear(); decoding.clear(); decodedBytes = 0
       })
       canvas?.remove()
       img?.remove()

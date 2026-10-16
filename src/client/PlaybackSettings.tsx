@@ -4,6 +4,7 @@ import type { PetStateView } from '../service.ts'
 import { desktopConnection, desktopRequest } from './desktop-connection.ts'
 import { petJson, petServiceFailure, type PetServiceStatus } from './pet-api.ts'
 import { t } from './locales.ts'
+import { BUBBLE_SCALE_MIN, BUBBLE_SCALE_MAX, BUBBLE_SCALE_STEP } from '../persist.ts'
 
 async function request(action: string, body?: unknown): Promise<any> {
   return petJson('/api/pet/' + (action === 'config' ? 'set-config' : 'state'), body === undefined ? {} : {
@@ -25,6 +26,8 @@ export function PlaybackSettings() {
   const [desktop, setDesktop] = useState(true)
   const [multi, setMulti] = useState(false)
   const [bubbleOnly, setBubbleOnly] = useState(false)
+  const [bubbleScale, setBubbleScale] = useState('1')
+  const bubbleScaleEdited = useRef(false)
   const [hoverPanel, setHoverPanel] = useState(false)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
@@ -58,7 +61,10 @@ export function PlaybackSettings() {
         setDesktop(state.display.desktopEnabled !== false)
         setMulti(state.display.multiPetEnabled === true)
         setBubbleOnly(state.display.bubbleOnly === true)
+        setBubbleScale(String(state.display.bubbleScale ?? 1)); bubbleScaleEdited.current = false
         setHoverPanel(state.display.hoverPanelEnabled === true)
+      } else if (!bubbleScaleEdited.current) {
+        setBubbleScale(String(state.display.bubbleScale ?? 1))
       }
     }).catch((error) => {
       if (alive) { setServiceStatus(petServiceFailure(error)); setMessage('') }
@@ -77,7 +83,10 @@ export function PlaybackSettings() {
   const validActions = !customActions || positiveFps(actionFps)
   const savedLimit = limitRunning ? Number(runLimit) : 0
   const savedActions = customActions ? Number(actionFps) : 0
-  const valid = validFps && validLimit && validActions && (mode !== 'tick' || validLinear)
+  const scaleValue = Number(bubbleScale), scaleSteps = scaleValue / BUBBLE_SCALE_STEP
+  const validBubbleScale = bubbleScale.trim() !== '' && Number.isFinite(scaleValue)
+    && scaleValue >= BUBBLE_SCALE_MIN && scaleValue <= BUBBLE_SCALE_MAX && Math.abs(scaleSteps - Math.round(scaleSteps)) < 1e-8
+  const valid = validFps && validLimit && validActions && validBubbleScale && (mode !== 'tick' || validLinear)
   runSave.current = async () => {
     const pending = pendingSave.current
     if (!pending || saveFlight.current || !connected || !mounted.current) return
@@ -86,7 +95,13 @@ export function PlaybackSettings() {
     try {
       const result = await request('config', pending.payload)
       if (result.ok !== true || Object.entries(pending.payload).some(([key, value]) => key !== 'petId' && result.display?.[key] !== value)) throw new Error('设置未保存')
-      if (pendingSave.current === pending) { pendingSave.current = undefined; if (mounted.current && pending.epoch === epoch.current) setMessage('已保存') }
+      if (pendingSave.current === pending) {
+        pendingSave.current = undefined
+        if (mounted.current && pending.epoch === epoch.current) {
+          bubbleScaleEdited.current = false
+          setMessage('已保存')
+        }
+      }
     } catch {
       failed = true
       if (mounted.current && pending.epoch === epoch.current) setMessage('自动保存失败，设置保留，稍后自动重试。')
@@ -103,7 +118,8 @@ export function PlaybackSettings() {
     window.clearTimeout(saveTimer.current)
     if (!valid) { pendingSave.current = undefined; setMessage('输入有效后自动保存'); return }
     const linear = validLinear ? { animationTickSlope: Number(slope), animationTickIntercept: Number(intercept) } : {}
-    pendingSave.current = { revision: editRevision, epoch: epoch.current, payload: { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), animationRunFpsLimit: savedLimit, animationActionFps: savedActions, desktopEnabled: desktop, multiPetEnabled: multi, bubbleOnly, hoverPanelEnabled: hoverPanel, ...linear } }
+    pendingSave.current = { revision: editRevision, epoch: epoch.current, payload: { petId: snapshot?.pet.id, animationMode: mode, animationFps: Number(fps), animationRunFpsLimit: savedLimit, animationActionFps: savedActions, desktopEnabled: desktop, multiPetEnabled: multi, bubbleOnly, hoverPanelEnabled: hoverPanel, ...linear,
+      ...(bubbleScaleEdited.current ? { bubbleScale: scaleValue } : {}) } }
     setMessage('待自动保存…')
     saveTimer.current = window.setTimeout(() => void runSave.current(), 0)
   }, [editRevision])
@@ -139,6 +155,12 @@ export function PlaybackSettings() {
     <fieldset disabled={!connected || busy} onChange={() => setEditRevision(value => value + 1)} style={{ display: 'grid', gap: 10, border: 0, padding: 0, margin: 0, minWidth: 0 }}>
     <label><input aria-label="仅显示状态气泡（无宠物图）" type="checkbox" checked={bubbleOnly} onChange={e => setBubbleOnly(e.target.checked)} /> 仅显示状态气泡（无宠物图）</label>
     <div style={{ opacity: .8 }}>隐藏形象，仅保留可拖动的任务状态气泡；空闲时常驻「随时就绪」。左键唤出 DSH，右键抚摸并展开看板。</div>
+    {bubbleOnly && <>
+      <label>气泡大小倍率 <input aria-label="气泡大小倍率" type="number" min={BUBBLE_SCALE_MIN} max={BUBBLE_SCALE_MAX} step={BUBBLE_SCALE_STEP} value={bubbleScale}
+        onChange={e => { bubbleScaleEdited.current = true; setBubbleScale(e.target.value) }} style={{ width: 88 }} /></label>
+      <div style={{ opacity: .8 }}>调整气泡文字、内边距和宽度，修改后自动保存。字号范围为 10–24px。</div>
+    </>}
+    {!validBubbleScale && <div role="alert">气泡大小倍率需为 0.5–2，按 0.05 递增；当前输入尚未提交保存。</div>}
     <label><input aria-label="悬停展开看板" type="checkbox" checked={hoverPanel} onChange={e => setHoverPanel(e.target.checked)} /> 悬停展开看板</label>
     <div style={{ opacity: .8 }}>默认关闭，鼠标经过时不展开补充能量、命名和隐藏面板。右键抚摸并打开看板；开启后也可悬停展开。</div>
     <label>左右跑动模式 <select aria-label="播放模式" value={mode} onChange={e => setMode(e.target.value as AnimationMode)}>

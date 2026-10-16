@@ -192,11 +192,26 @@ app.whenReady().then(async()=> {
   // same legs, including after a palette/state change and another frame tick.
   const planted=['idle','waving','failed','waiting','running','review']
   const captures=[]
+  const waitForAtlas = async () => {
+    for (let attempt=0;attempt<50;attempt++) {
+      const ready=await win.webContents.executeJavaScript(`(() => {
+        const el=document.querySelector('[data-dsh-pet-registered-frame]');
+        return el && getComputedStyle(el).backgroundImage!=='none';
+      })()`)
+      if (ready) {
+        await win.webContents.executeJavaScript('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+        return
+      }
+      await pause(100)
+    }
+    throw new Error('Whale atlas did not finish decoding before pixel verification')
+  }
   for (const palette of ['ds','gpt','claude','kimi','glm']) {
     let legHash
     for (const animation of planted) {
       current=makeState('whale-girl-refined',animation,palette)
       win=await refresh()
+      await waitForAtlas()
       const geometry=await win.webContents.executeJavaScript(`(() => {
         const sprite=document.querySelector('[data-dsh-pet-animation]'),frame=document.querySelector('[data-dsh-pet-registered-frame]'),legs=document.querySelector('[data-dsh-pet-planted]');
         const r=sprite.getBoundingClientRect();

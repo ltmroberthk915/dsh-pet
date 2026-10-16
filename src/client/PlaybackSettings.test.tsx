@@ -70,6 +70,30 @@ describe('Tick settings', () => {
     await screen.findByText('已保存')
     expect(host.writes.at(-1)).toMatchObject({ bubbleOnly: false })
   })
+  it('adjusts bubble-only size, rejects invalid drafts and restores the saved size', async () => {
+    const host = mockHost()
+    const view = render(<PlaybackSettings />)
+    await screen.findByLabelText('斜率 k')
+    fireEvent.click(screen.getByLabelText('仅显示状态气泡（无宠物图）'))
+    await screen.findByText('已保存')
+    for (const value of ['', '0.45', '2.05', '1.23']) {
+      const count = host.writes.length
+      fireEvent.change(screen.getByLabelText('气泡大小倍率'), { target: { value } })
+      expect(screen.getByRole('alert')).toBeTruthy()
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)) })
+      expect(host.writes).toHaveLength(count)
+    }
+    fireEvent.change(screen.getByLabelText('气泡大小倍率'), { target: { value: '1.75' } })
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).toMatchObject({ bubbleOnly: true, bubbleScale: 1.75 })
+    view.unmount()
+    render(<PlaybackSettings />)
+    const input = await screen.findByLabelText('气泡大小倍率') as HTMLInputElement
+    expect(input.value).toBe('1.75')
+    fireEvent.click(screen.getByLabelText('悬停展开看板'))
+    await screen.findByText('已保存')
+    expect(host.writes.at(-1)).not.toHaveProperty('bubbleScale')
+  })
   it('previews uncapped running and saves an independent other-action rate across remounts', async () => {
     const host = mockHost(undefined, 293)
     const view = render(<PlaybackSettings />)

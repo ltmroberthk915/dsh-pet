@@ -27,7 +27,7 @@ export function installDesktopPet({ owner, request, openMain }) {
   let enabled = false, closing = false, currentSessionId, revision = 0
   let stateFlight, reconcileFlight, cache, cacheAt = 0, pollTimer, saveTimer, savedBounds
   let petDefinitions = [], definitionsFlight
-  let pointerTimer
+  let pointerTimer, lastPointer
   const recovery = new Map()
   const watchedOwners = new WeakSet()
   const positionFile = join(app.getPath('userData'), 'dsh-pet-window.json')
@@ -37,6 +37,13 @@ export function installDesktopPet({ owner, request, openMain }) {
   petSession.on('will-download', event => event.preventDefault())
   const live = record => record && !record.win.isDestroyed()
   const primary = () => [...windows.values()].find(r => live(r) && r.view.primary && !r.retiring)
+  function moveWindow(record, x, y) {
+    // At fractional Windows DPI (e.g. 175%), setPosition round-trips the
+    // current physical size through rounded DIP bounds. Each move can grow
+    // the window by a pixel, shifting the centered pet away from the cursor.
+    // Always supply the intended size along with the new position.
+    record.win.setBounds({ x, y, ...record.geometry.dimensions })
+  }
   function keepOnTop(record) {
     if (!live(record) || !enabled || closing || record.retiring || !record.win.isVisible()) return
     if (!record.win.isAlwaysOnTop() && Date.now() >= (record.nextTopRetry ?? 0)) {
@@ -76,22 +83,37 @@ export function installDesktopPet({ owner, request, openMain }) {
       if (main.isAlwaysOnTop()) raisePets()
     })
   }
-  function syncPointer(record) {
+  function syncPointer(record, cursor) {
     if (!live(record)) return
     let interactive = record.wantsInteractive
-    if (record.hitRegions !== undefined) {
-      const cursor = screen.getCursorScreenPoint(), bounds = record.win.getBounds()
+    if (!record.drag && !record.refreshDpi && record.hitRegions !== undefined) {
+      cursor ??= screen.getCursorScreenPoint()
+      const bounds = record.win.getBounds()
       const x = cursor.x - bounds.x, y = cursor.y - bounds.y
       interactive = record.hitRegions.some(([left, top, width, height]) =>
         x >= left && y >= top && x < left + width && y < top + height)
     }
-    const ignore = record.retiring || (!record.drag && !interactive)
+    const ignore = record.retiring || record.refreshDpi === true || (!record.drag && !interactive)
     if (record.ignoreMouse === ignore) return
     record.ignoreMouse = ignore
     record.win.setIgnoreMouseEvents(ignore, { forward: true })
   }
-  function endDrag(record) {
+  function moveDrag(record, final = false) {
+    if (!record.drag || !live(record) || record.refreshDpi || !final && Date.now() - record.lastMove < 8) return
+    record.lastMove = Date.now()
+    // Cursor and window bounds are already in DIP. Applying the system scale
+    // again makes the pointer drift, especially after changing Windows DPI.
+    const cursor = screen.getCursorScreenPoint(), drag = record.drag
+    if (!drag.moved && Math.abs(cursor.x - drag.cursor.x) <= 4 && Math.abs(cursor.y - drag.cursor.y) <= 4) return
+    drag.moved = true
+    const x = Math.round(drag.bounds.x + cursor.x - drag.cursor.x)
+    const y = Math.round(drag.bounds.y + cursor.y - drag.cursor.y)
+    const current = record.win.getBounds()
+    if (current.x !== x || current.y !== y) moveWindow(record, x, y)
+  }
+  function endDrag(record, final = false) {
     if (!record.drag || !live(record)) return
+    if (final) moveDrag(record, true)
     record.drag = undefined
     separateOverlaps()
     savePosition(record)
@@ -183,7 +205,7 @@ export function installDesktopPet({ owner, request, openMain }) {
   }
   function destroyAll() {
     clearTimeout(pollTimer)
-    clearInterval(pointerTimer); pointerTimer = undefined
+    clearInterval(pointerTimer); pointerTimer = undefined; lastPointer = undefined
     recovery.clear()
     for (const record of windows.values()) { clearInterval(record.returnTimer); if (live(record)) record.win.destroy() }
     windows.clear()
@@ -211,7 +233,7 @@ export function installDesktopPet({ owner, request, openMain }) {
       // The main pet remains the anchor; do not pull a pet out of the user's hand.
       const position = record.view.primary || record.drag ? rect : findOpenPosition(rect, occupied, displays)
       const x = Math.round(bounds.x + position.x - rect.x), y = Math.round(bounds.y + position.y - rect.y)
-      if (x !== bounds.x || y !== bounds.y) record.win.setPosition(x, y)
+      if (x !== bounds.x || y !== bounds.y) moveWindow(record, x, y)
       occupied.push(artworkRect({ x, y }, record.geometry))
     }
   }
@@ -226,16 +248,16 @@ export function installDesktopPet({ owner, request, openMain }) {
     record.returnTimer = setInterval(() => {
       if (!live(record)) { clearInterval(record.returnTimer); return }
       const t = Math.min(1, (Date.now() - start) / 280), ease = 1 - (1 - t) ** 3
-      record.win.setPosition(Math.round(from.x + (target.x + (target.width - from.width) / 2 - from.x) * ease),
+      moveWindow(record, Math.round(from.x + (target.x + (target.width - from.width) / 2 - from.x) * ease),
         Math.round(from.y + (target.y + target.height - from.height - from.y) * ease))
       if (t === 1) { clearInterval(record.returnTimer); record.win.destroy() }
     }, 25)
   }
-  async function create(view, anchor, index) {
+  async function create(view, anchor, index, restored) {
     const geometry = measure(view)
     const saved = view.primary ? await readPosition() : undefined
     if (!enabled || closing) return
-    const base = anchor ?? saved ?? defaultBounds(geometry)
+    const base = restored ?? anchor ?? saved ?? defaultBounds(geometry)
     const spacing = Math.max(90, geometry.artwork.width + 18)
     const area = screen.getDisplayNearestPoint({ x: Math.round(base.x + WIDTH / 2), y: Math.round(base.y + HEIGHT / 2) }).bounds
     const centerX = base.x + (base.width ?? WIDTH) / 2
@@ -245,7 +267,7 @@ export function installDesktopPet({ owner, request, openMain }) {
     const offset = Math.max(1, index)
     let x = base.x + ((base.width ?? WIDTH) - geometry.dimensions.width) / 2
     let y = base.y + (base.height ?? HEIGHT) - geometry.dimensions.height
-    if (!view.primary) {
+    if (!view.primary && !restored) {
       x += direction * (((offset - 1) % columns) + 1) * spacing
       y -= Math.floor((offset - 1) / columns) * (geometry.artwork.height + 24)
       const left = (geometry.dimensions.width - geometry.artwork.width) / 2
@@ -264,7 +286,14 @@ export function installDesktopPet({ owner, request, openMain }) {
     windows.set(view.key, record)
     // Forwarded mouse moves may stop arriving over a maximized Chromium
     // window. Native cursor checks keep the pet's hit area clickable anyway.
-    pointerTimer ??= setInterval(() => { for (const item of windows.values()) syncPointer(item) }, 50)
+    pointerTimer ??= setInterval(() => {
+      // One native read for the whole group; a stationary cursor needs no
+      // repeated bounds reads. DOM/hit-region and window moves sync directly.
+      const cursor = screen.getCursorScreenPoint()
+      if (lastPointer?.x === cursor.x && lastPointer?.y === cursor.y) return
+      lastPointer = cursor
+      for (const item of windows.values()) syncPointer(item, cursor)
+    }, 50)
     win.setAlwaysOnTop(true, TOP_LEVEL)
     win.setIgnoreMouseEvents(true, { forward: true })
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
@@ -275,7 +304,7 @@ export function installDesktopPet({ owner, request, openMain }) {
     win.webContents.on('render-process-gone', () => recoverWindow(record))
     win.on('unresponsive', () => { record.unresponsiveTimer ??= setTimeout(() => recoverWindow(record), 5000) })
     win.on('responsive', () => { clearTimeout(record.unresponsiveTimer); record.unresponsiveTimer = undefined })
-    win.on('move', () => savePosition(record))
+    win.on('move', () => { savePosition(record); syncPointer(record) })
     win.on('focus', () => scheduleTopRepair(record))
     win.on('blur', () => { endDrag(record); syncPointer(record); scheduleTopRepair(record) })
     win.on('always-on-top-changed', () => scheduleTopRepair(record))
@@ -303,6 +332,14 @@ export function installDesktopPet({ owner, request, openMain }) {
       const viewIndex = index++
       let record = windows.get(view.key)
       if (record?.retiring) { clearInterval(record.returnTimer); record.win.destroy(); record = undefined }
+      if (live(record) && record.refreshDpi) {
+        // A new HWND and renderer pick up the current per-monitor DPI. Keep
+        // placement, but discard captured pointers and pixel hit rectangles
+        // belonging to the old 200%/175% window.
+        const restored = record.win.getBounds()
+        record.win.destroy()
+        await create(view, anchor, viewIndex, restored); layoutNeeded = true; continue
+      }
       if (!live(record)) {
         if (Date.now() < (recovery.get(view.key)?.retryAt ?? 0)) continue
         await create(view, anchor, viewIndex); layoutNeeded = true; continue
@@ -408,25 +445,15 @@ export function installDesktopPet({ owner, request, openMain }) {
   ipcMain.on(PREFIX + 'drag', (event, phase) => {
     try {
       const record = assertPet(event), win = record.win
-      if (record.retiring) return
+      if (record.retiring || record.refreshDpi) return
       if (phase === 'start') {
         // Captured pointer events can be re-delivered after a native move.
         // Keep the original screen anchor for the entire held gesture.
         record.drag ??= { cursor: screen.getCursorScreenPoint(), bounds: win.getBounds() }
         syncPointer(record); keepOnTop(record); return
       }
-      if (phase === 'end') { endDrag(record); return }
-      if (phase !== 'move' || !record.drag || Date.now() - record.lastMove < 8) return
-      record.lastMove = Date.now()
-      const cursor = screen.getCursorScreenPoint(), drag = record.drag
-      if (!record.drag.moved && Math.abs(cursor.x - drag.cursor.x) <= 4 && Math.abs(cursor.y - drag.cursor.y) <= 4) return
-      record.drag.moved = true
-      const x = Math.round(drag.bounds.x + cursor.x - drag.cursor.x)
-      const y = Math.round(drag.bounds.y + cursor.y - drag.cursor.y)
-      const current = win.getBounds()
-      // Moving a transparent HWND emits more pointer/move messages. A held
-      // cursor must not keep issuing native moves back into that feedback loop.
-      if (current.x !== x || current.y !== y) win.setPosition(x, y)
+      if (phase === 'end') { endDrag(record, true); return }
+      if (phase === 'move') moveDrag(record)
     } catch {}
   })
   ipcMain.handle(PREFIX + 'open-main', (event, id) => {
@@ -456,9 +483,21 @@ export function installDesktopPet({ owner, request, openMain }) {
     return { active: true }
   }
   ipcMain.handle(PREFIX + 'owner-reset', event => { assertOwner(event); return resetPosition() })
-  const refit = () => {
-    for (const record of windows.values()) if (live(record)) record.win.setBounds(fit(record.win.getBounds(), record.geometry))
+  const refit = (_event, _display, changedMetrics = []) => {
+    const dpiChanged = changedMetrics.includes('scaleFactor')
+    for (const record of windows.values()) if (live(record)) {
+      if (dpiChanged) {
+        record.refreshDpi = true
+        record.drag = undefined
+        record.hitRegions = undefined
+        syncPointer(record)
+      } else {
+        record.win.setBounds(fit(record.win.getBounds(), record.geometry))
+        if (record.drag) record.drag = { ...record.drag, cursor: screen.getCursorScreenPoint(), bounds: record.win.getBounds() }
+      }
+    }
     separateOverlaps()
+    if (dpiChanged && enabled && !closing) { cacheAt = 0; poll() }
   }
   screen.on('display-removed', refit); screen.on('display-metrics-changed', refit)
   app.on('before-quit', () => { closing = true; enabled = false; revision++; clearTimeout(saveTimer); destroyAll() })
