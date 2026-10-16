@@ -19,12 +19,21 @@ function createCompanion(options) {
   const appExecutable = options.appExecutable ?? nativeDesktopExecutable();
   const version = JSON.parse(readFileSync(join(options.pluginDir, 'package.json'), 'utf8')).version;
   let state = appExecutable ? 'idle' : 'unavailable', message, active = false, disposed = false;
-  let child, server, flight, stopping, retryTimer, watchdog, startupTimer, failures = 0, heartbeatAt = 0, healthySince = 0;
+  let child, server, flight, stopping, retryTimer, watchdog, startupTimer, deferTimer, idleTimer, failures = 0, heartbeatAt = 0, healthySince = 0;
   let generation = 0, resetRevision = 0, pendingOpen, openRevision = 0, lastOpenAt = 0;
   let requested = { enabled: false };
   const status = () => ({ supported: !!appExecutable, state, active, version,
     ...(message ? { message } : {}), ...(pendingOpen ? { pendingOpen } : {}) });
   const effective = () => ({ ...requested, enabled: requested.enabled && options.enabled() });
+  function queueStart(delay = options.startupDelayMs ?? 1000) {
+    if (disposed || !appExecutable || !effective().enabled || child || flight || state === 'error') return;
+    if (deferTimer) { if (delay !== 0) return; clearTimeout(deferTimer); }
+    state = 'starting';
+    // Let the Host finish mounting its own UI before starting disk work. A
+    // configure from the connected UI can release this short defer early.
+    deferTimer = setTimeout(() => { deferTimer = undefined; void start(); }, delay);
+    deferTimer.unref();
+  }
   function scheduleRetry() {
     if (disposed || !appExecutable || !effective().enabled || retryTimer) return;
     const delay = Math.min(30000, 1000 * 2 ** Math.min(failures++, 5));
@@ -35,7 +44,8 @@ function createCompanion(options) {
     retryTimer.unref();
   }
   const stopChild = () => {
-    clearTimeout(startupTimer); clearInterval(watchdog);
+    clearTimeout(startupTimer); clearInterval(watchdog); clearTimeout(idleTimer);
+    idleTimer = undefined;
     startupTimer = watchdog = undefined;
     active = false;
     const running = child; child = undefined;
@@ -71,7 +81,20 @@ function createCompanion(options) {
             const auth = Buffer.from(req.headers.authorization ?? '');
             if (req.headers.origin || req.headers['sec-fetch-site'] || auth.length !== credential.length || !timingSafeEqual(auth, credential)) { json(res, 403, { error: 'forbidden' }); return; }
             const url = new URL(req.url, 'http://127.0.0.1');
-            if (req.method === 'GET' && url.pathname === '/control') { json(res, 200, { options: effective(), resetRevision }); return; }
+            if (req.method === 'GET' && url.pathname === '/control') {
+              const control = effective();
+              if (control.enabled) { clearTimeout(idleTimer); idleTimer = undefined; }
+              else if (!idleTimer) {
+                // A hidden pet needs no resident Electron process. Leave a
+                // brief grace period for rapid hide/show and state writes.
+                idleTimer = setTimeout(() => {
+                  idleTimer = undefined;
+                  if (!effective().enabled) { generation++; stopChild(); state = 'idle'; message = undefined; }
+                }, 5000);
+                idleTimer.unref();
+              }
+              json(res, 200, { options: control, resetRevision }); return;
+            }
             if (req.method === 'POST' && url.pathname === '/event') {
               const event = await body(req);
               if (disposed || server !== privateServer || run !== generation) { json(res, 409, { error: 'retired-connection' }); return; }
@@ -135,7 +158,10 @@ function createCompanion(options) {
             : '独立窗口准备失败：' + String(error.message).slice(0, 250);
           scheduleRetry();
         }
-      } finally { flight = undefined; }
+      } finally {
+        flight = undefined;
+        if (run !== generation && !disposed && effective().enabled) queueStart(0);
+      }
     })();
     return flight;
   }
@@ -146,17 +172,18 @@ function createCompanion(options) {
       if (!requested.enabled && value.enabled) failures = 0;
       requested = { ...requested, enabled: value.enabled,
         ...(Object.hasOwn(value, 'currentSessionId') ? { currentSessionId: value.currentSessionId || undefined } : {}) };
-      if (requested.enabled) { if (state === 'error') scheduleRetry(); else void start(); }
-      // Keep an initialized companion dormant while hidden. Its private
-      // control poll notices visibility changes without the main window.
-      if (!requested.enabled) active = false;
-      if (!requested.enabled) { clearTimeout(retryTimer); retryTimer = undefined; }
+      if (requested.enabled) { if (state === 'error') scheduleRetry(); else queueStart(Object.hasOwn(value, 'currentSessionId') ? 0 : undefined); }
+      if (!requested.enabled) {
+        generation++; clearTimeout(deferTimer); deferTimer = undefined;
+        clearTimeout(retryTimer); retryTimer = undefined;
+        stopChild(); state = appExecutable ? 'idle' : 'unavailable'; message = undefined;
+      }
       return status();
     },
     resetPosition() { resetRevision++; return status(); },
     retry() { clearTimeout(retryTimer); retryTimer = undefined; failures = 0; if (state === 'error') { state = 'idle'; message = undefined; } void start(); return status(); },
     acknowledge(revision) { if (pendingOpen?.revision === revision) pendingOpen = undefined; return { ok: true }; },
-    dispose() { disposed = true; generation++; clearTimeout(retryTimer); retryTimer = undefined; stopChild(); state = 'idle'; },
+    dispose() { disposed = true; generation++; clearTimeout(deferTimer); deferTimer = undefined; clearTimeout(retryTimer); retryTimer = undefined; stopChild(); state = 'idle'; },
   };
 }
 module.exports = { createCompanion };

@@ -1,7 +1,7 @@
 {
   "name": "dsh-pet-copilot",
   "description": "DSH 多会话桌宠：鲸鱼娘、MIKU 与商务小蓝鲸，模型配色、tok/s 调速及共享亲密度。",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "publishConfig": {
     "access": "public"
   },
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc -b && node scripts/build-local.mjs",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/test-runtime-cache.mjs",
     "typecheck": "tsc -b --pretty false && tsc -p tsconfig.test.json --pretty false",
     "build:entries": "tsdown --config tsdown.prepare.config.ts",
     "build:local": "node scripts/build-local.mjs"
@@ -59,7 +59,8 @@
     "docs/palettes.png",
     "docs/fresh-install-v1.3.3.md",
     "docs/release-notes/v1.4.0.md",
-    "docs/release-notes/v1.4.1.md"
+    "docs/release-notes/v1.4.1.md",
+    "docs/release-notes/v1.4.2.md"
   ],
   "license": "Apache-2.0",
   "dsh": {

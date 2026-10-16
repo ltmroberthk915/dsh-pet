@@ -11,11 +11,12 @@ let children: any[]
 let handler: any
 let prepare: any
 let openMain: any
+let visible: boolean
 const tick = async (ms = 0) => { await vi.advanceTimersByTimeAsync(ms) }
 
 beforeEach(() => {
   vi.useFakeTimers()
-  children = []; openMain = vi.fn(); prepare = vi.fn().mockResolvedValue('C:/fixture/DshPetDesktop.exe')
+  children = []; visible = true; openMain = vi.fn(); prepare = vi.fn().mockResolvedValue('C:/fixture/DshPetDesktop.exe')
   const module = { exports: {} as any }
   runInNewContext(readFileSync(new URL('../desktop/companion-host.cjs', import.meta.url), 'utf8'), {
     module, Buffer, Date, URL, setTimeout, clearTimeout, setInterval, clearInterval,
@@ -44,7 +45,7 @@ beforeEach(() => {
     },
   })
   controller = module.exports.createCompanion({ pluginDir: fileURLToPath(new URL('..', import.meta.url)), cacheDir: 'C:/fixture/cache',
-    enabled: () => true, routes: () => [], prepareRuntime: prepare, openMain })
+    enabled: () => visible, routes: () => [], prepareRuntime: prepare, openMain })
 })
 afterEach(async () => { controller?.dispose(); await tick(3000); vi.useRealTimers() })
 
@@ -57,12 +58,12 @@ async function event(body: any) {
   handler(req, res); await tick()
   expect(res.writeHead).toHaveBeenCalledWith(200, expect.anything())
 }
-async function start() { controller.configure({ enabled: true }); await tick(); expect(children).toHaveLength(1) }
+async function start() { controller.configure({ enabled: true }); await tick(1000); expect(children).toHaveLength(1) }
 
 describe('independent pet automatic recovery', () => {
   it('retries a preparation failure automatically and retains manual retry', async () => {
     prepare.mockRejectedValueOnce(Object.assign(new Error('disk full'), { code: 'ENOSPC' }))
-    controller.configure({ enabled: true }); await tick()
+    controller.configure({ enabled: true }); await tick(1000)
     expect(controller.status().message).toContain('磁盘空间不足')
     expect(children).toHaveLength(0)
     await tick(1000); expect(children).toHaveLength(1)
@@ -107,5 +108,22 @@ describe('independent pet automatic recovery', () => {
     controller.acknowledge(revision - 1); expect(controller.status().pendingOpen).toBeDefined()
     controller.acknowledge(revision); expect(controller.status().pendingOpen).toBeUndefined()
     expect(children[0].bootstrap.appExecutable).toBe('C:/fixture/DeepSeek Harness.exe')
+  })
+  it('releases a hidden companion after its grace period and can start it again', async () => {
+    await start()
+    visible = false
+    const req = { method: 'GET', url: '/control', headers: { authorization: 'Bearer ' + children[0].bootstrap.token } }
+    const res = { headersSent: false, writeHead: vi.fn(), end: vi.fn() }
+    handler(req, res); await tick()
+    expect(res.writeHead).toHaveBeenCalledWith(200, expect.anything())
+    await tick(4999)
+    expect(children[0].kill).not.toHaveBeenCalled()
+    await tick(1)
+    expect(controller.status().state).toBe('idle')
+    await tick(3000)
+    expect(children[0].kill).toHaveBeenCalledOnce()
+    visible = true
+    controller.configure({ enabled: true }); await tick(1000)
+    expect(children).toHaveLength(2)
   })
 })

@@ -16,17 +16,25 @@ const input=process.env.DSH_PET_BOOTSTRAP;delete process.env.DSH_PET_BOOTSTRAP;
 try{if(!input||input.length>16384)throw Error('Invalid desktop bootstrap');const config=JSON.parse(input);
 require(config.module).start(config).catch(error=>{console.error(error);app.exit(1)})}catch(error){console.error(error);app.exit(1)}
 `;
-async function digest(file) {
+async function digest(file, metrics) {
   const hash = createHash('sha256');
-  for await (const chunk of createReadStream(file)) hash.update(chunk);
+  for await (const chunk of createReadStream(file)) { hash.update(chunk); metrics.bytesHashed += chunk.length; }
+  metrics.filesHashed++;
   return hash.digest('hex');
+}
+async function stamp(file) {
+  const stat = await fs.stat(file, { bigint: true });
+  // ctime and file identity catch replacement and same-size writes even if
+  // an updater restores mtime. Every file still passes realpath containment.
+  return [stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs, stat.mode].map(String).join(':');
 }
 async function regular(file, base) {
   const resolved = await fs.realpath(file);
   if (!resolved.startsWith(base + path.sep) || !(await fs.stat(resolved)).isFile()) throw Error('Invalid desktop runtime file: ' + path.basename(file));
   return resolved;
 }
-async function prepareRuntime(appExecutable, cacheDir) {
+async function prepareRuntime(appExecutable, cacheDir, { onMeasure } = {}) {
+  const started = performance.now(), metrics = { filesHashed: 0, bytesHashed: 0 };
   const executable = await fs.realpath(appExecutable), source = path.dirname(executable);
   if (path.basename(executable).toLowerCase() !== 'deepseek harness.exe') throw Error('需要原生 Windows DSH 的 Electron 运行库。');
   const files = [['DshPetDesktop.exe', executable]];
@@ -39,18 +47,51 @@ async function prepareRuntime(appExecutable, cacheDir) {
     if (/^[a-zA-Z0-9-]+\.pak$/.test(name)) files.push(['locales/' + name, await regular(path.join(source, 'locales', name), source)]);
   }
   if (!files.some(([name]) => name === 'locales/en-US.pak')) throw Error('Desktop runtime locales are missing.');
-  const fingerprints = {};
-  for (const [name, file] of files) fingerprints[name] = await digest(file);
-  const key = createHash('sha256').update(JSON.stringify(fingerprints)).update(bootstrap).digest('hex');
   await fs.mkdir(cacheDir, { recursive: true });
-  const root = await fs.realpath(cacheDir), target = path.join(root, 'electron-' + key);
-  const application = { 'resources/app/package.json': JSON.stringify({ name: 'dsh-pet-desktop', version: '1.0.0', main: 'main.cjs' }), 'resources/app/main.cjs': bootstrap };
-  async function verify(dir) {
-    if (await fs.realpath(dir) !== dir) throw Error('Desktop cache must not redirect to another directory.');
-    for (const [name, hash] of Object.entries(fingerprints)) if (await digest(await regular(path.join(dir, name), dir)) !== hash) throw Error('Desktop runtime cache checksum mismatch: ' + name);
-    for (const [name, content] of Object.entries(application)) if (await fs.readFile(await regular(path.join(dir, name), dir), 'utf8') !== content) throw Error('Desktop bootstrap checksum mismatch.');
+  const root = await fs.realpath(cacheDir), indexFile = path.join(root, 'verified-runtime.json');
+  const bootstrapHash = createHash('sha256').update(bootstrap).digest('hex');
+  let previous;
+  try {
+    const file = await regular(indexFile, root);
+    if ((await fs.stat(file)).size <= 1024 * 1024) previous = JSON.parse(await fs.readFile(file, 'utf8'));
+  } catch (error) { if (!['ENOENT'].includes(error.code) && !(error instanceof SyntaxError)) throw error; }
+  if (previous?.schema !== 1 || previous.executable !== executable || previous.bootstrap !== bootstrapHash) previous = undefined;
+  const fingerprints = {}, sources = {};
+  for (const [name, file] of files) {
+    const current = await stamp(file), saved = previous?.sources?.[name];
+    const hash = saved?.stamp === current && /^[a-f0-9]{64}$/.test(saved.hash)
+      ? saved.hash : await digest(file, metrics);
+    if (await stamp(file) !== current) throw Error('Desktop source changed during verification: ' + name);
+    fingerprints[name] = hash; sources[name] = { stamp: current, hash };
   }
-  try { await verify(target); return path.join(target, 'DshPetDesktop.exe'); }
+  const key = createHash('sha256').update(JSON.stringify(fingerprints)).update(bootstrap).digest('hex');
+  const target = path.join(root, 'electron-' + key);
+  const application = { 'resources/app/package.json': JSON.stringify({ name: 'dsh-pet-desktop', version: '1.0.0', main: 'main.cjs' }), 'resources/app/main.cjs': bootstrap };
+  async function verify(dir, saved) {
+    if (await fs.realpath(dir) !== dir) throw Error('Desktop cache must not redirect to another directory.');
+    const checked = {};
+    for (const [name, hash] of Object.entries(fingerprints)) {
+      const file = await regular(path.join(dir, name), dir), current = await stamp(file);
+      if (saved?.[name]?.stamp !== current || saved[name].hash !== hash) {
+        if (await digest(file, metrics) !== hash) throw Error('Desktop runtime cache checksum mismatch: ' + name);
+      }
+      if (await stamp(file) !== current) throw Error('Desktop cache changed during verification: ' + name);
+      checked[name] = { stamp: current, hash };
+    }
+    for (const [name, content] of Object.entries(application)) if (await fs.readFile(await regular(path.join(dir, name), dir), 'utf8') !== content) throw Error('Desktop bootstrap checksum mismatch.');
+    return checked;
+  }
+  async function finish(checked) {
+    const next = JSON.stringify({ schema: 1, executable, bootstrap: bootstrapHash, key, sources, cached: checked });
+    if (next !== JSON.stringify(previous)) {
+      const temporary = indexFile + '-' + process.pid + '-' + require('node:crypto').randomBytes(6).toString('hex') + '.tmp';
+      try { await fs.writeFile(temporary, next, { flag: 'wx' }); await fs.rename(temporary, indexFile); }
+      finally { await fs.unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
+    }
+    onMeasure?.({ ...metrics, elapsedMs: performance.now() - started });
+    return path.join(target, 'DshPetDesktop.exe');
+  }
+  try { return await finish(await verify(target, previous?.key === key ? previous.cached : undefined)); }
   catch (error) { if (error.code !== 'ENOENT') throw error; }
   const stage = await fs.mkdtemp(path.join(root, 'stage-'));
   try {
@@ -63,10 +104,10 @@ async function prepareRuntime(appExecutable, cacheDir) {
       await fs.mkdir(path.dirname(path.join(stage, name)), { recursive: true });
       await fs.writeFile(path.join(stage, name), content, { flag: 'wx' });
     }
-    await verify(stage);
+    const checked = await verify(stage);
     try { await fs.rename(stage, target); }
-    catch (error) { if (!['EEXIST', 'ENOTEMPTY', 'EPERM'].includes(error.code)) throw error; await verify(target); }
-    return path.join(target, 'DshPetDesktop.exe');
+    catch (error) { if (!['EEXIST', 'ENOTEMPTY', 'EPERM'].includes(error.code)) throw error; return await finish(await verify(target)); }
+    return await finish(await verify(target, checked));
   } finally {
     const checked = path.resolve(stage);
     if (path.dirname(checked) !== root || !path.basename(checked).startsWith('stage-')) throw Error('Invalid runtime staging cleanup.');

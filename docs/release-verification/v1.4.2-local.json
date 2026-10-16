@@ -1,0 +1,41 @@
+{
+  "version": "1.4.2",
+  "checkedAt": "2026-10-16T09:07:17.302Z",
+  "typecheck": "passed",
+  "vitest": {
+    "passed": 588,
+    "skipped": 1
+  },
+  "nodeTests": {
+    "runtimeCache": 7,
+    "releaseChannel": 9,
+    "failed": 0
+  },
+  "nativeDesktop": {
+    "passed": 32,
+    "hostArchiveUnchanged": true
+  },
+  "package": {
+    "verified": true,
+    "installScripts": false,
+    "servedFiles": 655,
+    "petIds": [
+      "blue-whale-business",
+      "miku",
+      "whale-girl-refined"
+    ]
+  },
+  "benchmark": {
+    "scope": "Isolated Windows pet readiness; prepared runtime; not full DSH cold startup",
+    "beforeMs": [
+      2009,
+      2475
+    ],
+    "afterMs": [
+      637,
+      569
+    ],
+    "unchangedRuntimeBytesHashed": 0
+  },
+  "sharedCliFallbackModified": false
+}

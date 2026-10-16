@@ -47,7 +47,7 @@ const registry = loadPetRegistry({ packageRoot: root, singlePet: true, petsDir: 
 const service = new PetService(ctx, { registry, persistDir: path.join(run, '中文 数据') })
 await service.setConfig({ visible: true, desktopEnabled: true })
 let routes, focused = 0
-const options = { pluginDir: root, appExecutable: executable, cacheDir: path.join(output, '中文 缓存'), entry,
+const options = { pluginDir: root, appExecutable: executable, cacheDir: path.join(output, '中文 缓存'), entry, startupDelayMs: 0,
   diagnostic: text => process.stderr.write(text),
   enabled: () => service.display().visible && service.display().desktopEnabled !== false,
   routes: () => routes, openMain: () => focused++ }
@@ -108,8 +108,10 @@ try {
   check('leaving the subagent restores the parent and removes the extra child window', true)
   await service.setConfig({ multiPetEnabled: false })
   companion.configure({ enabled: false })
-  await wait(() => readObserved().windows?.length === 0)
+  const disabledPid = readObserved().pid
+  await wait(() => { try { process.kill(disabledPid, 0); return false } catch { return true } })
   check('disabling desktop mode removes all native windows', !companion.status().active)
+  check('disabling desktop mode releases the independent Electron process', true)
   companion.configure({ enabled: true })
   await wait(() => companion.status().active && readObserved().windows?.length === 1)
   check('re-enabling creates exactly one native window', true)
