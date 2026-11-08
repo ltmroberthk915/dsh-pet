@@ -17,7 +17,7 @@ Most pet plugins give you one mascot. This one puts **every active top-level con
 
 **New in 1.5.0:** the keep row, the persisted kept list, and settled idle pets for kept conversations that are cold (for example after a Host restart). Deleting a conversation clears its flag, so no ghost pet remains. The same release renames the package from `dsh-pet-copilot`; the pet row id, `pet.json`, settings namespace and care data are unchanged. See the [release notes](docs/release-notes/v1.5.0.md).
 
-**The npm package is `dsh-pets-multiworkers`; the repository is `ltmroberthk915/dsh-pet`.** Get the matching precompiled archive from [Releases](https://github.com/ltmroberthk915/dsh-pet/releases). `dsh-session-pet.tgz` remains an identical compatibility filename. Catalog copy for **dsh-market** (awesome-dsh-plugin registry) and **dsh-open-market** (dsh-plugin-index) is kept in both GitHub registries with this same description.
+**The npm package is `dsh-pets-multiworkers`; the repository is `ltmroberthk915/dsh-pet`.** Get the matching precompiled archive from [Releases](https://github.com/ltmroberthk915/dsh-pet/releases). `dsh-session-pet.tgz` remains an identical compatibility filename. The same catalog copy is submitted to both markets: **dsh-market** via [awesome-dsh-plugin PR #13212](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/13212) and **dsh-open-market** via [dsh-plugin-index issue #328](https://github.com/polang233/dsh-plugin-index/issues/328); both appear after maintainer review.
 
 This independent fork of [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet) is maintained by ltmroberthk915 under Apache-2.0, with artwork attribution preserved. [中文说明](README.zh.md)
 
