@@ -17,7 +17,7 @@
 
 **1.5.0 新增：**「专属宠物保持」菜单行、保持列表持久化，以及冷会话（例如宿主重启后）按原配色合成一只常驻空闲宠物；删除会话会自动清除保持标记，不留幽灵宠物。同版本把包名从 `dsh-pet-copilot` 改为 `dsh-pets-multiworkers`；插件行 id、`pet.json`、设置命名空间与养成数据不变。见[更新说明](docs/release-notes/v1.5.0.md)。
 
-**npm 包名是 `dsh-pets-multiworkers`，GitHub 仓库是 `ltmroberthk915/dsh-pet`。** 从本仓库 [Release](https://github.com/ltmroberthk915/dsh-pet/releases) 下载同名预编译包；`dsh-session-pet.tgz` 仅作为同一包的兼容文件名保留。**dsh-market**（awesome-dsh-plugin 注册表）与 **dsh-open-market**（dsh-plugin-index）的市场文案已在两个 GitHub 注册表中保持同一份描述。
+**npm 包名是 `dsh-pets-multiworkers`，GitHub 仓库是 `ltmroberthk915/dsh-pet`。** 从本仓库 [Release](https://github.com/ltmroberthk915/dsh-pet/releases) 下载同名预编译包；`dsh-session-pet.tgz` 仅作为同一包的兼容文件名保留。同一份市场文案已提交到两个市场：**dsh-market** 见 [awesome-dsh-plugin PR #13212](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/13212)，**dsh-open-market** 见 [dsh-plugin-index issue #328](https://github.com/polang233/dsh-plugin-index/issues/328)；均需等待维护者合并后上架。
 
 本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，由 ltmroberthk915 独立维护，沿用 Apache-2.0 与原素材署名。[English](README.md)
 
