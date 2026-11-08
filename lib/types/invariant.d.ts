@@ -1,7 +1,7 @@
 /**
  * Package invariants — cheap structural checks run at import time on the
  * host side. Mirrors the pattern used by other dsh plugin packages.
- * @module dsh-pet-copilot/invariant
+ * @module dsh-pets-multiworkers/invariant
  */
 /** Assert a condition; throws a descriptive Error when violated. */
 export declare function invariant(condition: unknown, message: string): asserts condition;

@@ -4,7 +4,7 @@ import { animationFps, animationMode, optionalFps, tickSlope, tickIntercept, DEF
  * Pet persistence — tiny JSON store for affinity + display config, written
  * under $DSH_HOME (defaults to ~/.dsh) as `pet.json`. Deliberately minimal:
  * one file, atomic rename write, tolerant read (corrupt file → defaults).
- * @module dsh-pet-copilot/persist
+ * @module dsh-pets-multiworkers/persist
  */
 
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
@@ -134,10 +134,23 @@ export interface PetPersist {
   display: PetDisplayConfig
   /** Per-pet gameplay state (stats/currencies/mode), keyed by pet id. */
   gameplay: Record<string, PetGameplayState>
+  /**
+   * Conversations whose main-agent pet stays on the desktop after its work was
+   * viewed and the user left the conversation ("专属宠物保持"). Stored as the
+   * session ids the row menu toggled; subagent sessions are never kept (their
+   * pets follow the normal show/hide path).
+   */
+  keptSessions?: string[]
 }
 
 /** Name constraints. */
 export const PET_NAME_MAX_LENGTH = 20
+
+/** Most kept conversations persisted; the oldest entry drops first. */
+export const KEPT_SESSIONS_MAX = 512
+
+/** Session id ceiling shared with the viewed-acknowledgement API. */
+const SESSION_ID_MAX_LENGTH = 200
 
 export function emptyPersist(): PetPersist {
   return {
@@ -197,6 +210,24 @@ function loadPetSkins(parsed: PetPersistDocument): Record<string, string> {
 /** Clamp one count/score into [0, max]. */
 function clamp(value: number, max: number): number {
   return Math.min(max, Math.max(0, value))
+}
+
+/**
+ * Sanitize the kept-session list: non-empty bounded ids only, duplicates and
+ * non-strings dropped, newest entries kept past the cap. Returns an empty list
+ * for a document written before the field existed, so the caller can omit the
+ * key entirely (an untouched pet.json round-trips unchanged).
+ */
+function loadKeptSessions(parsed: PetPersistDocument): string[] {
+  if (!Array.isArray(parsed.keptSessions)) return []
+  const kept: string[] = []
+  for (const value of parsed.keptSessions) {
+    if (typeof value !== 'string') continue
+    const id = value.trim()
+    if (id === '' || id.length > SESSION_ID_MAX_LENGTH || kept.includes(id)) continue
+    kept.push(id)
+  }
+  return kept.slice(-KEPT_SESSIONS_MAX)
 }
 
 /** Absolute numeric ceilings applied at load (manifest clamps refine these). */
@@ -307,6 +338,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
     if (typeof parsed.name === 'string' && parsed.name.trim() !== '' && names[petId] === undefined) {
       names[petId] = parsed.name.trim().slice(0, PET_NAME_MAX_LENGTH)
     }
+    const keptSessions = loadKeptSessions(parsed)
     return {
       petId,
       names,
@@ -317,6 +349,7 @@ export function loadPetPersist(dir: string = petHomeDir()): PetPersist {
       display,
       gameplay: loadGameplay(parsed),
       ...(playback === undefined ? {} : { playback }),
+      ...(keptSessions.length === 0 ? {} : { keptSessions }),
     }
   } catch {
     return emptyPersist()

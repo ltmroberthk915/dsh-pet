@@ -1,6 +1,6 @@
 /**
  * dsh-pet locale dictionaries (zh/en).
- * @module dsh-pet-copilot/client/locales
+ * @module dsh-pets-multiworkers/client/locales
  */
 /** Dictionary namespace this package registers. */
 export declare const NS = "pet";
@@ -14,6 +14,8 @@ export declare const zh: {
     readonly 'pet.confirm': "确定";
     readonly 'pet.namePlaceholder': "输入新名字";
     readonly 'pet.summon': "召唤{name}";
+    readonly 'pet.menu.keep': "专属宠物保持";
+    readonly 'pet.menu.unkeep': "取消专属宠物保持";
     readonly 'pet.rank': "亲密度 {rank}";
     readonly 'pet.rank.name.\u5E7C\u9CB8': "幼鲸";
     readonly 'pet.rank.name.\u4F19\u4F34': "伙伴";
@@ -113,6 +115,8 @@ export declare const en: {
     readonly 'pet.confirm': "OK";
     readonly 'pet.namePlaceholder': "Enter a new name";
     readonly 'pet.summon': "Summon {name}";
+    readonly 'pet.menu.keep': "Keep this pet shown";
+    readonly 'pet.menu.unkeep': "Stop keeping this pet shown";
     readonly 'pet.rank': "Affinity {rank}";
     readonly 'pet.rank.name.\u5E7C\u9CB8': "Baby Whale";
     readonly 'pet.rank.name.\u4F19\u4F34': "Companion";

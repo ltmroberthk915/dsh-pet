@@ -4,7 +4,7 @@
  * snapshots, marking dirty so the owning facade decides when to flush. Read
  * paths (view) no longer settle the economy; settlements happen on explicit
  * economic events: completed-turn rewards (official or legacy) and feeds.
- * @module dsh-pet-copilot/ledger
+ * @module dsh-pets-multiworkers/ledger
  */
 
 import {
@@ -24,6 +24,7 @@ import {
 } from './treats.ts'
 import { RemarkPicker, type PetRemarks } from './remarks.ts'
 import type { PetDisplayConfig, PetPersist } from './persist.ts'
+import { KEPT_SESSIONS_MAX } from './persist.ts'
 import type { PetGameplayState } from './gameplay.ts'
 import type { SessionColor } from './session-colors.ts'
 import { animationFps, animationMode, optionalFps, tickSlope, tickIntercept } from './animation.ts'
@@ -170,6 +171,22 @@ export class PetLedger {
   /** The persisted skin id for one pet (undefined = the pet's default look). */
   petSkin(petId: string): string | undefined {
     return this.current.skins[petId]
+  }
+
+  /**
+   * Mark one conversation's main-agent pet as kept on screen, or release it
+   * ("专属宠物保持"). Idempotent: an unchanged flag does not dirty the store,
+   * so a duplicate menu click never rewrites pet.json.
+   * @param sessionId - the conversation whose pet is kept.
+   * @param keep - true keeps the pet visible after viewing; false releases it.
+   */
+  setSessionKept(sessionId: string, keep: boolean): void {
+    const kept = this.current.keptSessions ?? []
+    const present = kept.includes(sessionId)
+    if (present === keep) return
+    const next = keep ? [...kept, sessionId].slice(-KEPT_SESSIONS_MAX) : kept.filter(id => id !== sessionId)
+    this.current = { ...this.current, keptSessions: next }
+    this.dirty = true
   }
 
   /**

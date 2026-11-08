@@ -3,7 +3,7 @@
  * (reaction bubbles), written only through the store's audit actions. The
  * RPC polling and interactions live in the plugin apply body; components
  * only ever read snapshots.
- * @module dsh-pet-copilot/client/pet-store
+ * @module dsh-pets-multiworkers/client/pet-store
  */
 import type { EngineStoreHandle, EngineStoreInstance } from '@deepseek-ai/dsh-client-store';
 import type { PetGameplayStateView, PetStateView } from '../service.ts';

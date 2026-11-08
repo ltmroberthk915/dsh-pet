@@ -5,7 +5,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 
 export async function verifyInstall(options) {
   const { runtime, desktopExecutable, pnpm, marketBridge, registry, spec, version } = options
-  const name = 'dsh-pet-copilot'
+  const name = 'dsh-pets-multiworkers'
   const root = path.resolve('output/release-install-verification')
   fs.mkdirSync(root, { recursive: true })
   const dir = fs.mkdtempSync(path.join(root, 'isolated-'))

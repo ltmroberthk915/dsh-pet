@@ -25,7 +25,7 @@
  *
  * This file is imported directly by scripts/dsh-pet under node's strip-only
  * TypeScript mode: keep it erasable-syntax-only.
- * @module dsh-pet-copilot/voice-pack
+ * @module dsh-pets-multiworkers/voice-pack
  */
 
 import {

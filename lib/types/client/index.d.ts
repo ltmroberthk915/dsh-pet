@@ -10,7 +10,7 @@
  * portals into that same root, so the root owns the whole surface and a
  * root-keyed suppressor can hide it as one unit. When the pet is hidden the
  * entry becomes a fixed-position summon button.
- * @module dsh-pet-copilot/client
+ * @module dsh-pets-multiworkers/client
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis';
 import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client';

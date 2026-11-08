@@ -12,7 +12,7 @@
  * (safeManifestPath); unsafe entries make the model unloadable.
  *
  * Erasable-syntax-only: scripts/ import this under node strip-only mode.
- * @module dsh-pet-copilot/model3
+ * @module dsh-pets-multiworkers/model3
  */
 /** Collect the safe relative paths one model3.json references. */
 export declare function collectModel3References(model3: unknown): {

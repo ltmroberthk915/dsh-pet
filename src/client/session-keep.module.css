@@ -1,0 +1,69 @@
+/* Menu row for "专属宠物保持". Styling mirrors the host menu row: one
+   role="menuitem" button, 14px icon seat, 13px label, token-only colors. */
+.row {
+  position: relative;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary, #111827);
+  text-align: left;
+}
+
+.item:hover:not(:disabled),
+.item:focus-visible:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, 0.14));
+  outline: none;
+}
+
+.item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--dsw-alias-label-secondary, #6b7280);
+}
+
+.icon svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.iconActive {
+  color: var(--dsw-alias-brand-primary, #4d6bfe);
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check {
+  flex: none;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--dsw-alias-brand-primary, #4d6bfe);
+}

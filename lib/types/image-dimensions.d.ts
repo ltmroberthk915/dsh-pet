@@ -11,7 +11,7 @@
  * WebP: RIFF header (12) + chunk — 'VP8X' extended (width-1/height-1 as
  * little-endian uint24 at 24/27), 'VP8L' lossless (packed 14-bit dims at
  * 21), or 'VP8 ' lossy (frame header, low 14 bits of the uint16 at 26/28).
- * @module dsh-pet-copilot/image-dimensions
+ * @module dsh-pets-multiworkers/image-dimensions
  */
 export interface ImageDimensions {
     width: number;

@@ -9,7 +9,7 @@
  * JSON API, the asset prefix, and the Live2D runtime prefix are loopback-only
  * by default; a live paired-device cookie is an extra allow path when
  * remote-web-ui is loaded.
- * @module dsh-pet-copilot/routes
+ * @module dsh-pets-multiworkers/routes
  */
 
 import { existsSync, realpathSync, statSync } from 'node:fs'
@@ -600,6 +600,14 @@ export function makePetRoutes(deps: { service: PetService; ctx: Context; assetCa
     postRoute(ctx, PET_API_PREFIX + '/session-viewed', (body) => {
       if (typeof body.sessionId !== 'string' || typeof body.revision !== 'number') return Promise.reject(new Error('invalid-viewed-session'))
       return service.markSessionViewed(body.sessionId, body.revision)
+    }),
+    // '专属宠物保持': the conversation row menu reads the kept list on open and
+    // writes one toggle; the state snapshot also carries it, so a 2 s poll keeps
+    // the menu row current without extra requests.
+    getRoute(ctx, PET_API_PREFIX + '/kept-sessions', async () => ({ sessions: service.keptSessions() })),
+    postRoute(ctx, PET_API_PREFIX + '/session-keep', (body) => {
+      if (typeof body.sessionId !== 'string' || typeof body.keep !== 'boolean') return Promise.reject(new Error('invalid-session-keep'))
+      return service.setSessionKept(body.sessionId, body.keep)
     }),
     postRoute(ctx, PET_API_PREFIX + '/interact', (body) => {
       const kind = body.kind as PetInteraction | undefined

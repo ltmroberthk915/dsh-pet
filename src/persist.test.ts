@@ -62,11 +62,32 @@ describe('loadPetPersist', () => {
         gameplay: {
           otter: { stats: { hunger: 55.5 }, currencies: { coins: 12 }, mode: 'work' as const, settledAt: 777 },
         },
+        keptSessions: ['session-first', 'session-second'],
       }
       savePetPersist(data, dir)
       expect(loadPetPersist(dir)).toEqual(data)
     } finally {
       rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('sanitizes the kept-session list without inventing the field on older documents', () => {
+    const dir = tempDir()
+    try {
+      writeFileSync(join(dir, 'pet.json'), JSON.stringify({
+        petId: 'otter',
+        keptSessions: ['session-a', 'session-a', '', 42, 'x'.repeat(201), ' session-b '],
+      }), 'utf8')
+      expect(loadPetPersist(dir).keptSessions).toEqual(['session-a', 'session-b'])
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+    const empty = tempDir()
+    try {
+      // An untouched pet.json keeps loading exactly like the defaults.
+      expect(loadPetPersist(empty)).toEqual(emptyPersist())
+    } finally {
+      rmSync(empty, { recursive: true, force: true })
     }
   })
 

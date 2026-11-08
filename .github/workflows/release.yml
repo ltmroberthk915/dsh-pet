@@ -35,7 +35,7 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          node -e 'if (process.env.RELEASE_TAG !== "v" + require("./package.json").version) process.exit(1); if (!process.env.NODE_AUTH_TOKEN) throw Error("NPM_TOKEN is required for dsh-pet-copilot")'
+          node -e 'if (process.env.RELEASE_TAG !== "v" + require("./package.json").version) process.exit(1); if (!process.env.NODE_AUTH_TOKEN) throw Error("NPM_TOKEN is required for dsh-pets-multiworkers")'
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: node --test scripts/test-release-channel.mjs
       - run: pnpm typecheck
@@ -50,7 +50,7 @@ jobs:
       - name: Publish verified archive to next and verify official npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: node scripts/stage-release.mjs "output/dsh-pet-copilot-$(node -p 'require("./package.json").version').tgz"
+        run: node scripts/stage-release.mjs "output/dsh-pets-multiworkers-$(node -p 'require("./package.json").version').tgz"
       - uses: actions/upload-artifact@v4
         with:
           name: npm-publication-receipt

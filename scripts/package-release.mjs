@@ -43,7 +43,7 @@ const zip = entries => {
   return Buffer.concat([...locals, directory, end])
 }
 const migration = 'dsh-pet-profile-migration-' + pkg.version + '.zip'
-const paths = ['scripts/migrate-profile.mjs', 'scripts/migrate-profile.ps1', 'scripts/migrate-profile.cmd', 'docs/fresh-install-v1.3.3.md']
+const paths = ['scripts/migrate-profile.mjs', 'scripts/migrate-profile.ps1', 'scripts/migrate-profile.cmd', 'docs/fresh-install-v1.5.0.md']
 fs.writeFileSync(path.join(dest, migration), zip(paths.map(file => [path.basename(file), fs.readFileSync(path.join(root, file))])))
 const names = [canonical, 'dsh-session-pet.tgz', migration]
 const sums = names.map(file => hash(fs.readFileSync(path.join(dest, file))) + '  ' + file).join('\n') + '\n'

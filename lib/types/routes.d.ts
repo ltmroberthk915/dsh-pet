@@ -9,7 +9,7 @@
  * JSON API, the asset prefix, and the Live2D runtime prefix are loopback-only
  * by default; a live paired-device cookie is an extra allow path when
  * remote-web-ui is loaded.
- * @module dsh-pet-copilot/routes
+ * @module dsh-pets-multiworkers/routes
  */
 import type { Context } from '@deepseek-ai/cordis';
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver';

@@ -91,9 +91,18 @@ export interface PetPersist {
     display: PetDisplayConfig;
     /** Per-pet gameplay state (stats/currencies/mode), keyed by pet id. */
     gameplay: Record<string, PetGameplayState>;
+    /**
+     * Conversations whose main-agent pet stays on the desktop after its work was
+     * viewed and the user left the conversation ("专属宠物保持"). Stored as the
+     * session ids the row menu toggled; subagent sessions are never kept (their
+     * pets follow the normal show/hide path).
+     */
+    keptSessions?: string[];
 }
 /** Name constraints. */
 export declare const PET_NAME_MAX_LENGTH = 20;
+/** Most kept conversations persisted; the oldest entry drops first. */
+export declare const KEPT_SESSIONS_MAX = 512;
 export declare function emptyPersist(): PetPersist;
 /**
  * Resolve the persistence directory ($DSH_HOME or ~/.dsh). Delegates to the

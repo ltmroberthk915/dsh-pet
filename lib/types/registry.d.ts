@@ -24,7 +24,7 @@
  * that only carry 'frames' keep working: geometry, per-row frame counts and
  * per-track rhythm all fall back to the hatch-pet contract defaults, and the
  * whale-girl manifest overrides its own durations.
- * @module dsh-pet-copilot/registry
+ * @module dsh-pets-multiworkers/registry
  */
 import type { ActivityPhase, PetAnimation } from './state.ts';
 import { type PetRemarks, type PetRemarksManifest } from './remarks.ts';

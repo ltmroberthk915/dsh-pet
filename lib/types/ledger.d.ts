@@ -4,7 +4,7 @@
  * snapshots, marking dirty so the owning facade decides when to flush. Read
  * paths (view) no longer settle the economy; settlements happen on explicit
  * economic events: completed-turn rewards (official or legacy) and feeds.
- * @module dsh-pet-copilot/ledger
+ * @module dsh-pets-multiworkers/ledger
  */
 import { type AffinityConfig, type PetAffinityView, type PetInteraction } from './affinity.ts';
 import { type TreatConfig } from './treats.ts';
@@ -77,6 +77,14 @@ export declare class PetLedger {
     setPetSkin(petId: string, skinId: string | undefined): void;
     /** The persisted skin id for one pet (undefined = the pet's default look). */
     petSkin(petId: string): string | undefined;
+    /**
+     * Mark one conversation's main-agent pet as kept on screen, or release it
+     * ("专属宠物保持"). Idempotent: an unchanged flag does not dirty the store,
+     * so a duplicate menu click never rewrites pet.json.
+     * @param sessionId - the conversation whose pet is kept.
+     * @param keep - true keeps the pet visible after viewing; false releases it.
+     */
+    setSessionKept(sessionId: string, keep: boolean): void;
     /**
      * Swap the reaction pools to another pet's custom remarks (called on pet
      * selection). Slots the pet does not declare fall back to voice packs or built-ins.

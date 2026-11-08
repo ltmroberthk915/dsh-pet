@@ -14,7 +14,7 @@
 export type TelemetryChannel = 'market' | 'npm' | 'unknown'
 
 export interface TelemetryItem {
-  /** npm package name or asset id, e.g. "dsh-pet-copilot" or "skin:harbor". */
+  /** npm package name or asset id, e.g. "dsh-pets-multiworkers" or "skin:harbor". */
   name: string
   /** Installed version when known; omitted otherwise. */
   version?: string

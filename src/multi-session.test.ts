@@ -213,6 +213,74 @@ describe('per-conversation desktop pets', () => {
     expect((await f.service.state('resolved')).companions?.[0]?.color.palette).toBe('glm')
   })
 })
+describe('kept conversation pets ("专属宠物保持")', () => {
+  it('keeps a viewed conversation pet on screen until released, while focus still owns the main size', async () => {
+    const f = setup(); await f.service.setConfig({ multiPetEnabled: true })
+    const kept = f.session('keep-a', 'gpt-6'), focus = f.session('keep-b', 'claude')
+    f.phase(kept, 'thinking'); f.phase(focus, 'thinking')
+    // A finishes, the user visits it and leaves for B: the ordinary rule
+    // retires the idle, viewed pet.
+    f.phase(kept, 'idle')
+    const viewed = await f.service.state(kept.id)
+    await f.service.markSessionViewed(kept.id, viewed.awaitingView!)
+    expect((await f.service.state(focus.id)).companions?.some(c => c.sessionId === kept.id)).toBe(false)
+    // The row menu keeps A; it stays as a background companion.
+    expect(await f.service.setSessionKept(kept.id, true)).toEqual({ ok: true, keep: true, sessions: [kept.id] })
+    const persisted = readFileSync(join(f.dir, 'pet.json'), 'utf8')
+    const background = await f.service.state(focus.id)
+    expect(background.keptSessions).toEqual([kept.id])
+    expect(background.companions?.find(c => c.sessionId === kept.id)).toMatchObject({ primary: false, animation: 'idle' })
+    // Focusing A again gives its pet the main size, exactly as before.
+    expect((await f.service.state(kept.id)).companions?.find(c => c.sessionId === kept.id)?.primary).toBe(true)
+    // Reads (the 2 s poll) never rewrite the kept list.
+    expect(readFileSync(join(f.dir, 'pet.json'), 'utf8')).toBe(persisted)
+    // Releasing the keep restores the retirement rule.
+    expect((await f.service.setSessionKept(kept.id, false)).sessions).toEqual([])
+    expect((await f.service.state(focus.id)).companions?.some(c => c.sessionId === kept.id)).toBe(false)
+  })
+
+  it('synthesizes a settled idle pet for a kept conversation with no live activity', async () => {
+    const f = setup(); await f.service.setConfig({ multiPetEnabled: true })
+    const active = f.session('active', 'gpt-6'); f.phase(active, 'thinking')
+    await f.service.setSessionKept('cold-session', true)
+    const background = await f.service.state(active.id)
+    expect(background.companions?.find(c => c.sessionId === 'cold-session'))
+      .toMatchObject({ primary: false, animation: 'idle', phase: 'idle', sessionActive: false })
+    // Focusing the cold conversation gives its pet the main size.
+    expect((await f.service.state('cold-session')).companions?.find(c => c.sessionId === 'cold-session')?.primary).toBe(true)
+    await f.service.setSessionKept('cold-session', false)
+    expect((await f.service.state(active.id)).companions?.some(c => c.sessionId === 'cold-session')).toBe(false)
+  })
+
+  it('never keeps a subagent pet and persists the kept list across a restart', async () => {
+    const f = setup(); await f.service.setConfig({ multiPetEnabled: true })
+    const parent = f.session('keep-parent', 'gpt-6')
+    const child = { ...f.session('keep-child', 'gpt-6'), header: { origin: 'subagent' } }
+    f.phase(parent, 'thinking'); f.phase(child, 'thinking'); f.phase(child, 'idle')
+    await f.service.setSessionKept(child.id, true)
+    // A subagent pet keeps the current show/hide rules: its own focused window
+    // shows it, and the keep flag cannot resurrect it in the parent.
+    expect((await f.service.state(parent.id)).companions?.some(c => c.sessionId === child.id)).toBe(false)
+    expect((await f.service.state(child.id)).companions?.find(c => c.sessionId === child.id)?.primary).toBe(true)
+    f.phase(parent, 'idle')
+    await f.service.setSessionKept(parent.id, true)
+    const restarted = new PetService(new Context(), { registry: f.registry, persistDir: f.dir })
+    expect(restarted.keptSessions()).toEqual([child.id, parent.id])
+    expect((await restarted.state()).keptSessions).toEqual([child.id, parent.id])
+    // After a Host restart the conversation has no live activity: the kept pet
+    // is synthesized as a settled background companion and leads when focused.
+    const revived = await restarted.state('some-other-session')
+    expect(revived.companions?.find(c => c.sessionId === parent.id))
+      .toMatchObject({ primary: false, animation: 'idle', sessionActive: false })
+    expect((await restarted.state(parent.id)).companions?.find(c => c.sessionId === parent.id)?.primary).toBe(true)
+    // A removed conversation drops its keep, so no ghost pet is synthesized.
+    f.ctx.emit('session/disposed', parent as any)
+    expect(f.service.keptSessions()).not.toContain(parent.id)
+    await expect(f.service.setSessionKept('', true)).rejects.toThrow('invalid-kept-session')
+    await expect(f.service.setSessionKept('x'.repeat(201), true)).rejects.toThrow('invalid-kept-session')
+  })
+})
+
 describe('palette allocation', () => {
   it('uses the underlying model ahead of the provider and sanitizes persisted values', () => {
     expect(modelPalette('kimi-k2', 'openai-compatible')).toBe('kimi')

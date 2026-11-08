@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 
-export const PACKAGE = 'dsh-pet-copilot'
+export const PACKAGE = 'dsh-pets-multiworkers'
 export const MIN_AGE_MS = 24 * 60 * 60 * 1000
 export const OFFICIAL_REGISTRY = 'https://registry.npmjs.org'
 const REPOSITORY = 'https://github.com/ltmroberthk915/dsh-pet'

@@ -2,7 +2,7 @@
 
 在「设置 → 宠物」中选择「MIKU（会话版）」或「小蓝鲸（商务版）」。鲸鱼娘精致版仍是默认形象，已有大小、位置、配色、调速参数和累计互动记录继续使用。
 
-包名为 `dsh-pet-copilot`。下载已编译的 Release 安装包即可使用三套形象，无需自行构建；完整下载、官方桌面 CLI 路径和旧包迁移步骤见 [Windows 安装指南](install-desktop-windows.md)。独立桌面窗口随插件自动启用。
+包名为 `dsh-pets-multiworkers`。下载已编译的 Release 安装包即可使用三套形象，无需自行构建；完整下载、官方桌面 CLI 路径和旧包迁移步骤见 [Windows 安装指南](install-desktop-windows.md)。独立桌面窗口随插件自动启用。
 
 ## 会话行为
 

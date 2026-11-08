@@ -10,7 +10,7 @@
  * portals into that same root, so the root owns the whole surface and a
  * root-keyed suppressor can hide it as one unit. When the pet is hidden the
  * entry becomes a fixed-position summon button.
- * @module dsh-pet-copilot/client
+ * @module dsh-pets-multiworkers/client
  */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
@@ -38,6 +38,8 @@ import { createPetStore, type PetStoreInstance } from './pet-store.ts'
 import { createWorkTickGate } from './work-tick-gate.ts'
 import type { PetInjected } from './PetDockEntry.tsx'
 import { PetGroupEntry } from './PetGroupEntry.tsx'
+import { KeepPetMenuItem } from './KeepPetMenuItem.tsx'
+import { createKeepStore } from './keep-store.ts'
 import { registerPetUiTeardown, takeoverPetUiTeardown } from './ui-teardown.ts'
 import { PetSettingsSection, PetSettingsCardController, type PetSettings } from './PetSettingsCard.tsx'
 import { NS, en, zh, t } from './locales.ts'
@@ -51,6 +53,10 @@ interface PetHttpApi {
   /** Poll the host snapshot; the GUI's current session id rides the query. */
   state(currentSessionId?: string): Promise<PetStateView>
   markSessionViewed(sessionId: string, revision: number): Promise<{ ok: true }>
+  /** The conversations whose main pet is kept on screen ("专属宠物保持"). */
+  keptSessions(): Promise<{ sessions: string[] }>
+  /** Keep or release one conversation's main pet; answers with the whole list. */
+  setSessionKeep(sessionId: string, keep: boolean): Promise<{ ok: true; keep: boolean; sessions: string[] }>
   pets(): Promise<PetDefinition[]>
   interact(kind: PetInteraction): Promise<PetInteractResult>
   setVisible(visible: boolean): Promise<{ ok: true; display: PetDisplayConfig }>
@@ -84,6 +90,8 @@ const petApi: PetHttpApi = {
   state: (currentSessionId) => petFetch('/api/pet/state'
     + '?current=' + encodeURIComponent(currentSessionId ?? '')),
   markSessionViewed: (sessionId, revision) => petFetch('/api/pet/session-viewed', { sessionId, revision }),
+  keptSessions: () => petFetch('/api/pet/kept-sessions'),
+  setSessionKeep: (sessionId, keep) => petFetch('/api/pet/session-keep', { sessionId, keep }),
   pets: () => petFetch('/api/pet/pets'),
   interact: (kind) => petFetch('/api/pet/interact', { kind }),
   setVisible: (visible) => petFetch('/api/pet/set-visible', { visible }),
@@ -197,6 +205,40 @@ export function apply(ctx: ClientContext): void {
   // Built-in renderers dispatch through the plugin-wide registry (pet-center
   // M3). Registration is idempotent (id wins), so re-applies stay clean.
   defaultPetRendererRegistry.register(frames2dRenderer)
+
+  // "专属宠物保持" row in a conversation's "..." menu. It lives with the plugin
+  // fiber rather than the pet surface: the flag is durable host state, so the
+  // row stays meaningful while the pet master switch is off. The pet surface's
+  // poll mirrors the host list into this store whenever it runs.
+  const keepStore = createKeepStore()
+  /** The enabled pet surface's immediate refresh; absent while it is off. */
+  let refreshPet: (() => void) | undefined
+  const ensureKeepLoaded = (): void => {
+    keepStore.ensureLoaded(() => petApi.keptSessions().then(result => result.sessions))
+  }
+  const setSessionKeep = (sessionId: string, keep: boolean): void => {
+    void petApi.setSessionKeep(sessionId, keep).then((result) => {
+      keepStore.setSessions(result.sessions)
+      // Reflect the new companion set now instead of on the next poll tick.
+      refreshPet?.()
+    }, () => {
+      // The menu is already dismissed; the next open re-reads host truth.
+    })
+  }
+  ctx.slots.inject('sidebar.workspaces.session.menu.item', () => {
+    try {
+      return ctx.slots.register({
+        name: 'sidebar.workspaces.session.menu.item',
+        id: 'dsh-pets-multiworkers:session-keep',
+        order: 500,
+        locale: NS,
+        inject: () => ({ keepStore, ensureKeepLoaded, setSessionKeep }),
+      }, KeepPetMenuItem)
+    } catch {
+      // A host without the legacy Session-row slot keeps the rest of the pet.
+      return () => {}
+    }
+  })
 
   const settingsForm = petSettingsForm(ctx)
   const enabled = (): boolean => {
@@ -353,6 +395,7 @@ export function apply(ctx: ClientContext): void {
             })
           }
           setSnapshot(snapshot)
+          keepStore.setSessions(snapshot.keptSessions ?? [])
           // A selected tab in a hidden/minimized app is not a viewed result.
           // The completion revision prevents a late POST consuming a newer turn.
           if (requestedSessionId && snapshot.awaitingView !== undefined
@@ -373,6 +416,8 @@ export function apply(ctx: ClientContext): void {
           if (pollAgain && !uiGone) { pollAgain = false; pollNow() }
         })
       }
+      // The menu row asks the surface for an immediate refresh after a toggle.
+      refreshPet = pollNow
 
       const disposePoll = ctx.effect(() => {
         // Poll only while the tab is visible: the host snapshot does not
@@ -563,6 +608,7 @@ export function apply(ctx: ClientContext): void {
         container.remove()
         disposePoll()
         disposeSessionWatch()
+        if (refreshPet === pollNow) refreshPet = undefined
         disposeUi = undefined
       }
       // The slot teardown is the takeover hook a later apply body runs; it

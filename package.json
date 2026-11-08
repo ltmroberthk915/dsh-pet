@@ -1,7 +1,7 @@
 {
-  "name": "dsh-pet-copilot",
-  "description": "DSH 多会话桌宠：鲸鱼娘、MIKU 与商务小蓝鲸，模型配色、tok/s 调速及共享亲密度。",
-  "version": "1.4.2",
+  "name": "dsh-pets-multiworkers",
+  "description": "一池多宠的 DSH 桌宠：每个活跃会话各一只，工作状态指示、模型/供应商配色与 tok/s 跑速、会话右键「专属宠物保持」、子代理跟随与共享养成。",
+  "version": "1.5.0",
   "publishConfig": {
     "access": "public"
   },
@@ -58,9 +58,11 @@
     "docs/install-desktop-windows.md",
     "docs/palettes.png",
     "docs/fresh-install-v1.3.3.md",
+    "docs/fresh-install-v1.5.0.md",
     "docs/release-notes/v1.4.0.md",
     "docs/release-notes/v1.4.1.md",
-    "docs/release-notes/v1.4.2.md"
+    "docs/release-notes/v1.4.2.md",
+    "docs/release-notes/v1.5.0.md"
   ],
   "license": "Apache-2.0",
   "dsh": {
@@ -147,8 +149,11 @@
     "dsh-plugin",
     "deepseek",
     "pet",
+    "multi-pet",
     "desktop",
-    "session"
+    "session",
+    "status-indicator",
+    "model-colors"
   ],
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh": {

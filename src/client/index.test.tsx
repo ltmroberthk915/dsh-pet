@@ -69,6 +69,8 @@ interface FakeClientLifecycle {
   selectSession(id: string): void
   /** Namespaces the family settings binder was asked for (empty without one). */
   boundNamespaces(): string[]
+  /** Slot registrations made by this apply body (in registration order). */
+  slotRegistrations(): { name: string; options: Record<string, unknown>; component: unknown }[]
 }
 
 const activeLifecycles: FakeClientLifecycle[] = []
@@ -91,6 +93,7 @@ interface FakeContextOptions {
 
 function fakeContext(options: FakeContextOptions = {}): FakeClientLifecycle {
   const disposers: (() => void)[] = []
+  const registrations: { name: string; options: Record<string, unknown>; component: unknown }[] = []
   const settingsListeners = new Set<() => void>()
   const sessionListeners = new Set<() => void>()
   const boundNamespaces: string[] = []
@@ -139,7 +142,10 @@ function fakeContext(options: FakeContextOptions = {}): FakeClientLifecycle {
         if (typeof dispose === 'function') disposers.push(dispose)
         return dispose
       },
-      register: () => () => {},
+      register: (options: Record<string, unknown>, component: unknown) => {
+        registrations.push({ name: String(options?.name), options, component })
+        return () => {}
+      },
     },
     sessions: {
       list: {
@@ -168,6 +174,7 @@ function fakeContext(options: FakeContextOptions = {}): FakeClientLifecycle {
     setEnabled: (enabled: boolean) => { settingsValue = { enabled } },
     selectSession: (id: string) => { selectedSessionId = id; for (const listener of sessionListeners) listener() },
     boundNamespaces: () => boundNamespaces,
+    slotRegistrations: () => registrations,
   }
   activeLifecycles.push(lifecycle)
   return lifecycle
@@ -179,6 +186,16 @@ describe('pet client apply', () => {
     const root = document.body.querySelector('[data-dsh-pet-root]')
     expect(root).not.toBeNull()
     expect(root!.getAttribute('data-dsh-plugin')).toBe('pet')
+  })
+
+  it('adds "专属宠物保持" to the conversation row menu as its own cell', () => {
+    const f = fakeContext()
+    apply(f.ctx)
+    const row = f.slotRegistrations().find(entry => entry.name === 'sidebar.workspaces.session.menu.item')
+    expect(row).toBeDefined()
+    expect(row!.options.id).toBe('dsh-pets-multiworkers:session-keep')
+    expect(row!.options.order).toBe(500)
+    expect(typeof row!.component).toBe('function')
   })
 
   it('keeps one global pet root when two client factories overlap (#785)', () => {

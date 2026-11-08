@@ -5,7 +5,7 @@
  * Persistence lives in the service; this module only computes transitions.
  * Reaction copy resolves from the shared remark library (first line of each
  * built-in pool); the ledger layers per-pet custom remarks on top.
- * @module dsh-pet-copilot/affinity
+ * @module dsh-pets-multiworkers/affinity
  */
 /** One interaction the user can perform on the pet. */
 export type PetInteraction = 'pet' | 'feed';

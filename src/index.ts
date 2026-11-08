@@ -8,7 +8,7 @@
  * those sources, never touching host or client code. Install via
  * 'dsh plugin --profile web add link:<dsh-web>/packages/dsh-pet'; the
  * cordis.patch.yml inserts this plugin row.
- * @module dsh-pet-copilot
+ * @module dsh-pets-multiworkers
  */
 
 import { Context, type Volatile } from '@deepseek-ai/cordis'

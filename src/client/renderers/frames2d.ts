@@ -21,7 +21,7 @@
  *   historical behavior - cache-warm Image elements plus guarded src swaps,
  *   so environments without modern decoding keep working unchanged.
  *
- * @module dsh-pet-copilot/client/renderers/frames2d
+ * @module dsh-pets-multiworkers/client/renderers/frames2d
  */
 
 import { PET_RENDERER_API_VERSION, type PetRenderer, type PetRendererContext, type PetRendererHandle } from '../../contracts/renderer.ts'

@@ -1,46 +1,47 @@
-# 多形象会话桌宠 · dsh-pet-copilot
+# 多形象会话桌宠 · dsh-pets-multiworkers
 
-**看一眼桌宠，就知道 AI 忙到哪了。**
+**一池多宠，工作状态一眼可见。**
 
-鲸鱼娘、MIKU、商务小蓝鲸，给每个活跃会话一个看得见的伙伴。用配色区分模型，用跑动看生成速度，做完的任务等你查看。
+多数桌宠插件只能守着一只形象。这里把**所有活跃顶层会话同时放进一个鱼池**，不用来回切会话就能看到整条工作队列：
 
-**npm 包名是 `dsh-pet-copilot`，GitHub 仓库是 `ltmroberthk915/dsh-pet`。** 从本仓库 [Release](https://github.com/ltmroberthk915/dsh-pet/releases) 下载同名预编译包。`dsh-session-pet.tgz` 仅作为同一包的兼容文件名保留。
+| 你想知道 | 鱼池怎么告诉你 |
+| --- | --- |
+| 哪个会话在干活 | 每只宠物按真实阶段做动作：思考、执行工具、等待你、完成、失败，并显示该会话自己的状态气泡；后台宠物以 52.7% 大小排在旁边，焦点那只最清楚。 |
+| 哪个模型/供应商在忙 | 每个会话按模型分配稳定配色（DS/GPT/Claude/GLM/Kimi 等），同供应商的并发会话再用额外色相区分。 |
+| 它跑得多快 | 左右跑动速度跟随该会话底栏 tok/s（`FPS = max(1, k × tok/s + b)`），模型越快，宠物跑得越快。 |
+| 哪个对话要一直盯着 | 会话行 `...` 菜单（或右键）→「专属宠物保持」：结果查看后切走也不回收；聚焦它时主大小，其余保持次大小。 |
+| 子代理在做什么 | 打开子会话时主宠物跟随子代理自己的生成状态与底栏 tok/s，切回父会话恢复；子代理宠物按原逻辑显示/隐藏。 |
+| 桌面也想看 | 可选独立桌面窗口（不改 app.asar）、无素材的纯状态气泡、悬停或右键看板。 |
 
-本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，由 ltmroberthk915 独立维护，沿用 Apache-2.0 与原素材署名。
+**多宠不添活。** 喂食、亲密度、小鱼干、命名、拖动与大小控制在整个鱼池共享。形象可选鲸鱼娘、MIKU、商务小蓝鲸；商务鲸鱼的图像、底板和点击区域再乘以 0.75。
+
+**1.5.0 新增：**「专属宠物保持」菜单行、保持列表持久化，以及冷会话（例如宿主重启后）按原配色合成一只常驻空闲宠物；删除会话会自动清除保持标记，不留幽灵宠物。同版本把包名从 `dsh-pet-copilot` 改为 `dsh-pets-multiworkers`；插件行 id、`pet.json`、设置命名空间与养成数据不变。见[更新说明](docs/release-notes/v1.5.0.md)。
+
+**npm 包名是 `dsh-pets-multiworkers`，GitHub 仓库是 `ltmroberthk915/dsh-pet`。** 从本仓库 [Release](https://github.com/ltmroberthk915/dsh-pet/releases) 下载同名预编译包；`dsh-session-pet.tgz` 仅作为同一包的兼容文件名保留。**dsh-market**（awesome-dsh-plugin 注册表）与 **dsh-open-market**（dsh-plugin-index）的市场文案已在两个 GitHub 注册表中保持同一份描述。
+
+本项目 fork 自 [zhu1090093659/dsh-pet](https://github.com/zhu1090093659/dsh-pet)，由 ltmroberthk915 独立维护，沿用 Apache-2.0 与原素材署名。[English](README.md)
 
 ![五套模型配色](docs/palettes.png)
 
-## 功能
-
-- 鲸鱼娘、MIKU 与商务小蓝鲸；每个活跃顶层会话一个宠物，当前对话使用主大小，其他为 52.7%。商务鲸鱼的图像、底板和点击区域再统一乘以 0.75。
-- 模型配色在会话首次分配后保持稳定；后台会话完成后等待查看，查看后切走时收回。
-- 等待智能体时保持等待动作；打开子会话后主宠物跟随它自己的生成状态和底栏 tok/s，切回父会话后恢复父会话状态。
-- 左右跑动采用固定 FPS、素材原速或 `FPS = max(1, k × 底栏 tok/s + b)`，默认没有上限，可由用户自行限制。非左右跑动动作可独立设置 FPS；关闭时保留素材原始时长。所有形象规则相同。
-- 共享喂食与亲密度，支持拖动、大小和命名。左键唤出 DSH，右键抚摸并展开看板；悬停展开默认关闭，可在设置中开启。
-- [1.4.0 GitHub 安装包](https://github.com/ltmroberthk915/dsh-pet/releases/tag/v1.4.0)支持无宠物图的纯状态气泡模式，空闲时常驻「随时就绪」。三种内置形象按各动作的透明轮廓收紧点击包络，让图片外的界面继续接收点击。见 [更新说明](docs/release-notes/v1.4.0.md)。
-- 官方 Windows DSH 自动启动独立桌宠，无需修改 app.asar 或另装 Node、Electron、PowerShell 7。
-
-**1.4.2** 优化独立桌宠启动：复用未变化运行库的校验记录，短暂延后进程启动，关闭桌面模式后释放独立进程。详见[更新说明](docs/release-notes/v1.4.2.md)。
+左右跑动也可改用固定 FPS 或素材原速；可单独限制左右跑动上限，并独立设置其他动作 FPS，关闭第二项时保留素材原始时长。完成后的宠物等你查看；悬停展开默认关闭，设置开关与右键看板仍在。[1.4.0 GitHub 安装包](https://github.com/ltmroberthk915/dsh-pet/releases/tag/v1.4.0)增加了可拖动的纯状态气泡与按透明轮廓收紧的点击包络，1.4.2 降低了独立桌宠启动 I/O；这些说明对应的仍是旧包名版本。
 
 ## 安装与更新
 
-在 **设置 → 插件 → 添加插件** 输入 **`dsh-pet-copilot`**，默认安装 **1.4.0**。已使用 DSH 官方桌面插件管理流程，在严格 24 小时冷却且无例外的配置下验证官方 npm 源全新安装、从 1.3.3 升级和同版本重复安装，见[验收记录](docs/release-verification/v1.4.0-npm-latest.json)。填包名即可；填写 GitHub 仓库网址会走源码压缩包下载，可能遇到 GitHub 超时。
-
-[市场收录申请](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/6359) 正等待维护者审核。合并并同步后，在 dsh-market 搜索 **dsh-pet-copilot**，选择作者 **ltmroberthk915** 的条目，再点安装或更新。收录检查通过不等于已经上架；严格新版本策略仍按下文执行。
+在 **设置 → 插件 → 添加插件** 输入 **`dsh-pets-multiworkers`**。registry 收录同步前，可按下面的 Release 包或本地包安装。填包名即可；填写 GitHub 仓库网址会走源码压缩包下载，可能遇到 GitHub 超时。
 
 终端诊断应使用**桌面安装目录中的 CLI**，不要依赖 PATH 上的旧全局 dsh：
 
 ```powershell
 $dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd"
-& $dsh plugin --profile desktop why dsh-pet-copilot
+& $dsh plugin --profile desktop why dsh-pets-multiworkers
 ```
 
 自定义安装位置时，把 $dsh 改为那个安装目录下 resources/runtime/cli/bin/dsh.cmd 的完整路径。不要把 resources/runtime/bin 加入全局 PATH。
 
-离线包从对应 Release 下载 `dsh-pet-copilot-1.4.2.tgz`，按 `SHA256SUMS.txt` 核对后，用带包名的本地目标安装：
+离线包从对应 Release 下载 `dsh-pets-multiworkers-1.5.0.tgz`，按 `SHA256SUMS.txt` 核对后，用带包名的本地目标安装：
 
 ```powershell
-& $dsh plugin --profile desktop add 'dsh-pet-copilot@file:C:/Downloads/dsh-pet-copilot-1.4.2.tgz'
+& $dsh plugin --profile desktop add 'dsh-pets-multiworkers@file:C:/Downloads/dsh-pets-multiworkers-1.5.0.tgz'
 ```
 
 替换示例路径为实际下载位置。无需自行 pack 或安装 pnpm。Web 宿主使用 web profile。
@@ -49,9 +50,9 @@ $dsh = "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/ds
 
 ## 旧包名迁移
 
-先备份 DSH，在目标 profile 移除 `@ltmroberthk915/dsh-pet` 或 `@linxin666/dsh-pet` 并安装新包，再运行 Release 的 `dsh-pet-profile-migration-1.4.2.zip` 内迁移启动器，也可使用已安装包的 scripts 目录。**只保留 pet 行 ID 不足以迁移配置，DSH 还匹配 name。**
+1.5.0 把 `dsh-pet-copilot` 更名为 `dsh-pets-multiworkers`。先备份 DSH，在目标 profile 移除 `dsh-pet-copilot`（以及更早的 `@ltmroberthk915/dsh-pet`、`@linxin666/dsh-pet` 行）并安装新包，再运行 Release 的 `dsh-pet-profile-migration-1.5.0.zip` 内迁移启动器，也可使用已安装包的 scripts 目录。**只保留 pet 行 ID 不足以迁移配置，DSH 还匹配 name。**
 
-迁移器用真实宿主合成配置，备份后只修改该 profile 中 pet 覆盖项的旧名称。配置、禁用状态、注释、其他插件及共享 home 补丁保持不变。旧项与后来保存的新设置冲突，或存在别名、并发编辑时会停止说明原因。名字和养成数据仍保存在原 pet.json 中。详见 [新机与迁移说明](docs/fresh-install-v1.3.3.md)。
+迁移器用真实宿主合成配置，备份后只修改该 profile 中 pet 覆盖项的旧名称。配置、禁用状态、注释、其他插件及共享 home 补丁保持不变。旧项与后来保存的新设置冲突、存在别名、并发编辑，或 profile 中已存在多条历史 pet 行时会停止说明原因（避免生成重复匹配行）。名字和养成数据仍保存在原 pet.json 中。详见 [新机与迁移说明](docs/fresh-install-v1.5.0.md)。
 
 ## 冷却策略与发布查询
 
@@ -61,9 +62,9 @@ DSH 0.2.0-rc.2 / pnpm 11.7.0 的**默认非严格配置**可能安装刚发布�
 
 重复添加同一版本另有锁文件检查：隔离实测 1.3.2 → 1.3.3 升级成功后，立即再添加 1.3.3 会报 `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`，已有单版本例外也不保证通过。已装版本和 bundle 选择保留；不要因此删除用户锁文件或关闭全局冷却。首次安装、升级、重复安装分别验收。
 
-已定位到 pnpm 11.7.0 只采用同一包的第一条匹配规则：把两个版本分别写成两条例外，可能忽略后面的版本。若两个精确版本本来就已获准，可将原有两条合并为一条，例如 `dsh-pet-copilot@1.3.2 || 1.3.3`，并保留其他规则。CU 的同类隔离复现已验证这种修复，不增加获准版本。Pet 1.3.3 从空环境安装及立即重复安装均通过；这不能代替每一种旧版本升级历史的验证。
+已定位到 pnpm 11.7.0 只采用同一包的第一条匹配规则：把两个版本分别写成两条例外，可能忽略后面的版本。若两个精确版本本来就已获准，可将原有两条合并为一条，例如旧包的 `dsh-pet-copilot@1.3.2 || 1.3.3`（新版本使用新包名），并保留其他规则。CU 的同类隔离复现已验证这种修复，不增加获准版本。Pet 1.3.3 从空环境安装及立即重复安装均通过；这不能代替每一种旧版本升级历史的验证。
 
-维护者运行 `node scripts/release-channel.mjs check 1.4.0`。仅检查时可设置 `DSH_PET_REGISTRY=https://registry.npmmirror.com`，输出会标明 registry 与 authoritative。网络失败会注明查询源，不会误判成未发布。promote 始终忽略镜像设置，重新查询 npm 官方源，并要求成熟后的严格安装回执。
+维护者运行 `node scripts/release-channel.mjs check 1.5.0`。仅检查时可设置 `DSH_PET_REGISTRY=https://registry.npmmirror.com`，输出会标明 registry 与 authoritative。网络失败会注明查询源，不会误判成未发布。promote 始终忽略镜像设置，重新查询 npm 官方源，并要求成熟后的严格安装回执。
 
 ## 构建与验证
 

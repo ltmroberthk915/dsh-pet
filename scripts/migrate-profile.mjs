@@ -7,8 +7,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { isDeepStrictEqual } from 'node:util'
 
-export const OLD_NAMES = ['@ltmroberthk915/dsh-pet', '@linxin666/dsh-pet']
-export const NEW_NAME = 'dsh-pet-copilot'
+export const OLD_NAMES = ['@ltmroberthk915/dsh-pet', '@linxin666/dsh-pet', 'dsh-pet-copilot']
+export const NEW_NAME = 'dsh-pets-multiworkers'
 
 export function planMigration(source, yaml) {
   const doc = yaml.parseDocument(source, { keepSourceTokens: true, uniqueKeys: true })
@@ -16,6 +16,14 @@ export function planMigration(source, yaml) {
   if (!yaml.isSeq(doc.contents)) throw Error('The patch must be a YAML list')
   const rows = doc.contents.items.filter(item => yaml.isMap(item) && item.get('id') === 'pet')
   const current = rows.filter(item => !item.has('name') || item.get('name') === NEW_NAME)
+  // Profiles that were migrated twice can carry more than one inert legacy row.
+  // Renaming all of them would create duplicate matching rows, so stop and make
+  // the operator pick which historical row is the effective one.
+  const legacy = rows.filter(item => {
+    const name = item.get('name', true)
+    return yaml.isScalar(name) && OLD_NAMES.includes(name.value)
+  })
+  if (legacy.length > 1) throw Error('Multiple legacy pet rows require review; keep only the effective row before renaming')
   const replacements = []
   for (const item of doc.contents.items) {
     if (!yaml.isMap(item)) continue

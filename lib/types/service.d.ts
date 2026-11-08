@@ -10,7 +10,7 @@ import { type AnimationMode } from './animation.ts';
  * Concurrent sessions each keep their own machine: the sprite animation
  * follows the most recent meaningful event (the display session) while the
  * state view carries one bubble per active session.
- * @module dsh-pet-copilot/service
+ * @module dsh-pets-multiworkers/service
  */
 import { Context, Service } from '@deepseek-ai/cordis';
 import type { DesktopStatus } from './desktop-status.ts';
@@ -126,6 +126,13 @@ export interface PetStateView extends PetMotion {
     currentSessionId?: string;
     companions?: PetCompanionView[];
     color?: SessionColor;
+    /**
+     * Conversations whose main-agent pet is kept on screen after viewing
+     * ("专属宠物保持"). A kept top-level companion stays in `companions` while
+     * idle — its size still follows the focused conversation (primary vs.
+     * secondary) — whereas a subagent pet keeps the normal show/hide rules.
+     */
+    keptSessions?: string[];
     animation: PetStateSnapshot['animation'];
     bubble?: string;
     phase: PetStateSnapshot['phase'];
@@ -286,6 +293,25 @@ export declare class PetService extends Service {
         ok: true;
     }>;
     private awaitingView;
+    /**
+     * RPC: keep or release one conversation's main-agent pet ("专属宠物保持").
+     * A kept pet stays visible after its result was viewed and the user left the
+     * conversation; keeping only suppresses that retirement, so the companion
+     * still follows the normal primary/secondary sizing and a subagent session
+     * (which the row menu never offers) keeps the ordinary show/hide path.
+     * @param sessionId - the conversation to keep or release.
+     * @param keep - true keeps the pet visible; false releases it.
+     * @returns the stored flag plus the whole kept list (the row menu mirrors it).
+     */
+    setSessionKept(sessionId: string, keep: boolean): Promise<{
+        ok: true;
+        keep: boolean;
+        sessions: string[];
+    }>;
+    /** The persisted kept conversation ids (read-only view). */
+    keptSessions(): string[];
+    /** Whether one session's own main-agent pet is kept (subagent sessions never are). */
+    private sessionKept;
     /**
      * RPC: one plugin-authored announcement bubble (dsh-usage linkage). The
      * payload is validated into a bounded PetAnnouncement; a malformed one is

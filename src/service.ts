@@ -11,7 +11,7 @@ import { boundAnimation } from './animation-bindings.ts'
  * Concurrent sessions each keep their own machine: the sprite animation
  * follows the most recent meaningful event (the display session) while the
  * state view carries one bubble per active session.
- * @module dsh-pet-copilot/service
+ * @module dsh-pets-multiworkers/service
  */
 
 import { Context, Service } from '@deepseek-ai/cordis'
@@ -190,6 +190,13 @@ export interface PetStateView extends PetMotion {
   currentSessionId?: string
   companions?: PetCompanionView[]
   color?: SessionColor
+  /**
+   * Conversations whose main-agent pet is kept on screen after viewing
+   * ("专属宠物保持"). A kept top-level companion stays in `companions` while
+   * idle — its size still follows the focused conversation (primary vs.
+   * secondary) — whereas a subagent pet keeps the normal show/hide rules.
+   */
+  keptSessions?: string[]
   animation: PetStateSnapshot['animation']
   bubble?: string
   phase: PetStateSnapshot['phase']
@@ -430,6 +437,34 @@ export class PetService extends Service {
   }
 
   /**
+   * RPC: keep or release one conversation's main-agent pet ("专属宠物保持").
+   * A kept pet stays visible after its result was viewed and the user left the
+   * conversation; keeping only suppresses that retirement, so the companion
+   * still follows the normal primary/secondary sizing and a subagent session
+   * (which the row menu never offers) keeps the ordinary show/hide path.
+   * @param sessionId - the conversation to keep or release.
+   * @param keep - true keeps the pet visible; false releases it.
+   * @returns the stored flag plus the whole kept list (the row menu mirrors it).
+   */
+  async setSessionKept(sessionId: string, keep: boolean): Promise<{ ok: true; keep: boolean; sessions: string[] }> {
+    if (typeof sessionId !== 'string' || sessionId === '' || sessionId.length > 200) throw new Error('invalid-kept-session')
+    this.ledger.setSessionKept(sessionId, keep)
+    this.flush()
+    return { ok: true, keep, sessions: this.keptSessions() }
+  }
+
+  /** The persisted kept conversation ids (read-only view). */
+  keptSessions(): string[] {
+    return [...(this.ledger.snapshot.keptSessions ?? [])]
+  }
+
+  /** Whether one session's own main-agent pet is kept (subagent sessions never are). */
+  private sessionKept(session: Session): boolean {
+    if (session.header?.origin === 'subagent') return false
+    return this.ledger.snapshot.keptSessions?.includes(String(session.id)) === true
+  }
+
+  /**
    * RPC: one plugin-authored announcement bubble (dsh-usage linkage). The
    * payload is validated into a bounded PetAnnouncement; a malformed one is
    * dropped silently — a sibling plugin's bug must never surface as pet
@@ -560,6 +595,12 @@ export class PetService extends Service {
         }),
         this.ctx.on('session/disposed', (session: Session) => {
           this.ledger.forgetSession(String(session.id))
+          // A removed conversation has no pet to keep; dropping the flag keeps a
+          // deleted session from leaving a synthesized ghost pet behind.
+          if (this.ledger.snapshot.keptSessions?.includes(String(session.id))) {
+            this.ledger.setSessionKept(String(session.id), false)
+            this.flush()
+          }
           this.officialEventSessions.delete(session)
           this.sessionActivity.delete(session)
           if (session !== this.displaySession) return
@@ -989,7 +1030,10 @@ export class PetService extends Service {
         const id = String(session.id)
         if (session.header?.origin === 'subagent' && id !== currentSessionId) continue
         const state = activity.machine.render()
-        if (state.animation === 'idle' && !activity.retainUntilViewed) continue
+        // A kept conversation's main pet stays after its result was viewed and
+        // the user moved on; everything else retires as before. Subagent
+        // sessions never take the keep path (see sessionKept).
+        if (state.animation === 'idle' && !activity.retainUntilViewed && !this.sessionKept(session)) continue
         const whisper = (entry.id !== 'whale-girl-refined' || (state.phase !== 'failed' && state.phase !== 'waiting' && state.toolCategory !== 'ask'))
           && activity.whisper && Date.now() - activity.whisper.at < WHISPER_TTL_MS ? activity.whisper.text : undefined
         companions.push({ sessionId: id, primary: id === currentSessionId,
@@ -1001,6 +1045,31 @@ export class PetService extends Service {
       }
       // Finished background companions remain until explicitly viewed. A viewed
       // idle session stays only while it owns the main window; leaving retires it.
+      //
+      // A kept conversation may have NO live activity record: it was idle across
+      // a Host restart, or simply cold when the keep was set. Its "专属宠物"
+      // must still exist, so synthesize the settled idle companion from the
+      // session's own color. It stays at the secondary size and takes the main
+      // size while that conversation is focused — exactly the existing
+      // primary/secondary rule, without inventing activity.
+      const present = new Set(companions.map(c => c.sessionId))
+      for (const id of this.keptSessions()) {
+        if (present.has(id)) continue
+        const live = [...this.sessionActivity.keys()].find(session => String(session.id) === id)
+        // A live child agent keeps the ordinary show/hide path.
+        if (live?.header?.origin === 'subagent') continue
+        present.add(id)
+        const performance = this.footerPerformance(id)
+        companions.push({
+          sessionId: id,
+          primary: id === currentSessionId,
+          animation: boundAnimation(entry.id, { animation: 'idle', phase: 'idle', sessionActive: false, animationStartedAt: 0 }),
+          phase: 'idle',
+          sessionActive: false,
+          ...(performance === undefined ? {} : { performance }),
+          color: this.sessionColor(id),
+        })
+      }
       if (!companions.some(c => c.primary)) companions.unshift({
         sessionId: currentSessionId ?? '', primary: true,
         animation: boundAnimation(entry.id, snapshot), phase: snapshot.phase,
@@ -1072,6 +1141,7 @@ export class PetService extends Service {
       sessionActive: snapshot.sessionActive,
       sessions: currentSessionId === undefined ? sessions : sessions.filter(s => s.sessionId === currentSessionId),
       currentSessionId,
+      keptSessions: this.keptSessions(),
       awaitingView: selected ? this.awaitingView(this.sessionActivity.get(selected)) : undefined,
       companions,
       color: { palette: 'ds' },

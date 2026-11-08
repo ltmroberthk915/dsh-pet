@@ -12,7 +12,7 @@ import { companionFramePose, whaleFramePose } from './whale-stability.ts'
  * to reposition (persisted via setConfig). Everything visual comes from the
  * pet definition the host serves ('/api/pet/pets' + the state snapshot's
  * pet id), so one component renders every registry entry.
- * @module dsh-pet-copilot/client/PetSprite
+ * @module dsh-pets-multiworkers/client/PetSprite
  */
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'

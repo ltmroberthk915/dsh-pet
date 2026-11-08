@@ -1,11 +1,11 @@
 # Windows 独立桌宠安装
 
-当前包名为 `dsh-pet-copilot`，包含鲸鱼娘、MIKU、商务小蓝鲸及独立窗口。[安装、冷却与旧名迁移](fresh-install-v1.3.3.md)给出完整步骤。
+当前包名为 `dsh-pets-multiworkers`，包含鲸鱼娘、MIKU、商务小蓝鲸及独立窗口。[安装、更名迁移与「专属宠物保持」](fresh-install-v1.5.0.md)给出完整步骤。
 
 桌面 CLI 的明确入口是安装目录下 resources/runtime/cli/bin/dsh.cmd，标准位置示例：
 
 ```powershell
-& "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd" plugin --profile desktop why dsh-pet-copilot
+& "$env:LOCALAPPDATA/Programs/DeepSeek Harness/resources/runtime/cli/bin/dsh.cmd" plugin --profile desktop why dsh-pets-multiworkers
 ```
 
 自定义安装位置使用实际目录。不要依赖旧全局 dsh，不要将 resources/runtime/bin 加到全局 PATH。

@@ -9,7 +9,7 @@
  * Feeding consumes one treat. Settlement is lazy: it runs whenever the host
  * serves a state snapshot or an interaction, so there is no timer and no
  * drift — elapsed periods are computed from the persisted last-grant marks.
- * @module dsh-pet-copilot/treats
+ * @module dsh-pets-multiworkers/treats
  */
 /** Treat economy tuning. */
 export interface TreatConfig {

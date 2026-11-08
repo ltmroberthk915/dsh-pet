@@ -6,7 +6,7 @@ import { effectiveFps } from '../../animation.ts'
  * sprite chrome (the dock, bubbles and panel belong to the pet center, not
  * the renderer); a renderer this build cannot serve renders a clear
  * diagnostic card instead of blanking.
- * @module dsh-pet-copilot/client/renderers/PetRendererSwitch
+ * @module dsh-pets-multiworkers/client/renderers/PetRendererSwitch
  */
 
 import { cloneElement, isValidElement, useRef, type ReactElement, type ReactNode } from 'react'

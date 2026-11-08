@@ -35,14 +35,14 @@ jobs:
           set -eu
           version=$(node -p 'require("./package.json").version')
           tag="v$version"
-          canonical="dsh-pet-copilot-$version.tgz"
+          canonical="dsh-pets-multiworkers-$version.tgz"
           archive=$(find verified -name "$canonical" -type f)
           test -f "$archive"
           cd "$(dirname "$archive")"
           sha256sum -c SHA256SUMS.txt
           cmp "$canonical" dsh-session-pet.tgz
           tar -xOf "$canonical" package/package.json > "$RUNNER_TEMP/packed-package.json"
-          VERSION="$version" node -e 'const p=require(process.env.RUNNER_TEMP+"/packed-package.json"); if(p.name!=="dsh-pet-copilot" || p.version!==process.env.VERSION || p.scripts || p.devDependencies) throw Error("Wrong consumer archive")'
+          VERSION="$version" node -e 'const p=require(process.env.RUNNER_TEMP+"/packed-package.json"); if(p.name!=="dsh-pets-multiworkers" || p.version!==process.env.VERSION || p.scripts || p.devDependencies) throw Error("Wrong consumer archive")'
           test "$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" = true
           gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --notes-file release-notes.md
           gh release upload "$tag" --repo "$GITHUB_REPOSITORY" "$canonical" dsh-session-pet.tgz "dsh-pet-profile-migration-$version.zip" SHA256SUMS.txt --clobber

@@ -9,7 +9,7 @@
  * verb takes an explicit clock and rng so tests stay deterministic. Decay,
  * passive income and sleep restore are lazy-settled on read (the treats.ts
  * discipline): the host runs no timers for gameplay.
- * @module dsh-pet-copilot/gameplay
+ * @module dsh-pets-multiworkers/gameplay
  */
 
 /** One roam direction the pet may walk in. */
