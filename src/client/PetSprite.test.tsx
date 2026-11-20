@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 /**
- * PetSprite rename-box keyboard handling. The rename input must treat
- * Enter/Escape keydowns that arrive during IME composition (candidate
- * selection) as composition input, never as submit/cancel (issue #89).
+ * PetSprite care-panel interactions. The panel action row is feed / keep /
+ * hide: "命名" (the old rename form) is gone, replaced by the conversation
+ * keep toggle ("对话专宠").
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
@@ -104,7 +104,7 @@ function petProps(overrides: Partial<PetSpriteProps> = {}): PetSpriteProps {
     onFeed: vi.fn(),
     onHide: vi.fn(),
     onDragEnd: vi.fn(),
-    onRename: vi.fn(),
+    onToggleKeep: vi.fn(),
     onOpenSession: vi.fn(),
     onFeedbackDone: vi.fn(),
     t,
@@ -157,7 +157,7 @@ describe('bubble-only status and mouse actions', () => {
     fireEvent.contextMenu(sprite, { clientX: 25, clientY: 20 })
     expect(props.onPet).toHaveBeenCalledOnce()
     expect(props.onGameplayTap).toHaveBeenCalledWith(.25, .2)
-    expect(screen.getByText('改名')).toBeTruthy()
+    expect(screen.getByText('保持对话专宠')).toBeTruthy()
     expect(openMain).toHaveBeenCalledOnce()
   })
 
@@ -277,16 +277,19 @@ describe('small companion bubble permissions', () => {
   })
 })
 
-/** Render the pet with mocked callbacks; returns the rename/open spys + the RTL result. */
-function renderPet(overrides: Partial<PetSpriteProps> = {}): {
-  onRename: ReturnType<typeof vi.fn>
+/**
+ * Render the pet with mocked callbacks; the returned result is the RTL view.
+ * A keep handler is always injected unless the case overrides it, so the panel
+ * renders the "对话专宠" action.
+ */
+function renderPet(overrides: Partial<PetSpriteProps> = {}): ReturnType<typeof render> & {
+  onToggleKeep: ReturnType<typeof vi.fn>
   onOpenSession: ReturnType<typeof vi.fn>
-  result: ReturnType<typeof render>
 } {
-  const onRename = vi.fn()
+  const onToggleKeep = vi.fn()
   const onOpenSession = vi.fn()
-  const result = render(<PetSprite {...petProps({ onRename, onOpenSession, ...overrides })} />)
-  return { onRename, onOpenSession, result }
+  const result = render(<PetSprite {...petProps({ onToggleKeep, onOpenSession, ...overrides })} />)
+  return Object.assign(result, { onToggleKeep, onOpenSession })
 }
 
 describe('desktop pointer lifecycle', () => {
@@ -345,27 +348,20 @@ describe('desktop pointer lifecycle', () => {
   })
 })
 
-/** Hover the sprite to open the panel, then click the rename button. */
-function openRename(): HTMLInputElement {
-  fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
-  fireEvent.click(screen.getByText('改名'))
-  return screen.getByPlaceholderText('输入新名字') as HTMLInputElement
-}
-
 describe('quiet care panel and business whale base size', () => {
   it('defaults to quiet hover, allows deliberate right-click access, and responds to the setting', () => {
     renderPet({ display: { ...snapshot.display, hoverPanelEnabled: undefined } })
     const sprite = screen.getByRole('button', { name: '鲸鱼娘' })
     fireEvent.pointerOver(sprite)
-    expect(screen.queryByText('改名')).toBeNull()
+    expect(screen.queryByText('保持对话专宠')).toBeNull()
     fireEvent.contextMenu(sprite)
-    expect(screen.getByText('改名')).toBeTruthy()
+    expect(screen.getByText('保持对话专宠')).toBeTruthy()
     fireEvent.keyDown(sprite, { key: 'Escape' })
-    expect(screen.queryByText('改名')).toBeNull()
+    expect(screen.queryByText('保持对话专宠')).toBeNull()
     cleanup()
     renderPet({ display: { ...snapshot.display, hoverPanelEnabled: true } })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
-    expect(screen.getByText('改名')).toBeTruthy()
+    expect(screen.getByText('保持对话专宠')).toBeTruthy()
   })
 
   it.each([32, 160, 320, 1024, Math.round(160 * 0.527)])('shrinks the business whale artwork and hit area at base size %s', size => {
@@ -376,25 +372,6 @@ describe('quiet care panel and business whale base size', () => {
     expect((sprite.parentElement as HTMLElement).style.height).toBe(sprite.style.height)
   })
 })
-
-/**
- * Fire a keydown whose native event reports an active IME composition, the
- * way Chromium marks Enter/Escape pressed to select or dismiss a candidate.
- */
-function fireComposingKeydown(target: Element, key: string): void {
-  fireEvent.compositionStart(target)
-  const native = new window.KeyboardEvent('keydown', {
-    key,
-    bubbles: true,
-    cancelable: true,
-    isComposing: true,
-  })
-  // jsdom does not implement KeyboardEvent.isComposing, so pin the flag on
-  // the dispatched native event exactly as the browser would report it.
-  Object.defineProperty(native, 'isComposing', { value: true })
-  fireEvent(target, native)
-  fireEvent.compositionEnd(target)
-}
 
 describe('PetSprite custom visual (pet-center M3)', () => {
   it('renders the visual inside the sprite box and skips the atlas background', () => {
@@ -441,88 +418,42 @@ describe('PetSprite affinity rank localization (#1226)', () => {
   })
 })
 
-describe('PetSprite rename input', () => {
-  it('submits the draft on Enter outside composition', () => {
-    const { onRename } = renderPet()
-    const input = openRename()
-    fireEvent.change(input, { target: { value: ' 小鲸 ' } })
-    fireEvent.keyDown(input, { key: 'Enter' })
-    expect(onRename).toHaveBeenCalledTimes(1)
-    expect(onRename).toHaveBeenCalledWith('小鲸')
+describe('PetSprite conversation keep action (对话专宠)', () => {
+  it('replaces the rename form with a keep toggle in the care panel', () => {
+    renderPet()
+    fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
+    expect(screen.getByText('保持对话专宠')).toBeTruthy()
+    // The rename affordance is gone: no button and no name input.
+    expect(screen.queryByText('改名')).toBeNull()
     expect(screen.queryByPlaceholderText('输入新名字')).toBeNull()
   })
 
-  it('ignores Enter while an IME composition is active', () => {
-    const { onRename } = renderPet()
-    const input = openRename()
-    fireEvent.change(input, { target: { value: '泡泡酱' } })
-    fireComposingKeydown(input, 'Enter')
-    expect(onRename).not.toHaveBeenCalled()
-    expect(screen.getByPlaceholderText('输入新名字')).toBe(input)
-    expect(input.value).toBe('泡泡酱')
-    // Once the composition is over, Enter submits normally.
-    fireEvent.keyDown(input, { key: 'Enter' })
-    expect(onRename).toHaveBeenCalledWith('泡泡酱')
-    expect(screen.queryByPlaceholderText('输入新名字')).toBeNull()
+  it('keeps the conversation when clicked from the unkept state', () => {
+    const result = renderPet({ kept: false })
+    fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
+    const button = screen.getByRole('button', { name: '保持对话专宠' })
+    expect(button.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(button)
+    expect(result.onToggleKeep).toHaveBeenCalledTimes(1)
+    expect(result.onToggleKeep).toHaveBeenCalledWith(true)
   })
 
-  it('ignores Escape while an IME composition is active', () => {
-    const { onRename } = renderPet()
-    const input = openRename()
-    fireEvent.change(input, { target: { value: 'abc' } })
-    fireComposingKeydown(input, 'Escape')
-    expect(screen.getByPlaceholderText('输入新名字')).toBe(input)
-    // A real Escape outside composition closes the box without renaming.
-    fireEvent.keyDown(input, { key: 'Escape' })
-    expect(onRename).not.toHaveBeenCalled()
-    expect(screen.queryByPlaceholderText('输入新名字')).toBeNull()
+  it('releases an already kept conversation through the same button', () => {
+    const result = renderPet({ kept: true })
+    fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
+    const button = screen.getByRole('button', { name: '取消对话专宠' })
+    expect(button.getAttribute('aria-pressed')).toBe('true')
+    expect(button.title).toBe('保持后，这条会话完成、你离开它，宠物仍留在这里')
+    fireEvent.click(button)
+    expect(result.onToggleKeep).toHaveBeenCalledWith(false)
   })
 
-  it('ignores Enter between compositionStart and compositionEnd even when isComposing is false (#303)', () => {
-    // WeChat IME (Windows) marks composition keydowns with isComposing ===
-    // false; only the explicit composition events can be trusted.
-    const { onRename } = renderPet()
-    const input = openRename()
-    fireEvent.change(input, { target: { value: '泡泡酱' } })
-    fireEvent.compositionStart(input)
-    fireEvent.keyDown(input, { key: 'Enter' })
-    expect(onRename).not.toHaveBeenCalled()
-    expect(screen.getByPlaceholderText('输入新名字')).toBe(input)
-    fireEvent.compositionEnd(input)
-    fireEvent.keyDown(input, { key: 'Enter' })
-    expect(onRename).toHaveBeenCalledWith('泡泡酱')
-  })
-
-  it("ignores 'Process' keydowns emitted by IMEs mid-composition (#303)", () => {
-    const { onRename } = renderPet()
-    const input = openRename()
-    fireEvent.change(input, { target: { value: '泡泡酱' } })
-    fireEvent.keyDown(input, { key: 'Process' })
-    expect(onRename).not.toHaveBeenCalled()
-    expect(screen.getByPlaceholderText('输入新名字')).toBe(input)
-  })
-
-  it('keeps the rename panel open when the pointer leaves mid-rename (#303)', () => {
-    // An IME candidate window is an OS-level window: moving the pointer onto
-    // it fires pointerleave on the float. The hide timer must not unmount
-    // the input mid-composition (that crashes some IMEs / the renderer).
-    vi.useFakeTimers()
-    try {
-      renderPet()
-      const input = openRename()
-      const float = input.parentElement?.parentElement?.parentElement
-      expect(float).not.toBeNull()
-      fireEvent.pointerOut(float!, { relatedTarget: null })
-      act(() => { vi.advanceTimersByTime(1000) })
-      expect(screen.getByPlaceholderText('输入新名字')).toBe(input)
-      // After the rename ends, hover behavior works again.
-      fireEvent.keyDown(input, { key: 'Escape' })
-      fireEvent.pointerOut(float!, { relatedTarget: null })
-      act(() => { vi.advanceTimersByTime(1000) })
-      expect(screen.queryByText('改名')).toBeNull()
-    } finally {
-      vi.useRealTimers()
-    }
+  it('hides the action when no keep handler is injected', () => {
+    renderPet({ onToggleKeep: undefined })
+    fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
+    expect(screen.getByText('喂食')).toBeTruthy()
+    expect(screen.queryByText('保持对话专宠')).toBeNull()
+    expect(screen.queryByText('取消对话专宠')).toBeNull()
   })
 })
 
@@ -539,7 +470,7 @@ describe('PetSprite hover panel placement', () => {
     renderPet({ display: { ...snapshot.display, bottom: 20 } })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
 
-    const panel = screen.getByText('改名').closest('[data-placement]') as HTMLElement
+    const panel = screen.getByText('保持对话专宠').closest('[data-placement]') as HTMLElement
     expect(panel.getAttribute('data-placement')).toBe('above')
     // No bubble above the sprite: the panel keeps its default 8px gap.
     expect(panel.style.marginBottom).toBe('')
@@ -565,7 +496,7 @@ describe('PetSprite hover panel placement', () => {
     })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
 
-    const panel = screen.getByText('改名').closest('[data-placement]') as HTMLElement
+    const panel = screen.getByText('保持对话专宠').closest('[data-placement]') as HTMLElement
     expect(panel.getAttribute('data-placement')).toBe('above')
     // 40px bubble height + 14px (8px base gap + 6px clearance).
     expect(panel.style.marginBottom).toBe('54px')
@@ -595,7 +526,7 @@ describe('PetSprite hover panel placement', () => {
     })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
 
-    const panel = screen.getByText('改名').closest('[data-placement]') as HTMLElement
+    const panel = screen.getByText('保持对话专宠').closest('[data-placement]') as HTMLElement
     expect(panel.getAttribute('data-placement')).toBe('above')
     // 88px stack height + 14px clearance.
     expect(panel.style.marginBottom).toBe('102px')
@@ -799,7 +730,7 @@ describe('PetSprite status bubble', () => {
     })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
     // The hover panel is open...
-    expect(screen.queryByText('改名')).not.toBeNull()
+    expect(screen.queryByText('保持对话专宠')).not.toBeNull()
     // ...and the bubbles are still there, still clickable once the collapsed
     // stack is expanded by hovering it.
     fireEvent.pointerOver(screen.getByText('正在思考').closest('div')!)
@@ -890,7 +821,7 @@ describe('PetSprite panel chrome from the voice pack (pet-center M4)', () => {
   const voicedDefinition = (): PetDefinition => ({
     ...petDefinition(),
     panel: {
-      labels: { feed: '投喂', rename: '起名字', hide: '藏起来', confirm: '好的' },
+      labels: { feed: '投喂', keep: '牵挂这条会话', hide: '藏起来' },
       stats: { rank: '好感 {rank}', treats: '鱼干 {n}', points: '{points} 分' },
     },
   })
@@ -899,18 +830,24 @@ describe('PetSprite panel chrome from the voice pack (pet-center M4)', () => {
     renderPet({ definition: voicedDefinition() })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
     expect(screen.getByText('投喂')).toBeDefined()
-    expect(screen.getByText('起名字')).toBeDefined()
+    expect(screen.getByText('牵挂这条会话')).toBeDefined()
     expect(screen.getByText('藏起来')).toBeDefined()
     expect(screen.getByText('好感 幼鲸')).toBeDefined()
     expect(screen.getByText('鱼干 3')).toBeDefined()
     expect(screen.getByText('0 分')).toBeDefined()
   })
 
-  it('uses the pack confirm label inside the rename row', () => {
+  it('uses the pack keep label politely and the dictionary release copy once kept', () => {
+    // The pack words the keeping action; releasing is a state flip and always
+    // speaks the dictionary's release copy (mirrors the conversation menu row).
     renderPet({ definition: voicedDefinition() })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
-    fireEvent.click(screen.getByText('起名字'))
-    expect(screen.getByText('好的')).toBeDefined()
+    expect(screen.getByText('牵挂这条会话')).toBeTruthy()
+    cleanup()
+    renderPet({ definition: voicedDefinition(), kept: true })
+    fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
+    const button = screen.getByText('取消对话专宠').closest('button')!
+    expect(button.getAttribute('aria-pressed')).toBe('true')
   })
 
   it('hides actions the pack omits', () => {
@@ -922,7 +859,7 @@ describe('PetSprite panel chrome from the voice pack (pet-center M4)', () => {
     })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
     expect(screen.getByText('投喂')).toBeDefined()
-    expect(screen.queryByText('改名')).toBeNull()
+    expect(screen.queryByText('保持对话专宠')).toBeNull()
     expect(screen.queryByText('隐藏')).toBeNull()
   })
 
@@ -930,7 +867,7 @@ describe('PetSprite panel chrome from the voice pack (pet-center M4)', () => {
     renderPet({ definition: { ...petDefinition(), panel: { actions: [] } } })
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
     expect(screen.queryByText('喂食')).toBeNull()
-    expect(screen.queryByText('改名')).toBeNull()
+    expect(screen.queryByText('保持对话专宠')).toBeNull()
     expect(screen.queryByText('隐藏')).toBeNull()
     // The stat rows keep rendering.
     expect(screen.getByText('亲密度 幼鲸')).toBeDefined()
@@ -941,7 +878,7 @@ describe('PetSprite panel chrome from the voice pack (pet-center M4)', () => {
     renderPet()
     fireEvent.pointerOver(screen.getByRole('button', { name: '鲸鱼娘' }))
     expect(screen.getByText('喂食')).toBeDefined()
-    expect(screen.getByText('改名')).toBeDefined()
+    expect(screen.getByText('保持对话专宠')).toBeDefined()
     expect(screen.getByText('隐藏')).toBeDefined()
     expect(screen.getByText('亲密度 幼鲸')).toBeDefined()
   })
@@ -1400,7 +1337,7 @@ describe('PetSprite status decoration (pet-center M5, #567)', () => {
     // The definition comes from '/api/pet/pets', fetched once — a state
     // poll never replaces it, so both renders share one definition object.
     const definition = petDefinition()
-    const { result } = renderPet({ definition, snapshot: { ...snapshot, bubble: '正在思考', phase: 'thinking', decoration } })
+    const result = renderPet({ definition, snapshot: { ...snapshot, bubble: '正在思考', phase: 'thinking', decoration } })
     const step = (ms: number): void => {
       for (const callback of frames.splice(0)) callback(now)
       now += ms

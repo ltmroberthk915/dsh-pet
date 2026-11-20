@@ -132,9 +132,8 @@
   "panel": {
     "labels": {
       "feed": "补充能量",
-      "rename": "命名",
-      "hide": "隐藏",
-      "confirm": "保存"
+      "keep": "保持对话专宠",
+      "hide": "隐藏"
     },
     "stats": {
       "rank": "协作等级 {rank}",

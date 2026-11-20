@@ -1,6 +1,6 @@
 # v1.5.0 新机安装、更名迁移与「专属宠物保持」
 
-本版本起 npm 包名固定为 **`dsh-pets-multiworkers`**（旧名 `dsh-pet-copilot`）。插件行 id 仍为 `pet`，`pet.json` 数据与设置命名空间不变。Release 提供 `dsh-pets-multiworkers-<version>.tgz`、迁移附件与 `SHA256SUMS.txt`；`dsh-session-pet.tgz` 仅作为兼容文件名保留。
+本版本起 npm 包名固定为 **`dsh-pets-multiworkers`**（旧名 `dsh-pet-copilot`）。插件行 id 仍为 `pet`，`pet.json` 数据与设置命名空间不变。Release 提供 `dsh-pets-multiworkers-<version>.tgz`、迁移附件与 `SHA256SUMS.txt`；`dsh-session-pet.tgz` 仅作为兼容文件名保留。旧声音包 `voice.json` 里的 `panel.rename` / `panel.confirm` 槽位自 **1.5.1** 起废弃（改为 `panel.keep`），残留字段会被忽略、不影响加载。
 
 ## 安装入口
 

@@ -162,7 +162,7 @@ export function PlaybackSettings() {
     </>}
     {!validBubbleScale && <div role="alert">气泡大小倍率需为 0.5–2，按 0.05 递增；当前输入尚未提交保存。</div>}
     <label><input aria-label="悬停展开看板" type="checkbox" checked={hoverPanel} onChange={e => setHoverPanel(e.target.checked)} /> 悬停展开看板</label>
-    <div style={{ opacity: .8 }}>默认关闭，鼠标经过时不展开补充能量、命名和隐藏面板。右键抚摸并打开看板；开启后也可悬停展开。</div>
+    <div style={{ opacity: .8 }}>默认关闭，鼠标经过时不展开补充能量、对话专宠和隐藏面板。右键抚摸并打开看板；开启后也可悬停展开。</div>
     <label>左右跑动模式 <select aria-label="播放模式" value={mode} onChange={e => setMode(e.target.value as AnimationMode)}>
       <option value="fixed">固定 FPS</option><option value="native">素材原速</option><option value="tick">Tick · 跟随底部 tok/s</option>
     </select></label>

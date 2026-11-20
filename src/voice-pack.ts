@@ -42,12 +42,16 @@ import { normalizePetRemarks, type PetRemarks } from './remarks.ts'
 /** Schema version this module normalizes (optional field; missing = 1). */
 export const VOICE_PACK_V1 = 1 as const
 
-/** Hover-panel action buttons a pack can show or hide (canonical order). */
-export const PANEL_ACTIONS = ['feed', 'rename', 'hide'] as const
+/**
+ * Hover-panel action buttons a pack can show or hide (canonical order).
+ * 'keep' is the conversation keep toggle ("对话专宠") that replaced the old
+ * rename form; it toggles the durable host flag for the pet's own session.
+ */
+export const PANEL_ACTIONS = ['feed', 'keep', 'hide'] as const
 export type PanelAction = (typeof PANEL_ACTIONS)[number]
 
 /** Panel label slots (unset slots keep the client's i18n dictionary copy). */
-export const PANEL_LABEL_KEYS = ['feed', 'rename', 'hide', 'confirm'] as const
+export const PANEL_LABEL_KEYS = ['feed', 'keep', 'hide'] as const
 export type PanelLabelKey = (typeof PANEL_LABEL_KEYS)[number]
 
 /** Panel stat slots ({rank}/{n}/{points} interpolate the live values). */

@@ -163,15 +163,11 @@
               "type": "string",
               "maxLength": 40
             },
-            "rename": {
+            "keep": {
               "type": "string",
               "maxLength": 40
             },
             "hide": {
-              "type": "string",
-              "maxLength": 40
-            },
-            "confirm": {
               "type": "string",
               "maxLength": 40
             }
@@ -202,11 +198,11 @@
           "items": {
             "enum": [
               "feed",
-              "rename",
+              "keep",
               "hide"
             ]
           },
-          "description": "Subset of actions to render in canonical order; absent = all three, [] = none."
+          "description": "Subset of actions to render in canonical order; absent = all three, [] = none. 'keep' is the conversation keep toggle."
         }
       }
     },

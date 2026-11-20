@@ -1,7 +1,7 @@
 {
   "name": "dsh-pets-multiworkers",
   "description": "一池多宠的 DSH 桌宠：每个活跃会话各一只，工作状态指示、模型/供应商配色与 tok/s 跑速、会话右键「专属宠物保持」、子代理跟随与共享养成。",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publishConfig": {
     "access": "public"
   },
@@ -62,7 +62,8 @@
     "docs/release-notes/v1.4.0.md",
     "docs/release-notes/v1.4.1.md",
     "docs/release-notes/v1.4.2.md",
-    "docs/release-notes/v1.5.0.md"
+    "docs/release-notes/v1.5.0.md",
+    "docs/release-notes/v1.5.1.md"
   ],
   "license": "Apache-2.0",
   "dsh": {

@@ -213,7 +213,7 @@ describe('per-conversation desktop pets', () => {
     expect((await f.service.state('resolved')).companions?.[0]?.color.palette).toBe('glm')
   })
 })
-describe('kept conversation pets ("专属宠物保持")', () => {
+describe('kept conversation pets ("对话专宠")', () => {
   it('keeps a viewed conversation pet on screen until released, while focus still owns the main size', async () => {
     const f = setup(); await f.service.setConfig({ multiPetEnabled: true })
     const kept = f.session('keep-a', 'gpt-6'), focus = f.session('keep-b', 'claude')
@@ -257,16 +257,23 @@ describe('kept conversation pets ("专属宠物保持")', () => {
     const parent = f.session('keep-parent', 'gpt-6')
     const child = { ...f.session('keep-child', 'gpt-6'), header: { origin: 'subagent' } }
     f.phase(parent, 'thinking'); f.phase(child, 'thinking'); f.phase(child, 'idle')
-    await f.service.setSessionKept(child.id, true)
+    // Writing the flag for a subagent is refused outright: its pet can never be
+    // kept (view() skips the keep path), so storing it would report a lie.
+    await expect(f.service.setSessionKept(child.id, true)).rejects.toThrow('subagent-session-not-keepable')
+    expect(f.service.keptSessions()).toEqual([])
     // A subagent pet keeps the current show/hide rules: its own focused window
-    // shows it, and the keep flag cannot resurrect it in the parent.
+    // shows it, and no keep can resurrect it in the parent.
     expect((await f.service.state(parent.id)).companions?.some(c => c.sessionId === child.id)).toBe(false)
     expect((await f.service.state(child.id)).companions?.find(c => c.sessionId === child.id)?.primary).toBe(true)
+    // The browser half reads `keepable` off the same snapshot to hide the
+    // care panel's keep action for that child's sprite.
+    expect((await f.service.state(child.id)).keepable).toBe(false)
+    expect((await f.service.state(parent.id)).keepable).toBe(true)
     f.phase(parent, 'idle')
     await f.service.setSessionKept(parent.id, true)
     const restarted = new PetService(new Context(), { registry: f.registry, persistDir: f.dir })
-    expect(restarted.keptSessions()).toEqual([child.id, parent.id])
-    expect((await restarted.state()).keptSessions).toEqual([child.id, parent.id])
+    expect(restarted.keptSessions()).toEqual([parent.id])
+    expect((await restarted.state()).keptSessions).toEqual([parent.id])
     // After a Host restart the conversation has no live activity: the kept pet
     // is synthesized as a settled background companion and leads when focused.
     const revived = await restarted.state('some-other-session')

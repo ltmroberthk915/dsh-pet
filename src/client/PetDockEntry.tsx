@@ -20,6 +20,7 @@ import { PetSprite } from './PetSprite.tsx'
 import { PetRendererSwitch } from './renderers/PetRendererSwitch.tsx'
 import { createDragStream, type DragStream } from './drag-stream.ts'
 import { GameplayHud, type GameplayApi, type GameplayBus } from './gameplay-hud.tsx'
+import { keepTargetId, sessionKept } from './keep-store.ts'
 import { NS } from './locales.ts'
 import styles from './pet.module.css'
 
@@ -39,8 +40,12 @@ export interface PetInjected {
   summon: () => void
   /** Persist a drag position. */
   dragEnd: (right: number, bottom: number) => void
-  /** Rename the selected pet (persisted by the host). */
-  rename: (name: string) => void
+  /**
+   * Keep or release the conversation a sprite stands for ("对话专宠", persisted
+   * by the host). Absent on surfaces that cannot reach the host's keep
+   * endpoint; that panel action is then hidden rather than rendered dead.
+   */
+  setSessionKeep?: (sessionId: string, keep: boolean) => void
   /** Navigate the GUI to the session a bubble reports on. */
   openSession: (sessionId: string) => void
   /** Clear the reaction bubble. */
@@ -94,6 +99,17 @@ export function PetDockEntry(props: PetDockEntryProps): ReactElement {
   const gameplay = definition?.gameplay
 
   if (visible) {
+    // "对话专宠": the sprite keeps the conversation it reports on. Both the
+    // target and the kept flag come from the same snapshot, so the panel label
+    // and the durable host flag can never disagree for more than one poll.
+    const keepTarget = keepTargetId(snapshot)
+    const setSessionKeep = props.setSessionKeep
+    const keep = setSessionKeep !== undefined && keepTarget !== undefined
+      ? {
+          onToggleKeep: (next: boolean) => setSessionKeep(keepTarget, next),
+          kept: sessionKept(snapshot, keepTarget),
+        }
+      : {}
     return (
       <span data-pet-dock data-testid="pet-dock">
         {snapshot === null || definition === null
@@ -115,7 +131,7 @@ export function PetDockEntry(props: PetDockEntryProps): ReactElement {
                 onFeed={props.feed}
                 onHide={props.hide}
                 onDragEnd={props.dragEnd}
-                onRename={props.rename}
+                {...keep}
                 onOpenSession={props.openSession}
                 onFeedbackDone={props.feedbackDone}
                 portalTarget={props.portalTarget}

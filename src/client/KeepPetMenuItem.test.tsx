@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * The conversation row menu contributes "专属宠物保持". The row is a plain
+ * The conversation row menu contributes "保持对话专宠". The row is a plain
  * menuitem button (the harness forbids importing its client UI primitives), so
  * these tests pin its label toggle, the menu dismissal, and the host call.
  */
@@ -44,7 +44,7 @@ describe('keep menu row', () => {
     const f = setup(false)
     expect(f.ensureKeepLoaded).toHaveBeenCalledTimes(1)
     const button = f.getByRole('menuitem') as HTMLButtonElement
-    expect(button.textContent).toContain('专属宠物保持')
+    expect(button.textContent).toContain('保持对话专宠')
     expect(button.getAttribute('aria-pressed')).toBe('false')
     fireEvent.click(button)
     expect(f.closeMenu).toHaveBeenCalledWith(false)
@@ -55,7 +55,7 @@ describe('keep menu row', () => {
     const f = setup(false)
     act(() => { f.keepStore.setSessions(['session-a']) })
     const button = f.getByRole('menuitem') as HTMLButtonElement
-    expect(button.textContent).toContain('取消专属宠物保持')
+    expect(button.textContent).toContain('取消对话专宠')
     expect(button.getAttribute('aria-pressed')).toBe('true')
     fireEvent.click(button)
     expect(f.setSessionKeep).toHaveBeenCalledWith('session-a', false)

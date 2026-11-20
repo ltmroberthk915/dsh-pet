@@ -165,20 +165,34 @@ describe('normalizeWhisperResults', () => {
 describe('normalizePanel', () => {
   it('normalizes labels, stats and the action subset', () => {
     const panel = normalizePanel({
-      labels: { feed: '投喂', confirm: '好的', bogus: 'x' },
+      labels: { feed: '投喂', keep: '牵挂', bogus: 'x' },
       stats: { rank: '好感 {rank}', points: '{points} 分' },
       actions: ['hide', 'feed', 'hide', 'bogus'],
     })
-    expect(panel?.labels).toEqual({ feed: '投喂', confirm: '好的' })
+    expect(panel?.labels).toEqual({ feed: '投喂', keep: '牵挂' })
     expect(panel?.stats).toEqual({ rank: '好感 {rank}', points: '{points} 分' })
     expect(panel?.actions).toEqual(['feed', 'hide'])
   })
 
   it('rejects non-string labels and labels carrying placeholders', () => {
     const warnings: string[] = []
-    const panel = normalizePanel({ labels: { feed: 3, rename: '改名 {tool}' } }, m => warnings.push(m))
+    // 'rename' is no longer a panel slot: the row's action is 'keep' now, and
+    // a stale pack naming the old slot must not silently render anything.
+    const panel = normalizePanel({ labels: { feed: 3, keep: '牵挂 {tool}' } }, m => warnings.push(m))
     expect(panel?.labels).toBeUndefined()
     expect(warnings.length).toBe(2)
+  })
+
+  it('drops the retired rename / confirm label slots', () => {
+    const stale = normalizePanel({ labels: { rename: '命名', confirm: '保存', hide: '隐藏' } })
+    expect(stale?.labels).toEqual({ hide: '隐藏' })
+  })
+
+  it('keeps the keep action in canonical order with the rest', () => {
+    const panel = normalizePanel({ actions: ['hide', 'keep', 'feed', 'keep'] })
+    expect(panel?.actions).toEqual(['feed', 'keep', 'hide'])
+    expect(PANEL_ACTIONS).toEqual(['feed', 'keep', 'hide'])
+    expect(PANEL_LABEL_KEYS).toEqual(['feed', 'keep', 'hide'])
   })
 
   it('keeps an explicit empty action list (hides every action)', () => {

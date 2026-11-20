@@ -9,7 +9,7 @@
  * exactly one [data-dsh-pet-root].
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { act } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import type { PetStateView } from '../service.ts'
 // The npm SDK's client half is a closure-factory bundle for the GUI's
 // __ModuleLoader__ (not importable under vitest); provide defineStore /
@@ -388,5 +388,54 @@ describe('desktop and embedded pet ownership', () => {
     expect(f.configure.mock.calls.length).toBeGreaterThanOrEqual(2)
     expect(document.querySelector<HTMLElement>('[data-dsh-pet-root]')!.style.display).toBe('none')
     expect(document.querySelectorAll('[data-pet-dock]')).toHaveLength(0)
+  })
+})
+
+/** A minimal registry entry the embedded sprite can render. */
+const PET_DEFINITION = {
+  id: 'whale-girl-refined',
+  displayName: '鲸鱼娘',
+  description: '',
+  renderer: 'sprite2d',
+  cell: { width: 192, height: 208 },
+  columns: 8,
+  rows: [6, 8, 8, 4, 5, 8, 6, 6, 6],
+  atlasRows: 9,
+  tracks: { idle: { frames: [0, 1], durations: [400, 400], loop: true } },
+  atlasUrl: '/pet/whale-girl-refined/spritesheet.webp',
+  manifestUrl: '/pet/whale-girl-refined/pet.json',
+}
+
+describe('pet care panel conversation keep', () => {
+  function fixture() {
+    vi.useFakeTimers()
+    const snapshot: PetStateView = {
+      animation: 'idle', phase: 'idle', sessionActive: false,
+      display: { visible: true, size: 480, right: 24, bottom: 20, bubbleScale: 1, hoverPanelEnabled: true, multiPetEnabled: false, desktopEnabled: false },
+      affinity: { points: 0, rank: '幼鲸', rankEmoji: '*', pets: 0, feeds: 0, turns: 0, petCooldown: false, feedCooldown: false },
+      pet: { id: 'whale-girl-refined', displayName: '鲸鱼娘', description: '' },
+      name: '鲸鱼娘', treats: { stocked: 0, max: 20 },
+      sessionId: 'conv-a', currentSessionId: 'conv-a', keptSessions: [],
+    }
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url === '/api/pet/pets') return Response.json([PET_DEFINITION])
+      if (url.startsWith('/api/pet/state')) return Response.json(snapshot)
+      if (url === '/api/pet/session-keep') return Response.json({ ok: true, keep: true, sessions: ['conv-a'] })
+      return Response.json([])
+    }))
+    return { lifecycle: fakeContext(), keepPosts: () => vi.mocked(fetch).mock.calls.filter(([url]) => url === '/api/pet/session-keep') }
+  }
+
+  it('writes the keep flag for the sprite own conversation', async () => {
+    const f = fixture()
+    await act(async () => { apply(f.lifecycle.ctx); await vi.advanceTimersByTimeAsync(1100) })
+    // The floating sprite portals into the plugin root with its own a11y label.
+    const sprite = document.querySelector<HTMLElement>('[data-dsh-pet-animation][role="button"]')
+    expect(sprite).not.toBeNull()
+    fireEvent.pointerOver(sprite!)
+    await act(async () => { fireEvent.click(screen.getByText('保持对话专宠')) })
+    const posts = f.keepPosts()
+    expect(posts).toHaveLength(1)
+    expect(JSON.parse(posts[0]![1]!.body as string)).toEqual({ sessionId: 'conv-a', keep: true })
   })
 })

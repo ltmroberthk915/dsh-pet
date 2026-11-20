@@ -32,8 +32,12 @@ export interface PetInjected {
     summon: () => void;
     /** Persist a drag position. */
     dragEnd: (right: number, bottom: number) => void;
-    /** Rename the selected pet (persisted by the host). */
-    rename: (name: string) => void;
+    /**
+     * Keep or release the conversation a sprite stands for ("对话专宠", persisted
+     * by the host). Absent on surfaces that cannot reach the host's keep
+     * endpoint; that panel action is then hidden rather than rendered dead.
+     */
+    setSessionKeep?: (sessionId: string, keep: boolean) => void;
     /** Navigate the GUI to the session a bubble reports on. */
     openSession: (sessionId: string) => void;
     /** Clear the reaction bubble. */

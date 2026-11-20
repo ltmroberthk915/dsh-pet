@@ -107,6 +107,13 @@ export declare const MAX_SESSION_BUBBLES = 12;
 export interface PetCompanionView extends PetMotion {
     sessionId: string;
     primary: boolean;
+    /**
+     * Whether this companion's conversation can hold a keep ("对话专宠").
+     * Absent means yes; `false` marks a subagent conversation, whose pet always
+     * follows the ordinary show/hide rules. Served per companion because every
+     * desktop window and embedded sprite renders its own conversation.
+     */
+    keepable?: boolean;
     /** Completion revision awaiting an explicit foreground-view acknowledgement. */
     awaitingView?: number;
     animation: PetStateSnapshot['animation'];
@@ -128,11 +135,18 @@ export interface PetStateView extends PetMotion {
     color?: SessionColor;
     /**
      * Conversations whose main-agent pet is kept on screen after viewing
-     * ("专属宠物保持"). A kept top-level companion stays in `companions` while
+     * ("对话专宠"). A kept top-level companion stays in `companions` while
      * idle — its size still follows the focused conversation (primary vs.
      * secondary) — whereas a subagent pet keeps the normal show/hide rules.
      */
     keptSessions?: string[];
+    /**
+     * Whether the conversation this view speaks for can be kept at all. Absent
+     * means yes; `false` marks a subagent conversation, whose pet always keeps
+     * the ordinary show/hide rules — the browser half hides the care panel's
+     * keep action instead of offering a write the host refuses.
+     */
+    keepable?: boolean;
     animation: PetStateSnapshot['animation'];
     bubble?: string;
     phase: PetStateSnapshot['phase'];
@@ -294,14 +308,15 @@ export declare class PetService extends Service {
     }>;
     private awaitingView;
     /**
-     * RPC: keep or release one conversation's main-agent pet ("专属宠物保持").
+     * RPC: keep or release one conversation's main-agent pet ("对话专宠").
      * A kept pet stays visible after its result was viewed and the user left the
      * conversation; keeping only suppresses that retirement, so the companion
-     * still follows the normal primary/secondary sizing and a subagent session
-     * (which the row menu never offers) keeps the ordinary show/hide path.
+     * still follows the normal primary/secondary sizing. A subagent session is
+     * refused: `view()` never honours the flag for one (see sessionKept), so
+     * storing it would report a "kept" pet that can never be kept.
      * @param sessionId - the conversation to keep or release.
      * @param keep - true keeps the pet visible; false releases it.
-     * @returns the stored flag plus the whole kept list (the row menu mirrors it).
+     * @returns the stored flag plus the whole kept list (the browser mirrors it).
      */
     setSessionKept(sessionId: string, keep: boolean): Promise<{
         ok: true;

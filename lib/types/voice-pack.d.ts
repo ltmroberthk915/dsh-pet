@@ -31,11 +31,15 @@ import { type VoicePackOverrides, type WhisperCategory, type WhisperResult } fro
 import { type PetRemarks } from './remarks.ts';
 /** Schema version this module normalizes (optional field; missing = 1). */
 export declare const VOICE_PACK_V1: 1;
-/** Hover-panel action buttons a pack can show or hide (canonical order). */
-export declare const PANEL_ACTIONS: readonly ["feed", "rename", "hide"];
+/**
+ * Hover-panel action buttons a pack can show or hide (canonical order).
+ * 'keep' is the conversation keep toggle ("对话专宠") that replaced the old
+ * rename form; it toggles the durable host flag for the pet's own session.
+ */
+export declare const PANEL_ACTIONS: readonly ["feed", "keep", "hide"];
 export type PanelAction = (typeof PANEL_ACTIONS)[number];
 /** Panel label slots (unset slots keep the client's i18n dictionary copy). */
-export declare const PANEL_LABEL_KEYS: readonly ["feed", "rename", "hide", "confirm"];
+export declare const PANEL_LABEL_KEYS: readonly ["feed", "keep", "hide"];
 export type PanelLabelKey = (typeof PANEL_LABEL_KEYS)[number];
 /** Panel stat slots ({rank}/{n}/{points} interpolate the live values). */
 export declare const PANEL_STAT_KEYS: readonly ["rank", "treats", "points"];

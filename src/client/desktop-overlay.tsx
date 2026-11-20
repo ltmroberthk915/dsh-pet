@@ -61,7 +61,7 @@ function App() {
   return <>
     <PetDockEntry store={store} ensure={() => void refresh()} pet={() => interact('pet')} feed={() => interact('feed')}
       hide={() => void action('hide').catch(() => {})} summon={() => void action('show').catch(() => {})}
-      dragEnd={() => {}} rename={name => void action('rename', { name }).catch(() => {})}
+      dragEnd={() => {}} setSessionKeep={(id, keep) => void action('session-keep', { sessionId: id, keep }).catch(() => {})}
       openSession={id => void bridge.openMain(id)} feedbackDone={() => store.actions.setFeedback(null)} t={t}
       gameplay={{ touch: zone => action('touch', { zone }), setSkin: skin => action('skin', { skin }),
         setMode: mode => action('mode', { mode }), workTick: () => action('work-tick'), buy: item => action('buy', { item }) }} />

@@ -26,8 +26,15 @@ export interface PetSpriteProps {
     onDragEnd: (right: number, bottom: number) => void;
     /** Drag gesture notifications for renderers with a drag track (frames2d). */
     onDraggingChange?: (dragging: boolean) => void;
-    /** Rename the selected pet (persisted by the host). */
-    onRename: (name: string) => void;
+    /**
+     * Toggle this conversation's "对话专宠" flag (persisted by the host): a kept
+     * conversation's pet stays on screen after its result was viewed and the
+     * user left the conversation. Omitted (or no conversation to keep) hides the
+     * panel action; this replaced the old rename form.
+     */
+    onToggleKeep?: (keep: boolean) => void;
+    /** Whether this sprite's own conversation is currently kept. */
+    kept?: boolean;
     /** Navigate to the session one status bubble reports on. */
     onOpenSession: (sessionId: string) => void;
     /** Clear the reaction bubble (after its CSS animation). */

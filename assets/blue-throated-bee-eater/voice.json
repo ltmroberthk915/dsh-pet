@@ -6,7 +6,7 @@
     },
     "actions": [
       "feed",
-      "rename",
+      "keep",
       "hide"
     ]
   }

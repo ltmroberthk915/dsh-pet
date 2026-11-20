@@ -9,11 +9,11 @@ Most pet plugins give you one mascot. This one puts **every active top-level con
 | Which conversation is working | Each pet plays its own real phase — thinking, tool running, waiting for you, done, failed — with that session's own status bubble. Background pets sit at 52.7% size so the focused one reads first. |
 | Which model or vendor is busy | Stable per-session palettes for DeepSeek, GPT, Claude, GLM, Kimi and more, plus extra hues that keep same-vendor sessions apart. |
 | How fast it is going | Left/right running speed follows that session's footer tok/s (`FPS = max(1, k × tok/s + b)`), so a faster model visibly runs faster. |
-| A conversation to keep watching | Open the row's `...` menu (or right-click it) → **专属宠物保持** (keep pet shown): the conversation's own pet stops being recycled after its result is viewed and you move on. Focus gives it the main size; the rest stay secondary. |
+| A conversation to keep watching | Open the row's `...` menu (or right-click it) → **保持对话专宠** (keep this conversation's pet), or use the same toggle on the pet's own right-click panel: the conversation's own pet stops being recycled after its result is viewed and you move on. Focus gives it the main size; the rest stay secondary. |
 | What a subagent is doing | Opening a subagent hands the main pet that session's own generation state and footer rate; returning restores the parent. Subagent pets keep the ordinary show/hide rules. |
 | Desktop presence | Optional native overlay windows without patching app.asar, a status-only bubble mode with no artwork, and a hover or right-click care panel. |
 
-**Multi-pet without multi-chore.** Feeding, affinity, treats, naming, dragging and size controls are shared across the whole tank. Pick the whale-girl, MIKU or business blue whale; the business whale's artwork, base and hit area carry an extra 0.75 scale.
+**Multi-pet without multi-chore.** Feeding, affinity, treats, dragging and size controls are shared across the whole tank. Pick the whale-girl, MIKU or business blue whale; the business whale's artwork, base and hit area carry an extra 0.75 scale.
 
 **New in 1.5.0:** the keep row, the persisted kept list, and settled idle pets for kept conversations that are cold (for example after a Host restart). Deleting a conversation clears its flag, so no ghost pet remains. The same release renames the package from `dsh-pet-copilot`; the pet row id, `pet.json`, settings namespace and care data are unchanged. See the [release notes](docs/release-notes/v1.5.0.md).
 

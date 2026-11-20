@@ -14,7 +14,7 @@ const WIDTH = 420, HEIGHT = 460
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; media-src 'self'; object-src 'none'; base-uri 'none'; frame-src 'none'; form-action 'none'"
 const ACTIONS = {
   state: ['GET', '/api/pet/state'], pets: ['GET', '/api/pet/pets'],
-  rename: ['POST', '/api/pet/set-name'],
+  'session-keep': ['POST', '/api/pet/session-keep'],
   pet: ['POST', '/api/pet/interact', { kind: 'pet' }], feed: ['POST', '/api/pet/interact', { kind: 'feed' }],
   hide: ['POST', '/api/pet/set-visible', { visible: false }], show: ['POST', '/api/pet/set-visible', { visible: true }],
   touch: ['POST', '/api/pet/gameplay/touch'], skin: ['POST', '/api/pet/set-skin'],
@@ -198,6 +198,8 @@ export function installDesktopPet({ owner, request, openMain }) {
     const { companions, ...common } = state
     if (!state.display?.multiPetEnabled || !companions?.length) return [{ ...common, key: 'single', primary: true, color: { palette: 'ds' } }]
     return companions.map(c => ({ ...common, ...c, key: 'session:' + c.sessionId,
+      // Each window is one conversation: the keep gate rides its own record.
+      keepable: c.keepable,
       bubble: c.bubble, performance: c.performance,
       sessions: c.bubble ? [{ sessionId: c.sessionId, animation: c.animation, phase: c.phase, bubble: c.bubble, whisper: c.whisper }] : [],
       announcement: c.primary ? state.announcement : undefined,

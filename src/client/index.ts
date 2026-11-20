@@ -534,13 +534,10 @@ export function apply(ctx: ClientContext): void {
             // Ignore; next poll resyncs.
           })
         },
-        rename: (name) => {
-          petApi.setName(name).then((result) => {
-            if (result.ok) pollNow()
-          }, () => {
-            // Ignore; next poll resyncs.
-          })
-        },
+        // "对话专宠" from the pet's own care panel: the same durable host flag
+        // the conversation row menu toggles, so both surfaces stay in sync
+        // through the shared keep store and the next poll.
+        setSessionKeep,
         feedbackDone: () => {
           setFeedback(null)
         },
